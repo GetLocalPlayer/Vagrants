@@ -1,0 +1,50 @@
+package SpikedCarapace
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DarkServantShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNThornShield
+constant NAME = "Spiked Carapace"
+constant DESCRIPTION = "Enhances the hero's skin with organic barbs. Reduces damage taken from |cffffaf00melee|r attacks returning it to the attacker."
+constant real array DAMAGE_REDUCTION = [0.10, 0.12, 0.14, 0.16, 0.18]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionCryptLordSpikedCarapace(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Damage Reduction", (int lvl) -> (DAMAGE_REDUCTION[lvl - 1] * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetReceivedDamageFactor(lvl -> 1 - DAMAGE_REDUCTION[lvl - 1])
+	..presetReturnedDamageFactor(lvl -> DAMAGE_REDUCTION[lvl - 1])
+	..presetDefenseBonus(lvl -> 0)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	darkServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, "")
+	..setArtTarget(1, "{0},{1},{2},{3}".format(Abilities.thornyShieldTargetChestLeft, Abilities.thornyShieldTargetChestRight, Abilities.thornyShieldTargetChestMountLeft, Abilities.thornyShieldTargetChestMountRight))
+	..setTargetAttachmentPoint0(1, "chest,left")
+	..setTargetAttachmentPoint1(1, "chest,right")
+	..setTargetAttachmentPoint2(1, "chest,mount,left")
+	..setTargetAttachmentPoint3(1, "chest,mount,left")
+	..setTargetAttachments(1, 4)

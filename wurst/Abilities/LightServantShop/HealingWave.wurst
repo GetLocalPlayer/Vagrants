@@ -1,0 +1,99 @@
+package HealingWave
+import ClosureEvents
+import ClosureTimers
+import ExLigthing
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import LightServantShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNHealingWave
+constant NAME = "Healing Wave"
+constant DESCRIPTION = "Calls forth a wave of energy that heals a target and bounces to nearby friendlies. Each bounce heals less damage. |cff969696The most wounded are healed first.|r"
+constant LIGHTNING_TYPE = LIGHTNING_HEALING_WAWE_PRIMARY
+constant real LIGHTNING_LIFETIME = 0.75
+constant real LIGHTNING_JUMP_INTERVAL = 0.25
+constant LIGHTING_LAUNCH_IMPACT_OFFSET = vec3(0, 0, 100)
+constant SOUND_EFFECT = "HealingWaveTarget"
+
+constant real array HEALING = [60, 100, 140, 180, 220]
+constant int NUMBER_OF_TARGETS = 6
+constant real HEALING_REDUCTION = 0.1
+constant real CAST_RANGE = 700.
+constant real AOE = 500.
+constant real COOLDOWN = 2.5
+constant int array MANACOST = [50, 55, 60, 65, 70]
+constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setEffectSound(SOUND_EFFECT)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..addTooltipProperty("Healing", (int lvl) -> HEALING[lvl - 1])
+	..addTooltipProperty("Number of Targets", (int lvl) -> NUMBER_OF_TARGETS)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..tooltipStopListen()
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetOption(Option.VISIBLE, true)
+	..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init
+	EventListener.onCast(ABIL_ID) (unit caster) ->
+		let target = EventData.getSpellTargetUnit()
+		new ExLigthing(LIGHTNING_TYPE, caster, target, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
+		..setLifetime(LIGHTNING_LIFETIME)
+		..setFadepoint(LIGHTNING_LIFETIME)
+		var healing = HEALING[caster.getAbilityLevel(ABIL_ID) - 1]
+		target.setLife(target.getLife() + healing)
+		let healedUnits = CreateGroup()
+		..addUnit(target)
+		var previousTarget = target
+		doPeriodicallyCounted(LIGHTNING_JUMP_INTERVAL, NUMBER_OF_TARGETS - 1) cbTargets ->
+			unit newTarget = null
+			let targetPos = previousTarget.getPos()
+			ENUM_GROUP.enumUnitsInRange(targetPos, AOE + MAX_COLLISION_SIZE)
+			for u in ENUM_GROUP
+				if u.isInRange(targetPos, AOE) and not healedUnits.contains(u)
+					if u.isAlive() and u.isAllyOf(caster) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and not u.isInvulnerable() and not u.isType(UNIT_TYPE_STRUCTURE)
+						if newTarget == null or u.getLife()/u.getMaxHP() < newTarget.getLife()/newTarget.getMaxHP()
+							newTarget = u
+			if newTarget != null
+				healing *= HEALING_REDUCTION
+				newTarget.setLife(newTarget.getLife() + healing)
+				new ExLigthing(LIGHTNING_TYPE, previousTarget, newTarget, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
+				..setLifetime(LIGHTNING_LIFETIME)
+				..setFadepoint(LIGHTNING_LIFETIME)
+				previousTarget = newTarget
+				healedUnits.addUnit(previousTarget)
+			if newTarget == null or cbTargets.isLast()
+				healedUnits.destr()
+				if not cbTargets.isLast()
+					destroy cbTargets

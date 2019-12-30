@@ -1,0 +1,33 @@
+package Evasion
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import AssasinShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNEvasion
+constant NAME = "Evasion"
+constant DESCRIPTION = "Gives a chance to avoid an attack."
+constant CHANCE = [0.2, 0.25, 0.30, 0.35, 0.4]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionDemonHunterEvasion(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Chance", (int lvl) -> (CHANCE[lvl - 1] * 100).toInt().toString())
+	..tooltipStopListen()
+	..presetChancetoEvade((int lvl) -> CHANCE[lvl - 1])
+	assasinShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

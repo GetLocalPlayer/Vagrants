@@ -1,0 +1,49 @@
+package CarrionSwarm
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import DarkServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNCarrionSwarm
+constant NAME = "Carrion Swarm"
+constant DESCRIPTION = "Sends a horde of bats to deal damage to each enemy unit in a cone."
+constant real array DAMAGE = [125, 140,  155, 170, 185]
+constant real CAST_RANGE = 700
+constant real AOE = 100
+constant real FINAL_AOE = 350
+constant real COOLDOWN = 6
+constant int array MANACOST = [105, 115, 125, 135, 145]
+constant TARGETS_ALLOWED = "ground,air,organic,enemies"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionDreadlordCarrionSwarm(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetDamage(lvl -> DAMAGE[lvl - 1])
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..tooltipStopListen()
+	..presetMaxDamage(lvl -> 999999)
+	..presetDistance(lvl -> CAST_RANGE)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetFinalArea(lvl -> FINAL_AOE)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	darkServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

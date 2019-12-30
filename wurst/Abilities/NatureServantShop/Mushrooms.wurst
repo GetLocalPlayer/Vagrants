@@ -1,0 +1,114 @@
+package Mushrooms
+import ClosureEvents
+import ClosureTimers
+import ClosureForGroups
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = "ReplaceableTextures\\CommandButtons\\BTNMushrooms.blp"
+constant HOTKEY = getHotkey()
+constant NAME = "Mushrooms"
+constant DESCRIPTION = "Mushrooms grow beneath the hero's feet, whose spores heal allies every second."
+
+constant ART_CASTER = Objects.nEDeath
+constant ART_TARGET = Abilities.vampiricAuraTarget
+constant MUSHROOM_MODEL = Doodads.ashenShrooms0
+constant MUSHROOM_ART_DEATH = Abilities.mirrorImageDeathCaster
+constant int MUSHROOMS_DENSITY = 6
+constant real MUSHROOM_HEIGHT = 100
+constant real MUSHROOMS_GROWING_TIME = 1
+constant real MUSHROOMS_SPAWN_INTERVAL = 0.04
+
+constant real array HEALING = [20, 25, 35, 50, 70]
+constant real MISSED_HEALTH_FACTOR = 0.02
+constant real AOE = 200.
+constant real DURATION = 10
+constant real COOLDOWN = 30
+constant int array MANACOST = [125, 140, 155, 170, 185]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	..addPropertyPostfix("Healing", " + " + (MISSED_HEALTH_FACTOR * 100).toInt().toString() + "% missing hit points")
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setArtEffect("")
+	..setArtCaster(ART_CASTER)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetDurationNormal(lvl -> DURATION)
+	..addTooltipProperty("Healing", (int lvl) -> HEALING[lvl - 1])
+	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TargetsAllowed.enemies)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, false)
+	..presetTargetType((int lvl) -> Targettype.NONE castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init
+	EventListener.onCast(ABIL_ID) (unit caster) ->
+		let casterPos = caster.getPos()
+		let startPos = casterPos.add(-AOE, -AOE)
+		let areaSq = AOE.squared()
+		let offsetRange = AOE * 2 / MUSHROOMS_DENSITY
+		let randomOffsetRange = AOE / MUSHROOMS_DENSITY
+		var count = 0
+		vec3 array positions
+		for i = 1 to MUSHROOMS_DENSITY 
+			for n = 0 to MUSHROOMS_DENSITY - 1
+				let randomOffset = vec2(GetRandomReal(-randomOffsetRange, randomOffsetRange), GetRandomReal(-randomOffsetRange, randomOffsetRange))
+				let pos = (startPos.add(offsetRange * (i - 1), offsetRange * n) + randomOffset).withTerrainZ(-MUSHROOM_HEIGHT)
+				if pos.distanceTo2dSq(casterPos) <= areaSq
+					positions[count] = pos
+					count++
+		var spawnDelay = 0.0
+		while count > 0
+			let random = GetRandomInt(0, count - 1)
+			var pos = positions[random]
+			doAfter(spawnDelay) () ->
+				let mushroom = addEffect(MUSHROOM_MODEL, pos)
+				..setYaw(GetRandomReal(-180, 180).asAngleDegrees())
+				..setColor(0, 255, 0)
+				let timerInterval = 0.02
+				doPeriodicallyTimed(timerInterval, MUSHROOMS_GROWING_TIME) (CallbackCounted cb) ->
+					pos.z += timerInterval / MUSHROOMS_GROWING_TIME * MUSHROOM_HEIGHT
+					mushroom..setPos(pos)
+					if cb.isLast()
+						doAfter(DURATION) () ->
+							mushroom..setZ(-10000)
+							..destr()
+							flashEffect(MUSHROOM_ART_DEATH, pos)
+			spawnDelay += MUSHROOMS_SPAWN_INTERVAL
+			count--
+			positions[random] = positions[count]
+		let healing = HEALING[caster.getAbilityLevel(ABIL_ID) - 1]
+		let missedHealthFactor = MISSED_HEALTH_FACTOR
+		doPeriodicallyTimed(1, DURATION) (CallbackCounted cb) ->
+			forUnitsInRange(casterPos, AOE, true) (unit u) ->
+				if u.isAlive() and u.isAllyOf(caster) and not u.isInvulnerable() and not u.isType(UNIT_TYPE_MAGIC_IMMUNE)
+					u.setLife(u.getLife() + healing + (u.getMaxHP() - u.getLife()) * missedHealthFactor)
+					flashEffect(ART_TARGET, u, "origin")

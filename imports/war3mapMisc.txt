@@ -1,0 +1,14 @@
+[Misc]
+AgiDefenseBonus=0.15
+DamageBonusMagic=
+DamageBonusNormal=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
+DamageBonusPierce=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
+DamageBonusSpells=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
+FrostAttackSpeedDecrease=0.1
+FrostMoveSpeedDecrease=0.0
+HeroAbilityLevelSkip=0
+MaxHeroLevel=28
+TradingIncLarge=0
+TradingIncSmall=0
+StrAttackBonus=0.00
+

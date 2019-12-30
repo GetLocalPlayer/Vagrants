@@ -1,0 +1,170 @@
+package EntanglingRoots
+import ClosureEvents
+import ClosureForGroups
+import DummyCaster
+import Orders
+import HashMap
+
+import Assets
+import BuffObjEditing
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = Icons.bTNEntanglingRoots
+constant HOTKEY = getHotkey()
+constant NAME = "Entangling Roots"
+constant DESCRIPTION = "Causes roots to burst from the ground, immobilizing the enemies in a target area, dealing damage twice per second."
+constant BUFF_DESCRIPTION = "This unit can't move."
+constant BUFF_ART_TARGET = Abilities.entanglingRootsTarget
+
+constant real array DAMAGE = [40, 50, 60, 70, 80]
+constant real CAST_RANGE = 500
+constant real AOE = 200.
+constant real DURATION = 2.5
+constant real COOLDOWN = 16
+constant int array MANACOST = [100, 115, 130, 145, 160]
+constant TARGETS_ALLOWED = "ground,air,enemy,neutral"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant DUMMY_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant DUMMY_BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setArtEffect("")
+	..setArtCaster("")
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetDurationNormal(lvl -> DURATION)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1])
+	..tooltipStopListen()
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, true)
+	..presetTargetType((int lvl) -> Targettype.POINT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionEnsnare(DUMMY_ABIL_ID)
+	..setDummyAbility()
+	..setBuffs(1, "{0},{1}".format(DUMMY_BUFF_ID.toRawCode(), DUMMY_BUFF_ID.toRawCode()))
+	..setDurationNormal(1, 99999)
+	..setDurationHero(1, 99999)
+	..setAirUnitLowerDuration(1, 0)
+	..setMissileSpeed(0)
+	..setMissileArt("")
+	..setAirUnitLowerDuration(1, 0.3)
+	new BuffDefinition(DUMMY_BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setTargetAttachmentPoint0(1, "origin")
+	..setArtTarget(1, BUFF_ART_TARGET)
+
+
+let affectedUnits = new HashMap<unit, RootBuff>
+
+
+class RootBuff
+	private unit caster
+	private unit target
+	private real remainingTime
+	private real damage
+	private real timeToDamage
+	private timer t
+
+	private static let damageTimeInterval = 0.5
+	private static let epsilon = 0.0001
+	private static let instances = new HashMap<timer, RootBuff> // can't use TimerUtils since there's a problem with TimerGetRemaining function
+
+	construct(unit caster, unit target, real duration, real damage)
+		this.caster = caster
+		this.target = target
+		this.remainingTime = duration
+		this.damage = damage
+		this.t = CreateTimer()
+		..start(damageTimeInterval, function timerCallback)
+		instances.put(t, this)
+		new DummyCaster()
+		..delay(1)
+		..origin(target.getPos())
+		..owner(caster.getOwner())
+		..castTarget(DUMMY_ABIL_ID, 1, OrderIds.ensnare, target)
+		affectedUnits.put(target, this)
+
+	ondestroy
+		instances.remove(t)
+		t.destr()
+		affectedUnits.remove(target)
+		target.removeAbility(DUMMY_BUFF_ID)
+
+	private static function timerCallback()
+		let t = GetExpiredTimer()
+		instances.get(t).update(t.getElapsed())
+
+	private function update(real elapsedTime)
+		timeToDamage -= elapsedTime
+		if timeToDamage <= epsilon
+			caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_PLANT, WEAPON_TYPE_WHOKNOWS)
+			timeToDamage = damageTimeInterval
+		remainingTime -= elapsedTime
+		if remainingTime > epsilon
+			instances.remove(t)
+			t..pause()
+			..destr()
+			t = CreateTimer()
+			..start(remainingTime > damageTimeInterval ? damageTimeInterval : remainingTime, function timerCallback)
+			instances.put(t, this)
+		else
+			destroy this
+
+	function setDuration(real duration)
+		remainingTime = duration
+		t.pause()
+		timeToDamage = t.getRemaining()
+		instances.remove(t)
+		t.destr()
+		t = CreateTimer()
+		..start(timeToDamage, function timerCallback)
+		instances.put(t, this)
+
+	function setCaster(unit caster)
+		this.caster = caster
+
+	function setDamage(real damage)
+		this.damage = damage
+
+
+init
+	EventListener.onPointCast(ABIL_ID) (caster, target) ->
+		let damage = DAMAGE[caster.getAbilityLevel(ABIL_ID) - 1]
+		forUnitsInRange(target, AOE, true) (unit u) ->
+			if u.isAlive() and u.isEnemyOf(caster) and not u.isType(UNIT_TYPE_STRUCTURE) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and not u.isInvulnerable()
+				if affectedUnits.has(u)
+					affectedUnits.get(u)..setCaster(caster)
+					..setDamage(damage)
+					..setDuration(DURATION)
+				else
+					new RootBuff(caster, u, DURATION, damage)
+			

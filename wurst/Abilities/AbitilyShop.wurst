@@ -1,0 +1,157 @@
+package AbitilyShop
+import LinkedList
+import HashMap
+import EventHelper
+
+import ChannelAbilityPreset
+
+
+@configurable constant MAX_ABILITIES_SOLD = 7
+@configurable constant MSG_MAX_ABILITIES_SOLD = "The hero cannot learn more abilites"
+@configurable constant BLOCK_SOLD_ABILITIES_TO_OTHER_PLAYER = false
+@configurable constant ABILITY_SOLD_EFFECT = "Abilities\\Spells\\Items\\AIam\\AIamTarget.mdl"
+/** {0} will be replaced with the ability's name */
+@configurable constant MSG_MAX_LEVEL = "[|cffffcc00{0}|r] is already at the maximum level!"
+/** {0} will be replaced with the colored palyer name
+{1} will be replaced with the ability's name */
+@configurable constant MSG_ABILITY_LEARNT = "{0} has learnt [|cffffcc00{1}|r]"
+
+constant PROPER_NAME_MARKER = "!ABILITY!"
+
+public class AbilityShopPreset extends BuildingDefinition
+	private let soldPassive = new LinkedList<HeroDefinition>
+	private let soldActive = new LinkedList<HeroDefinition>
+	
+	private function constructor(string icon, string name, string soundSet, string model)
+		setName(name)
+		setNormalAbilities("Ane2,Avul,Asud")
+		setUnitSoundSet(soundSet)
+		setItemsSold("")
+		setUnitsSold("")
+		setModelFile(model)
+		setShadowTextureBuilding("")
+		setGroundTexture("")
+		setIconGameInterface(icon)
+
+	construct(int newId, string icon, string name, string soundSet, string model)
+		super(newId, 'ngme')
+		constructor(icon, name, soundSet, model)
+
+	construct(string icon, string name, string soundSet, string model)
+		super(UNIT_ID_GEN.next(), 'ngme')
+		constructor(icon, name, soundSet, model)
+
+	/** Returns sold unit id. */
+	function addAbilitySold(int abilId, bool isPassive, string icon, string tooltip, string tooltipExtended, int cost) returns int
+		if soldPassive.size() + soldActive.size() >= 12
+			compileError("An AbilityShopPreset doesn't allow selling more than 12 abilities!")
+		let heroDef = new HeroDefinition(HERO_ID_GEN.next(), 'Hpal')
+		..setTooltipExtended(tooltipExtended)
+		..setTooltipBasic(tooltip)
+		..setName(tooltip)
+		..setIconGameInterface(icon)
+		..setLumberCost(cost)
+		..setHeroAbilities("")
+		..setUnitSoundSet("")
+		..setShadowImageUnit("")
+		..hideHeroDeathMsg(true)
+		..hideHeroInterfaceIcon(true)
+		..hideHeroMinimapDisplay(true)
+		..setModelFile("_.mdl")
+		..setGoldCost(0)
+		..setFoodCost(0)
+		..setSightRadiusDay(0)
+		..setSightRadiusNight(0)
+		..setHitPointsRegenerationRate(-100)
+		..setHitPointsMaximumBase(1)
+		..setStockMaximum(1)
+		..setStockStartDelay(0)
+		..setStockReplenishInterval(0)
+		..setAttacksEnabled(0)
+		..setRace(Race.Human)
+		..setRequirements("")
+		for i = 1 to 9
+			heroDef.setRequierementsForTier(i, "")
+		/* Hero proper name is used to transfer data
+		from compiletime to game. A name starts with special
+		marker defined as the class' static constant, then
+		ability id is coming. The name is finished with
+		ability cost, that will be used to return spent 
+		lumber if ability cannot be learnt. */ 
+		heroDef.setProperNames(PROPER_NAME_MARKER + abilId.toRawCode() + cost.toString())
+		if isPassive
+			soldPassive.add(heroDef)
+		else
+			soldActive.add(heroDef)
+
+		let soldUnits = new LinkedList<HeroDefinition>
+		..addAll(soldActive)
+		..addAll(soldPassive)
+		var soldUnitsString = ""
+		for i = 0 to soldUnits.size() - 1
+			soldUnitsString += soldUnits.get(i).getNewId().toRawCode() + ","
+			soldUnits.get(i)..setButtonPositionX(i mod 4)
+			..setButtonPositionY(i div 4)
+		destroy soldUnits
+
+		setUnitsSold(soldUnitsString)
+		return heroDef.getNewId()
+
+
+let userTriggers = new HashMap<int, trigger>
+
+public function trigger.registerAbilitySoldEvent(int abilId)
+	userTriggers.put(abilId, this)
+
+function executeUserTriggers(int abilId)
+	if userTriggers.has(abilId)
+		let trg = userTriggers.get(abilId)
+		if trg.isEnabled() and trg.evaluate()
+			trg.execute()
+
+// HashMap<buyer, abilityCounter>
+let buyersCache = new HashMap<unit, int>
+
+init
+	CreateTrigger()
+	..registerAnyUnitEvent(EVENT_PLAYER_UNIT_SELL)
+	..addCondition(Condition( () -> EventData.getSoldUnit().getProperName().startsWith(PROPER_NAME_MARKER) ))
+	..addAction() ->
+		let soldUnit = EventData.getSoldUnit()
+		let buyer = EventData.getBuyingUnit()
+		let properName = soldUnit.getProperName()
+		let abilIdString = properName.substring(PROPER_NAME_MARKER.length(), PROPER_NAME_MARKER.length() + 4)
+		let costString = properName.substring(PROPER_NAME_MARKER.length() + 4, properName.length())
+		let abilId = abilIdString.fromRawCode()
+		let cost = costString.toInt()
+		if not buyersCache.has(buyer)
+			buyersCache.put(buyer, 0)
+		if not buyer.hasAbility(abilId)
+			if buyersCache.get(buyer) == MAX_ABILITIES_SOLD
+				buyer.getOwner()..print(MSG_MAX_ABILITIES_SOLD)
+				..addLumber(cost)
+			else
+				buyer..addAbility(abilId)
+				..makeAbilityPermanent(abilId, true)
+				for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+					if players[i] != buyer.getOwner()
+						players[i].print(MSG_ABILITY_LEARNT.format(GetObjectName(abilId)))
+				flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
+				if localPlayer == buyer.getOwner()
+					let x = buyersCache.get(buyer) mod 4
+					let y = (11 - buyersCache.get(buyer)) div 4
+					BlzSetAbilityPosX(abilId, x)
+					BlzSetAbilityPosY(abilId, y)
+					BlzSetAbilityActivatedPosX(abilId, x)
+					BlzSetAbilityActivatedPosY(abilId, y)
+				buyersCache.put(buyer, buyersCache.get(buyer) + 1)
+				executeUserTriggers(abilId)
+		else
+			if buyer.getAbilityLevel(abilId) < buyer.getAbility(abilId).getField(ABILITY_IF_LEVELS)
+				buyer.incAbilityLevel(abilId)
+				flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
+				executeUserTriggers(abilId)
+			else
+				buyer.getOwner()..print(MSG_MAX_LEVEL.format(GetObjectName(abilId)))
+				..addLumber(cost)
+		soldUnit.remove()

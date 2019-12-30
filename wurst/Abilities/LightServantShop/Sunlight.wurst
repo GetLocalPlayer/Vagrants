@@ -1,0 +1,73 @@
+package Sunlight
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import LightServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = Icons.bTNTransmute
+constant HOTKEY = getHotkey()
+constant NAME = "Sunglight"
+constant DESCRIPTION = "Activate Sunlight to engulf this unit in light, causing  damage each second to nearby enemy units. |cff969696Drains mana until deactivated.|r"
+constant BUFF_DESCRIPTION = "Nearby units take damage.."
+constant BUFF_EFFECT = Abilities.healingSalveTarget
+constant AOE = 700.
+constant TARGETS_ALLOWED = "air,enemies,ground"
+constant real array DAMAGE = [10, 15, 20, 25, 30]
+constant int MANACOST = 25
+constant real array MANA_PER_SECOND = [7, 9, 11, 13, 15]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, "")
+	..setArtSpecial(1, BUFF_EFFECT)
+	..setTargetAttachmentPoint0(1, "overhead")
+	let dunnoWhyThisBuffIsNeeded = new BuffDefinition(BUFF_ID_GEN.next(), 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, "")
+	..setTooltipNormalExtended(1, "")
+	..setArtTarget(1, "")
+	..setTargetAttachmentPoint0(1, "")
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionDemonHunterImmolation(ABIL_ID)
+	..setIconNormal(ICON)
+	..setName(NAME)
+	..setIconTurnOff(Icons.bTNCancel)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1])
+	..presetManaDrainedperSecond(lvl -> MANA_PER_SECOND[lvl - 1])
+	..presetManaCost(lvl -> MANACOST)
+	..tooltipStopListen()
+	..presetDurationNormal(lvl -> 1)
+	..presetDurationHero(lvl -> 1)
+	..presetBufferManaRequired(lvl -> 0)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetDamageperInterval(lvl -> DAMAGE[lvl - 1])
+	..presetTooltipTurnOff((int lvl) -> "Deactivate Sunlight") 
+	..presetTooltipTurnOffExtended((int lvl) -> "Activate Sunlight") 
+	..presetBuffs( lvl -> "{0},{1}".format(BUFF_ID.toRawCode(), dunnoWhyThisBuffIsNeeded.getNewId().toRawCode()))
+	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+

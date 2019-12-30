@@ -1,0 +1,158 @@
+package SeedOfCorruption
+import ClosureEvents
+import ClosureForGroups
+import ClosureTimers
+import HashMap
+
+import Assets
+import BuffObjEditing
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import CurseMasterShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = "ReplaceableTextures\\CommandButtons\\BTNSeedOfCorruption.blp"
+constant NAME = "Seed of Corruption"
+constant DESCRIPTION = "Reduces a target enemy's armor. If the target dies under the effect, the seed explodes reducing nearby enemies armor."
+constant BUFF_DESCRIPTION = "This unit's armor reduced."
+
+constant PROJECTILE_MODEL = Abilities.orbCorruptionMissile
+constant int PROJECTILE_SPEED = 650
+
+constant MAIN_BUFF_EFFECT = Abilities.banishTarget
+constant EXPLOSION_BUFF_EFFECT = Abilities.carrionSwarmDamage
+constant EXPLOSION_EFFECT = Abilities.deathCoilSpecialArt
+
+constant real array ARMOR_REDUCTION = [0.20, 0.25, 0.30, 0.35, 0.40]
+constant real array EXPLOSION_ARMOR_REDUCTION = [0.10, 0.125, 0.15, 0.175, 0.2]
+
+constant real CAST_RANGE = 550.
+constant real AOE = 300
+constant real DURATION = 18.
+constant real COOLDOWN = 8.
+constant int array MANACOST = [90, 100, 110, 120, 130]
+constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+constant MAIN_BUFF = buffTuple(compiletime(ABIL_ID_GEN.next()), compiletime(BUFF_ID_GEN.next()))
+constant EXPLOSION_BUFF = buffTuple(compiletime(ABIL_ID_GEN.next()), compiletime(BUFF_ID_GEN.next()))
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionAlchemistAcidBomb(ABIL_ID)
+	..setIconNormal(ICON)
+	..setName(NAME)
+	..setMissileArt(PROJECTILE_MODEL)
+	..setMissileSpeed(PROJECTILE_SPEED)
+	..setMissileArc(0.1)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..addTooltipProperty("Armor Reduction", (int lvl) -> (ARMOR_REDUCTION[lvl - 1] * 100).toInt().toString() + "%")
+	..addTooltipProperty("Explosion Armor Reduction", (int lvl) -> (EXPLOSION_ARMOR_REDUCTION[lvl - 1] * 100).toInt().toString() + "%")
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..presetDurationNormal((int lvl) -> DURATION)
+	..presetAreaofEffect((lvl) -> AOE)
+	..presetCastRange((int lvl) -> CAST_RANGE)
+	..tooltipStopListen()
+	..presetDurationHero((lvl) -> DURATION)
+	..presetArmorPenalty((lvl) -> 0)
+	..presetPrimaryDamage((lvl) -> 0)
+	..presetSecondaryDamage((lvl) -> 0)
+	..presetAreaofEffect((lvl) -> 0)
+	..presetDamageInterval((lvl) -> 1000)
+	..presetTargetsAllowed((lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((lvl) -> BUFF_ID.toRawCode())
+	curseMasterShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	// Main target buff
+	new AbilityDefinitionPaladinDevotionAura(MAIN_BUFF.abilId)
+	..setLevels(LEVELS)
+	..setArtTarget(MAIN_BUFF_EFFECT)
+	..presetTargetsAllowed((lvl) -> "self")
+	..presetBuffs((lvl) -> MAIN_BUFF.buffId.toRawCode())
+	..presetArmorBonus((lvl) -> -ARMOR_REDUCTION[lvl - 1])
+	..presetPercentBonus((lvl) -> true)
+	new BuffDefinition(MAIN_BUFF.buffId, 'Basl')
+	..setName(1, NAME)
+	..setIcon(ICON)
+	..setTooltipNormal(1, "|cffff0000{0}|r".format(NAME))
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, "")
+	// Explosion buff
+	new AbilityDefinitionPaladinDevotionAura(EXPLOSION_BUFF.abilId)
+	..setLevels(LEVELS)
+	..setArtTarget(EXPLOSION_BUFF_EFFECT)
+	..presetTargetsAllowed((lvl) -> "self")
+	..presetBuffs((lvl) -> EXPLOSION_BUFF.buffId.toRawCode())
+	..presetArmorBonus((lvl) -> -EXPLOSION_ARMOR_REDUCTION[lvl - 1])
+	..presetPercentBonus((lvl) -> true)
+	new BuffDefinition(EXPLOSION_BUFF.buffId, 'Basl')
+	..setName(1, NAME)
+	..setIcon(ICON)
+	..setTooltipNormal(1, "|cffff0000{0}|r".format(NAME))
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, "")
+
+
+init // Main buff
+	let mainBuffTargets = new HashMap<unit, CallbackSingle>
+	let explosionBuffTargets = new HashMap<unit, CallbackSingle>
+
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
+		let target = EventData.getTriggerUnit()
+		if target.hasAbility(BUFF_ID)
+			target.removeAbility(BUFF_ID)
+			let caster = EventData.getEventDamageSource()
+			let lvl = caster.getAbilityLevel(ABIL_ID)
+			if mainBuffTargets.has(target)
+				destroy mainBuffTargets.getAndRemove(target)
+				target..removeAbility(MAIN_BUFF.buffId)
+				..setAbilityLevel(MAIN_BUFF.abilId, lvl)
+			else
+				target..addAbility(MAIN_BUFF.abilId)
+				target..removeAbility(MAIN_BUFF.buffId)
+				..setAbilityLevel(MAIN_BUFF.abilId, lvl)
+			CallbackSingle mainBuffTimer = () ->
+				mainBuffTargets.remove(target)
+				target..removeAbility(MAIN_BUFF.abilId)
+				..removeAbility(MAIN_BUFF.buffId)
+			doAfter(DURATION, mainBuffTimer)
+			mainBuffTargets.put(target, mainBuffTimer)
+
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) () ->
+		let target = EventData.getDyingUnit()
+		if mainBuffTargets.has(target)
+			let lvl = target.getAbilityLevel(MAIN_BUFF.abilId)
+			destroy mainBuffTargets.getAndRemove(target)
+			target..removeAbility(MAIN_BUFF.abilId)
+			..removeAbility(MAIN_BUFF.buffId)
+			flashEffect(EXPLOSION_EFFECT, target, "origin")
+			forUnitsInRange(target.getPos(), AOE, true) (unit u) ->
+				if u != target and u.isAllyOf(target) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and u.isAlive()
+					flashEffect(EXPLOSION_EFFECT, u, "origin")
+					if explosionBuffTargets.has(u)
+						destroy explosionBuffTargets.getAndRemove(u)
+						u..removeAbility(EXPLOSION_BUFF.buffId)
+						..setAbilityLevel(EXPLOSION_BUFF.abilId, lvl)
+					else
+						u..addAbility(EXPLOSION_BUFF.abilId)
+						..removeAbility(EXPLOSION_BUFF.buffId)
+						..setAbilityLevel(EXPLOSION_BUFF.abilId, lvl)
+					CallbackSingle explosionBuffTimer = () ->
+						explosionBuffTargets.remove(u)
+						u..removeAbility(EXPLOSION_BUFF.abilId)
+						..removeAbility(EXPLOSION_BUFF.buffId)
+					doAfter(DURATION, explosionBuffTimer)
+					explosionBuffTargets.put(u, explosionBuffTimer)
+		if explosionBuffTargets.has(target)
+			destroy explosionBuffTargets.getAndRemove(target)
+			target..removeAbility(EXPLOSION_BUFF.abilId)
+			..removeAbility(EXPLOSION_BUFF.buffId)

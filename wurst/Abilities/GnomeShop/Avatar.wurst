@@ -1,0 +1,51 @@
+package Avatar
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import GnomeShop
+import HotkeyFactory
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNAvatar
+constant NAME = "Avatar"
+constant DESCRIPTION = "Activate Avatar to give the hero a bonus armor, hit points, attack damage and spell immunity."
+constant DURATION = 10.
+constant COOLDOWN = 28.
+constant MANACOST = [56, 66, 76, 86, 96]
+constant ARMOR_BONUS = [2., 3., 4., 5., 6.]
+constant DAMAGE_BONUS = [10., 15., 20., 25., 30.]
+constant HIT_POINTS_BONUS = [100., 130., 160., 190., 220.]
+
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionMountainKingAvatar(ABIL_ID)
+	..setHeroAbility(true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..addTooltipProperty("Damage Bonus", (int lvl) -> DAMAGE_BONUS[lvl - 1].toInt())
+	..addTooltipProperty("Armor Bonus", (int lvl) -> ARMOR_BONUS[lvl - 1].toInt())
+	..addTooltipProperty("Hit Points Bonus", (int lvl) -> HIT_POINTS_BONUS[lvl - 1].toInt())
+	..presetDurationNormal((int lvl) -> DURATION)
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..tooltipStopListen()
+	..presetDurationHero((int lvl) -> DURATION)
+	..presetDefenseBonus((int lvl) -> ARMOR_BONUS[lvl - 1]) 
+	..presetDamageBonus((int lvl) -> DAMAGE_BONUS[lvl - 1])
+	..presetHitPointBonus((int lvl) -> HIT_POINTS_BONUS[lvl - 1])
+	gnomeShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

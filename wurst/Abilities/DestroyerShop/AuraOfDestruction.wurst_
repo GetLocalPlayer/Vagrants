@@ -1,0 +1,110 @@
+/* Units commit suicide if you give them Elune's Grace
+(this ability works on) or any other magic resistace 
+ability but the health they get from an upgrate is more
+than their own max health (even if the such huge bonus
+is coming from several levels of the upgrde).  */
+package AuraOfDestruction
+import EventHelper
+import ClosureForGroups
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import BuffObjEditing
+import DestroyerShop
+import AbilityTooltipGenerator
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant RESISTANCE_REDUCTION = [0.10, 0.15, 0.20, 0.25, 0.3]
+constant AOE = 500.
+constant NAME = "Aura of Destruction"
+constant DESCRIPTION = "Enemy units affected by this aura take increased magic damage."
+constant ICON = "ReplaceableTextures\\CommandButtons\\PASvolcano.blp"
+
+
+constant ABIL_ID = compiletime(HERO_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+constant SPELLBOOK_ID = compiletime(ABIL_ID_GEN.next())
+constant ELUNES_GRACE_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function buildAuraOfDestruction()
+    let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+    let abilDef = new AbilityDefinitionAuraDevotionCreep(ABIL_ID_GEN.next())
+        ..setIconNormal(ICON)
+        ..setHeroAbility(true)
+        ..setRequirements("")
+        ..setRace(Race.Human)
+        ..setArtTarget("")
+        ..registerTooltipGenerator(tooltipGen)
+        ..tooltipStartListen()
+        ..setLevels(LEVELS)
+        ..addTooltipProperty("Damage inc.", (int lvl) -> (RESISTANCE_REDUCTION[lvl - 1] * 100).toInt().toString() + "%")
+        ..addTooltipProperty("Area of Effect", (int lvl) -> AOE.toInt())
+        ..tooltipStopListen()
+        ..presetAreaofEffect(lvl -> AOE)
+        ..presetTargetsAllowed(lvl -> TargetsAllowed.enemies)
+        ..presetBuffs(lvl -> BUFF_ID.toRawCode())
+        ..presetArmorBonus(lvl -> 0)
+    let soldUnitDef = new SoldHeroPreset(ABIL_ID, SHOP_COST, ICON, NAME, tooltipGen.getTooltipLearnExtended(), true)
+    new BuffDefinition(BUFF_ID, 'BHad')
+    ..setRace(1, "human")
+    ..setIconNormal(1, Icons.bTNVolcano)
+    ..setArtTarget(1, Abilities.flameStrikeDamageTarget)
+    ..setTooltipNormal(1, "|cFFFF0000" + NAME)
+    ..setTooltipNormalExtended(1, DESCRIPTION)
+    new AbilityDefinitionSpellBook(SPELLBOOK_ID)
+    ..setLevels(1)
+    ..setSpellList(1, ELUNES_GRACE_ID.toRawCode())
+    ..setMaximumSpells(1, 1)
+    ..setRace(Race.Human)
+    new AbilityDefinitionElunesGrace(ELUNES_GRACE_ID)
+    ..setRace(Race.Human)
+    ..setLevels(LEVELS)
+    ..presetDamageTaken(lvl -> 1)
+    ..presetDamageDealt(lvl -> 1)
+    ..presetMagicDamageReduction(lvl -> 1. + RESISTANCE_REDUCTION[lvl - 1])
+    destroyerShop.addAbilitySold(soldUnitDef)
+
+
+let auraOwners = CreateGroup()
+let auraTargets = CreateGroup()
+let auraTimer = CreateTimer()
+
+function onAuraTimer()
+    for target in auraTargets
+        if not target.hasAbility(BUFF_ID)
+            target.removeAbility(SPELLBOOK_ID)
+            auraTargets.removeUnit(target)
+    for owner in auraOwners
+        let level = owner.getBoundAbilityLevel(ABIL_ID)
+        forUnitsInRange(owner.getPos(), AOE, true) (unit target) ->
+            if target.hasAbility(BUFF_ID)
+                if not auraTargets.contains(target)
+                    target..addAbility(SPELLBOOK_ID)            
+                    ..setAbilityLevel(ELUNES_GRACE_ID, level)
+                    auraTargets.addUnit(target)
+                else if target.getAbilityLevel(ELUNES_GRACE_ID) < level
+                    target.setAbilityLevel(ELUNES_GRACE_ID, level)
+
+function learnAura()
+    if EventData.getSoldUnit().getTypeId() == ABIL_ID and getBoundAbilityLevel() == 1
+        auraOwners.addUnit(EventData.getBuyingUnit())
+        if auraOwners.size() == 1
+            auraTimer.startPeriodic(1, function onAuraTimer)
+
+init
+    for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+        players[i].setAbilityAvailable(SPELLBOOK_ID, false)
+    CreateTrigger()
+    ..registerBoundAbilityUnitSoldEvent()
+    ..addAction(function learnAura)
+
+        
+        
+        
+        
+        

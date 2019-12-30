@@ -1,0 +1,36 @@
+package CriticalStrike
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import AssasinShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNCriticalStrike
+constant NAME = "Critical Strike"
+constant DESCRIPTION = "Gives a chance to deal increased damage on an attack."
+constant CHANCE = 15
+constant DAMAGE_MULTIPLIER = [1.75, 2.1, 2.45, 2.85, 3.25]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionBladeMasterCriticalStrike(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Chance", (int lvl) -> CHANCE.toString() + "%")
+	..addTooltipProperty("Damage increased to", (int lvl) -> (DAMAGE_MULTIPLIER[lvl - 1] * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetChancetoCriticalStrike((int lvl) -> CHANCE.toReal())
+	..presetDamageMultiplier((int lvl) -> DAMAGE_MULTIPLIER[lvl - 1])
+	assasinShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

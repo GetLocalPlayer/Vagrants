@@ -1,0 +1,52 @@
+package ForkedLightning
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNMonsoon
+constant NAME = "Forked Lightning"
+constant DESCRIPTION = "Calls forth a cone of lightning to damage enemies."
+constant int NUMBER_OF_TARGETS = 7
+constant real array DAMAGE = [120, 145,  170, 195, 220]
+constant real CAST_RANGE = 600
+constant real AOE = 100
+constant real FINAL_AOE = 350
+constant real COOLDOWN = 8
+constant int array MANACOST = [75, 90, 105, 120, 135]
+constant TARGETS_ALLOWED = "ground,air,organic,enemies"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionSeaWitchForkedLightning(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1])
+	..addTooltipProperty("Number of Targets", (int lvl) -> NUMBER_OF_TARGETS)
+	..tooltipStopListen()
+	..presetNumberofTargetsHit(lvl -> NUMBER_OF_TARGETS)
+	..presetDamageperTarget(lvl -> DAMAGE[lvl - 1])
+	..presetDistance(lvl -> CAST_RANGE)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetFinalArea(lvl -> FINAL_AOE)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

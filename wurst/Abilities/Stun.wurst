@@ -1,0 +1,61 @@
+package Stun
+import HashMap
+import TimerUtils
+import ClosureTimers
+import DummyCaster
+
+import OrderIds
+import AbilityObjEditing
+import BuffObjEditing
+import ObjectIdGenerator
+import ObjectIds
+
+
+let abilityId = compiletime(ABIL_ID_GEN.next())
+let buffId = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function buildCustomStun()
+    new AbilityDefinitionMountainKingThunderBolt(abilityId)
+    ..setLevels(1)
+    ..setDurationHero(1, 999999)
+    ..setDurationNormal(1, 999999)
+    ..setRequiredLevel(6)
+    ..setMissileArt("")
+    ..setMissileSpeed(0)
+    ..setDamage(1, 0)
+    ..setTargetsAllowed(1, TargetsAllowed.vulnerable + "," + TargetsAllowed.invulnerable)
+    ..setBuffs(1, buffId.toRawCode())
+    ..setDummyAbility()
+    new BuffDefinition(buffId, 'BPSE')
+
+
+let stunnedUnits = new HashMap<unit, timer>
+
+
+public function unit.stun(real duration) returns bool
+    if this.isInvulnerable()
+        return false
+    if not stunnedUnits.has(this)
+        new DummyCaster()
+        ..origin(this.getPos())
+        ..castTarget(abilityId, 1, OrderIds.thunderbolt, this)
+        let tim = getTimer()
+        ..doAfter(duration) () ->
+            this.removeAbility(buffId)
+            stunnedUnits.remove(this)
+        stunnedUnits.put(this, tim)
+        return true
+    else if stunnedUnits.get(this).getRemaining() < duration
+        stunnedUnits.get(this)..pause()
+        ..doAfter(duration, stunnedUnits.get(this).getData() castTo CallbackSingle)
+        return true
+    return false
+
+
+public function unit.removeStun() returns bool
+    if stunnedUnits.has(this)
+        destroy stunnedUnits.getAndRemove(this).getData() castTo CallbackSingle
+        this.removeAbility(buffId)
+        return true
+    return false

@@ -1,0 +1,120 @@
+package AbilityTooltipGenerator
+import HashMap
+import LinkedList
+
+import AbilityObjEditing
+
+
+@configurable constant LEVEL_COLOR = "|cffffcc00"
+@configurable constant HOTKEY_COLOR = "|cffffcc00"
+@configurable constant LEARN_COLOR = "|cffffffff"
+@configurable constant PROPERTY_COLOR = "|cffd9f869"
+@configurable constant COMMON_PROPERTY_COLOR = "|cffc3dbff"
+/** The separator between each level data in a row
+in a learn tooltip. */
+@configurable constant LEVEL_SEPARATOR = "/" 
+
+/** Generator will rename these properties. */
+constant PROPERTY_ALIAS = new IterableMap<string, string>
+	..put("Duration Normal", "Duration")
+	..put("Follow Through Time", "Channeling time")
+/** A postfix that will be added to a partucular property. */
+constant PROPERTY_POSTFIX = new IterableMap<string, string>
+	..put("Cooldown", " sec.")
+	..put("Duration Normal", " sec.")
+	..put("Duration Hero", " sec.")
+	..put("Follow Through Time", " sec.")
+	..put("Chance", "%")
+/** Generator will place these properties in the end of a description in the same order.
+Ignores RENAMED_PROPERTIES constant. */
+constant COMMON_PROPERTIES = asList<string>("Cast Range", "Area of Effect", "Casting Time", "Follow Through Time", "Duration Normal", "Duration Hero",  "Cooldown", "Mana Cost")
+/** These properties will be placed only in Learn tooltip.
+Ignores RENAMED_PROPERTIES constant. */
+constant LEARN_PROPERTIES = asList<string>("Mana Cost")
+
+
+public class AbilityTooltipGenerator implements TooltipGenerator
+	private let properties = new IterableMap<string, StringLevelClosure>
+	private var levels = 1
+	private var name = ""
+	private var description = ""
+	private var hotkey = ""
+
+	private let propertyAlias = PROPERTY_ALIAS.copy()
+	private let propertyPostfix = PROPERTY_POSTFIX.copy()
+
+	construct(string name, string description)
+		this.name = name
+		this.description = description
+
+	override function addProperty(string title, StringLevelClosure lc)
+		properties.put(title, lc)
+
+	override function applyToDef(AbilityDefinition def)
+		levels = properties.has("Levels") ? properties.getAndRemove("Levels").run(0).toInt() : 1
+		hotkey = properties.has("Hotkey") ? properties.getAndRemove("Hotkey").run(0) : ""
+		for lvl = 1 to levels
+			def..setTooltipNormal(lvl, getTooltipNormal(lvl))
+			..setTooltipNormalExtended(lvl, getTooltipNormalExtended(lvl))
+		def..setTooltipLearn(getTooltipLearn())
+		..setTooltipLearnExtended(getTooltipLearnExtended())
+
+	function addPropertyPostfix(string property, string postfix)
+		if not propertyPostfix.has(property)
+			propertyPostfix.put(property, postfix)
+		else
+			compileError(property + " already has postfix " + postfix + "in the AbilityTooltipGenerator instance.")
+
+	function getTooltipNormal(int lvl) returns string
+		var tooltip = name
+		tooltip += levels > 1 ? " - {0}Level {1}|r".format(LEVEL_COLOR, lvl.toString()) : ""
+		tooltip += hotkey != "" ? " [{0}{1}|r]".format(HOTKEY_COLOR, hotkey) : ""
+		return tooltip
+
+	function getTooltipNormalExtended(int lvl) returns string
+		var tooltip = description + (properties.size() > 0 ? "|n" : "")
+		var commonProperties = ""
+		for prop in COMMON_PROPERTIES
+			if properties.has(prop) and not LEARN_PROPERTIES.has(prop)
+				let title = propertyAlias.has(prop) ? propertyAlias.get(prop) : prop
+				let value = properties.get(prop).run(lvl) + (propertyPostfix.has(prop) ? propertyPostfix.get(prop) : "")
+				commonProperties += "|n{0}{1}|r: {2}".format(COMMON_PROPERTY_COLOR, title, value)
+		for prop in properties
+			if not COMMON_PROPERTIES.has(prop) and not LEARN_PROPERTIES.has(prop)
+				let title = propertyAlias.has(prop) ? propertyAlias.get(prop) : prop
+				let value = properties.get(prop).run(lvl) + (propertyPostfix.has(prop) ? propertyPostfix.get(prop) : "")
+				tooltip += "|n{0}{1}|r: {2}".format(PROPERTY_COLOR, title, value)
+		return tooltip + (commonProperties != "" ? "|n" + commonProperties : "")
+		
+	function getTooltipLearn() returns string
+		var tooltip = "{0}Learn {1}|r".format(LEARN_COLOR, name)
+		tooltip += levels > 1 ? " - {0}Level %d|r".format(LEVEL_COLOR) : ""
+		tooltip += hotkey != "" ? " [{0}{1}|r]".format(HOTKEY_COLOR, hotkey) : ""
+		return tooltip
+
+	/** Collapses each level of the property into one string using '/' as a separator. */
+	private function getCollapsedLevelsProperty(string prop) returns string
+		let firstValue = properties.get(prop).run(1)
+		var otherValues = ""
+		var isSingleValue = true
+		if levels > 1
+			for lvl = 2 to levels
+				let value = properties.get(prop).run(lvl)
+				isSingleValue = isSingleValue and firstValue == value
+				otherValues += LEVEL_SEPARATOR + properties.get(prop).run(lvl)
+		return isSingleValue ? firstValue : firstValue + otherValues
+
+	function getTooltipLearnExtended() returns string
+		var tooltip = description + (properties.size() > 0 ? "|n" : "")
+		var commonProperties = ""
+		for prop in COMMON_PROPERTIES
+			if properties.has(prop)
+				let title = propertyAlias.has(prop) ? propertyAlias.get(prop) : prop
+				let value = getCollapsedLevelsProperty(prop) + (propertyPostfix.has(prop) ? propertyPostfix.get(prop): "")
+				commonProperties += "|n{0}{1}|r: {2}".format(COMMON_PROPERTY_COLOR, title, value)
+		for prop in properties
+			if not COMMON_PROPERTIES.has(prop)
+				let title = propertyAlias.has(prop) ? propertyAlias.get(prop) : prop
+				let value = getCollapsedLevelsProperty(prop) + (propertyPostfix.has(prop) ? propertyPostfix.get(prop): "")
+				tooltip += "|n{0}{1}|r: {2}".format(PROPERTY_COLOR, title, value)
+		return tooltip + (commonProperties != "" ? "|n" + commonProperties : "")

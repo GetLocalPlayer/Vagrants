@@ -1,0 +1,53 @@
+package VampiricAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DarkServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant ICON = Icons.pASBTNVampiricAura
+constant NAME = "Vampiric Aura"
+constant DESCRIPTION = "Nearby friendly |cffffaf00melee|r units gain a part of their attack damage when they hit enemy units as healing."
+constant BUFF_DESCRIPTION = "This unit is under the effects of Vampiric Aura; damage it deals to enemy units will restore hit points."
+constant BUFF_ART_SPECIAL = Abilities.vampiricAuraTarget
+constant BUFF_ART_TARGET = Abilities.generalAuraTarget
+constant ABIL_ART_TARGET = Abilities.vampiricAura
+constant real array VAMPIRISM = [0.10, 0.15, 0.20, 0.25, 0.30]
+constant real AOE = 600
+constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionDreadlordVampiricAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setArtTarget(ABIL_ART_TARGET)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)	
+	..addTooltipProperty("Vampirism", (int lvl) -> (VAMPIRISM[lvl - 1] * 100).toInt().toString() + "%")
+	..presetAreaofEffect(lvl -> AOE)
+	..tooltipStopListen()
+	..presetAttackDamageStolen(lvl -> VAMPIRISM[lvl - 1])
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	darkServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtSpecial(1, BUFF_ART_SPECIAL)
+	..setArtTarget(1, BUFF_ART_TARGET)

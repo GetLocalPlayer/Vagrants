@@ -1,0 +1,64 @@
+package InnerFire
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import LightServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = Icons.bTNInnerFireOn
+constant HOTKEY = getHotkey()
+constant NAME = "Inner Fire"
+constant DESCRIPTION = "Increases a target friendly unit's basic attack damage and armor."
+constant BUFF_DESCRIPTION = "This unit's armor and attack damage are increased."
+constant BUFF_EFFECT = Abilities.innerFireTarget
+constant int ARMOR_BONUS = 2
+constant real array DAMAGE_BONUS = [0.15, 0.25, 0.30, 0.35, 0.4]
+constant CAST_RANGE = 500.
+constant real DURATION = 20
+constant real COOLDOWN = 5
+constant int array MANACOST = [35, 45, 55, 65, 75]
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionInnerFire(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCastRange((lvl) -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..presetDefenseIncrease(lvl -> ARMOR_BONUS)
+	..presetDurationNormal(lvl -> DURATION)
+	..addTooltipProperty("Damage Increase", (int lvl) -> (DAMAGE_BONUS[lvl - 1] * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetDamageIncrease(lvl -> DAMAGE_BONUS[lvl - 1])
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetAutocastRange(lvl -> CAST_RANGE)
+	..presetDurationHero(lvl -> DURATION)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetBuffs( lvl -> BUFF_ID.toRawCode())
+	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, BUFF_EFFECT)
+	..setTargetAttachmentPoint0(1, "overhead")

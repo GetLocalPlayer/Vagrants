@@ -1,0 +1,146 @@
+package TrueshotAura
+import HashMap
+import EventHelper
+import ClosureTimers
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import BuffObjEditing
+import AbilityTooltipGenerator
+import GnomeShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNTrueShot
+constant NAME = "Trueshot Aura"
+constant DESCRIPTION = "An aura that gives friendly nearby heroes a bonus damage to their |cffffaf00ranged|r attacks. Enemies attacked by owner of this aura get marked. Damage bonus against marked enemies is incresed."
+constant BUFF_DESCRIPTION = "This unit's ranged attacks has s bonus damage."
+constant AOE = 600.
+constant TARGETS_ALLOWED = "air,friend,ground,hero,invulnerable,self,vulnerable"
+constant DAMAGE_BONUS = [10., 12., 14., 16., 18.]
+constant MARK_BONUS_DAMAGE = 0.5
+constant MARK_DURATION = 5.
+constant MARK_BONUS_DURATION = 5. 
+constant MARK_BUFF = compiletime(createDummyBuffObject("Trueshot Mark", "Heroes get additional attack damage bonus against this unit.", ICON, "Abilities\\TrueshotAura\\trueshotauramark.mdx", "overhead"))
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+constant BONUS_DAMAGE_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionMoonPriestessTrueshotAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Damage Bonus", (int lvl) -> DAMAGE_BONUS[lvl - 1].toInt())
+	..addTooltipProperty("Bonus Increasing", (int lvl) -> (MARK_BONUS_DAMAGE * 100).toInt().toString() + "%")
+	..addTooltipProperty("Mark Duration", (int lvl) -> MARK_DURATION.toString() + " sec.")
+	..presetAreaofEffect((int lvl) -> AOE)
+	..tooltipStopListen()
+	..presetDamageBonus((int lvl) -> DAMAGE_BONUS[lvl - 1])
+	..presetMeleeBonus((int lvl) -> false)
+	..presetRangedBonus((int lvl) -> true)
+	..presetFlatBonus((int lvl) -> true)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED) 
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode()) 
+	gnomeShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'BEar')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	new AbilityDefinitionAttackBonus(BONUS_DAMAGE_ABIL_ID)
+	..setLevels(LEVELS)
+	..presetAttackBonus((int lvl) -> (DAMAGE_BONUS[lvl - 1] * MARK_BONUS_DAMAGE).toInt())
+
+
+// <auraOwner, markedUnit>
+let ownersTargets = new IterableMap<unit, unit>
+// <markedUnit, endTimer>
+let markedUnits = new HashMap<unit, CallbackSingle>
+
+
+init // Mark units
+	let cond = Condition() ->
+		let attacker = EventData.getAttackerUnit()
+		return attacker.hasAbility(ABIL_ID) and attacker.isType(UNIT_TYPE_RANGED_ATTACKER)
+	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_ATTACKED)
+	..addCondition(cond)
+	..addAction() ->
+		let attacker = EventData.getAttackerUnit()
+		let target = EventData.getTriggerUnit()
+		// Release previous target 
+		if ownersTargets.has(attacker) and ownersTargets.get(attacker) != target
+			let previousTarget = ownersTargets.get(attacker)
+			..removeAbility(MARK_BUFF.abilId)
+			..removeAbility(MARK_BUFF.buffId)
+			destroy markedUnits.get(previousTarget)
+			markedUnits.remove(previousTarget)
+		ownersTargets.put(attacker, target)
+		// Current target
+		if markedUnits.has(target)
+			destroy markedUnits.get(target)
+		else
+			target.addAbility(MARK_BUFF.abilId)
+		let cb = doAfter(MARK_DURATION) () ->
+			target..removeAbility(MARK_BUFF.abilId)
+			..removeAbility(MARK_BUFF.buffId)
+			markedUnits.remove(target)
+			ownersTargets.remove(attacker)
+		markedUnits.put(target, cb)
+
+
+// <attacker, endBonusIncreasingTimer>
+let attackersCallbacks = new HashMap<unit, CallbackSingle>
+
+init // Bonus incresing
+	let cond = Condition() ->
+		let attacker = EventData.getAttackerUnit()
+		let target = EventData.getTriggerUnit()
+		return attacker.hasAbility(BUFF_ID) and attacker.isType(UNIT_TYPE_RANGED_ATTACKER) and target.hasAbility(MARK_BUFF.buffId)
+	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_ATTACKED)
+	..addCondition(cond)
+	..addAction() ->
+		let attacker = EventData.getAttackerUnit()
+		let target = EventData.getTriggerUnit()
+		let range = AOE + attacker.getCollisionSize()
+		var lvl = 0
+		for owner in ownersTargets
+			if attacker.isAllyOf(owner) and ownersTargets.get(owner) == target and attacker.isInRange(owner.getPos(), range)
+				if owner.getAbilityLevel(ABIL_ID) > lvl
+					lvl = owner.getAbilityLevel(ABIL_ID)
+		if lvl > 0
+			if attackersCallbacks.has(attacker)
+				destroy attackersCallbacks.get(attacker)
+			else
+				attacker.addAbility(BONUS_DAMAGE_ABIL_ID)
+			attacker.setAbilityLevel(BONUS_DAMAGE_ABIL_ID, lvl)
+			let cb = doAfter(MARK_BONUS_DURATION) () ->
+				attacker.removeAbility(BONUS_DAMAGE_ABIL_ID)
+				attackersCallbacks.remove(attacker)
+			attackersCallbacks.put(attacker, cb)
+				
+				
+
+init // Remove bonus increasing if a non-marked unit is attacked
+	let cond = Condition() ->
+		let attacker = EventData.getAttackerUnit()
+		let target = EventData.getTriggerUnit()
+		return attackersCallbacks.has(attacker) and (attacker.isType(UNIT_TYPE_MELEE_ATTACKER) or not target.hasAbility(MARK_BUFF.buffId))
+	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_ATTACKED)
+	..addCondition(cond)
+	..addAction() -> 
+		let attacker = EventData.getAttackerUnit()
+		attacker.removeAbility(BONUS_DAMAGE_ABIL_ID)
+		destroy attackersCallbacks.get(attacker)
+		attackersCallbacks.remove(attacker)

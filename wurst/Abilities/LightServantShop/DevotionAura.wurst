@@ -1,0 +1,47 @@
+package DevotionAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import LightServantShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNDevotion
+constant NAME = "Devotion Aura"
+constant DESCRIPTION = "Gives additional armor to nearby friendly units based on their base armor."
+constant BUFF_DESCRIPTION = "This unit's armor is increased."
+constant AOE = 600.
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant real array ARMOR_BONUS = [2, 3, 4, 5, 6]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPaladinDevotionAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetAreaofEffect((lvl) -> AOE)
+	..presetArmorBonus((lvl) -> ARMOR_BONUS[lvl - 1])
+	..tooltipStopListen()
+	..presetPercentBonus((lvl) -> false)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	lightServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)

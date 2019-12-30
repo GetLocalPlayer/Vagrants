@@ -1,0 +1,75 @@
+package Starfall
+import ClosureEvents
+import ClosureTimers
+import ClosureForGroups
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = Icons.bTNStarFall
+constant HOTKEY = getHotkey()
+constant NAME = "Starfall"
+constant DESCRIPTION = "Calls down falling stars that damage nearby enemy units."
+
+constant ART_CASTER = Abilities.starfallCaster
+constant ART_TARGET = Abilities.starfallTarget
+
+constant real array DAMAGE = [65, 80, 95, 110, 125]
+constant DAMAGE_DELAY = 0.5 // Delay before damage will be done, to synchronize with the effect
+constant real DAMAGE_INTERVAL = 0.1
+constant real AOE = 750.
+constant real COOLDOWN = 7
+constant int array MANACOST = [80, 90, 100, 110, 120]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setArtEffect("")
+	..setArtCaster(ART_CASTER)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..presetCooldown(lvl -> COOLDOWN)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1])
+	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TargetsAllowed.enemies)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, false)
+	..presetTargetType((int lvl) -> Targettype.NONE castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init
+	EventListener.onCast(ABIL_ID) (caster) ->
+		let caster = EventData.getTriggerUnit()
+		var _damageInterval = 0.0
+		let damage = DAMAGE[caster.getAbilityLevel(ABIL_ID) - 1]
+		forUnitsInRange(caster.getPos(), AOE + MAX_COLLISION_SIZE, true) (unit target) ->
+			if target.isEnemyOf(caster) and target.isAlive() and not target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not target.isInvulnerable() and target.isInRange(caster.getPos(), AOE)
+				doAfter(_damageInterval) () ->
+					flashEffect(ART_TARGET, target, "origin")
+					doAfter(DAMAGE_DELAY) () ->
+						caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+				_damageInterval += DAMAGE_INTERVAL

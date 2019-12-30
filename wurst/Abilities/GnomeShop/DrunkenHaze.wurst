@@ -1,0 +1,62 @@
+package DrunkenHaze
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import GnomeShop
+import HotkeyFactory
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.bTNStrongDrink
+constant HOTKEY = getHotkey()
+constant NAME = "Drunken Haze"
+constant DESCRIPTION = "Drenches enemy units in alcohol, causing their movement speed to be reduced and have a chance to miss on attacks. When units with Drunken Haze cast on them are hit by Breath of Fire, they will ignite and take burn damage."
+constant BUFF_DESCRIPTION = "This unit was hit by a Drunken Haze; it has reduced movement speed and a chance to miss on attacks."
+constant TARGETS_ALLOWED = "air,ground,enemy,organic,neutral"
+constant AOE = 150.
+constant RANGE = 550.
+constant CHANCE_TO_MISS = [0.10, 0.15, 0.20, 0.25, 0.30]
+constant MOVEMENT_SLOW = 0.2
+constant COOLDOWN = 20.
+constant DURATION = 6.
+constant MANACOST = [90, 100, 110, 120, 130]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionBrewmasterDrunkenHaze(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..addTooltipProperty("Chance to Miss", (int lvl) -> (CHANCE_TO_MISS[lvl - 1] * 100).toInt().toString() + "%")
+	..addTooltipProperty("Movement Speed Reduction", (int lvl) -> (MOVEMENT_SLOW * 100).toInt().toString() + "%")
+	..presetAreaofEffect((int lvl) -> AOE)
+	..presetCastRange((int lvl) -> RANGE)
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..presetDurationNormal((int lvl) -> DURATION)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..tooltipStopListen()
+	..presetDurationHero((int lvl) -> DURATION)
+	..presetMovementSpeedModifier((int lvl) -> MOVEMENT_SLOW)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	gnomeShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)

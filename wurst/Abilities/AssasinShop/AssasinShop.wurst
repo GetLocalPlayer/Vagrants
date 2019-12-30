@@ -1,0 +1,31 @@
+package AssasinShop
+import ClosureForGroups
+import MapBounds
+
+import Assets
+import ObjectIdGenerator
+import ObjEditingCommons
+import public AbitilyShop
+
+
+let shopId = compiletime(UNIT_ID_GEN.next())
+let originalShopId = 'n005'
+
+public AbilityShopPreset assasinShopDef
+
+
+@compiletime function build()
+	assasinShopDef = new AbilityShopPreset(shopId, Icons.bTNAssassin, "Assasin", Soundsets.heroWarden, Units.assassin1)
+	..setGroundTexture("")
+	..setCollisionSize(0)
+	..setMovementType(MovementType.Fly)
+	..setPathingMap("")
+	..setSelectionScale(2)
+	..setScalingValue(1.5)
+
+init
+	forUnitsInRect(playableMapRect) (unit u) ->
+		if u.getTypeId() == originalShopId
+			u..addAbility('Aloc')
+			..setVertexColor(255, 255, 255, 0)
+			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())

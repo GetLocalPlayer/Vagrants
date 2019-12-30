@@ -1,0 +1,83 @@
+package TestGhoul
+import ClosureEvents
+
+import Assets
+import ObjectIdGenerator
+import UnitObjEditing
+
+
+constant COMMAND = "-CreateTestGhoul"
+constant SHORT_COMMAND = "-ctg"
+constant COMMAND_REMOVE = "-RemoveCreatedGhouls"
+constant SHORT_COMMAND_REMOVE = "-rcg"
+constant COMMAND_HP = "-SetGhoulHitPoints"
+constant SHORT_COMMAND_HP = "-sghp"
+constant SPAWN_RECT = gg_rct_TestGhoul
+constant UNIT_ID = compiletime(UNIT_ID_GEN.next())
+
+var testGhoulsMaxLife = 5000
+
+
+@compiletime function build()
+	new UnitDefinition(UNIT_ID, UnitIds.ghoul)
+	..setHitPointsMaximumBase(testGhoulsMaxLife)
+	..setManaMaximum(5000)
+	..setSpeedBase(1)
+	..setAttack1DamageBase(5)
+	..setDefenseBase(0)
+	..setName("Test Ghoul")
+	
+
+let ghouls = CreateGroup()
+
+
+function createGhouls()
+	let msg = EventData.getChatMessage().toLowerCase()
+	let cmd = COMMAND.toLowerCase()
+	let short = SHORT_COMMAND.toLowerCase()
+	if not msg.startsWith(cmd) and not msg.startsWith(short)
+		return
+	let s = msg.startsWith(cmd) ? msg.substring(cmd.length() + 1) : (msg.startsWith(short) ? msg.substring(short.length() + 1) : null)
+	var count = s.toInt()
+	count = count <= 0 ? 1 : count
+	for i = 0 to count - 1
+		let u = createUnit(players[PLAYER_NEUTRAL_AGGRESSIVE], UNIT_ID, SPAWN_RECT.randomPoint(), GetRandomInt(0, 359).toReal().asAngleDegrees())
+		..setMaxHP(testGhoulsMaxLife)
+		ghouls.addUnit(u)
+	
+init
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			createGhouls()
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			let msg = EventData.getChatMessage().toLowerCase()
+			let cmd = COMMAND_REMOVE.toLowerCase()
+			let short = SHORT_COMMAND_REMOVE.toLowerCase()
+			if msg.startsWith(cmd) or msg.startsWith(short)
+				for u in ghouls
+					u.kill()
+
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) () ->
+		let u = EventData.getDyingUnit()
+		if u.getTypeId() == UNIT_ID
+			ghouls.removeUnit(u)
+
+
+function setHP()
+	let msg = EventData.getChatMessage().toLowerCase()
+	let cmd = COMMAND_HP.toLowerCase()
+	let short = SHORT_COMMAND_HP.toLowerCase()
+	if not msg.startsWith(cmd) and not msg.startsWith(short)
+		return
+	let s = msg.startsWith(cmd) ? msg.substring(cmd.length() + 1) : (msg.startsWith(short) ? msg.substring(short.length() + 1) : null)
+	let hp = s.toInt()
+	testGhoulsMaxLife = hp <= 0 ? 1 : hp
+	for u in ghouls
+		u.setMaxHP(testGhoulsMaxLife)
+	
+init
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			setHP()

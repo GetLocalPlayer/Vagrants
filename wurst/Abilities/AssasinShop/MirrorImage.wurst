@@ -1,0 +1,84 @@
+package MirrorImage
+import DummyCaster
+import ClosureEvents
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import AssasinShop
+import HotkeyFactory
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNMirrorImage
+constant NAME = "Mirror Image"
+constant DESCRIPTION = "Creates illusion of the hero that deals decreased damage and takes increased damage."
+constant CHANCE = 15
+constant DAMAGE_DEALT = [0.15, 0.22, 0.29, 0.36, 0.36]
+constant DAMAGE_TAKEN = 3.
+constant NUMBER_OF_IMAGES = [2, 2, 2, 2, 3]
+constant DURATION = 10.
+constant COOLDOWN = 15.
+constant MANACOST = [70, 80, 90, 100, 110]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant DUMMY_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..addTooltipProperty("Damage Taken", (int lvl) -> (DAMAGE_TAKEN * 100).toInt().toString() + "%")
+	..addTooltipProperty("Damage Dealt", (int lvl) -> (DAMAGE_DEALT[lvl - 1] * 100).toInt().toString() + "%")
+	..addTooltipProperty("Number of Images", (int lvl) -> NUMBER_OF_IMAGES[lvl - 1])
+	..presetDurationNormal((int lvl) -> DURATION) 
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..tooltipStopListen()
+	..presetOption(Option.VISIBLE, true)
+	..presetTargetType((int lvl) -> Targettype.NONE castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	..setAnimationNames("spell")
+	assasinShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionItemIllusion(DUMMY_ABIL_ID)
+	..setLevels(LEVELS)
+	..presetCooldown((int lvl) -> 0)
+	..presetManaCost((int lvl) -> 0)
+	..presetDamageDealtofnormal((int lvl) -> DAMAGE_DEALT[lvl - 1]) 
+	..presetDamageReceivedMultiplier((int lvl) -> DAMAGE_TAKEN)
+	..presetDurationNormal((int lvl) -> DURATION)
+	..presetDurationHero((int lvl) -> DURATION)
+	..presetCastRange((int lvl) -> 99999)
+	..presetAreaofEffect((int lvl) -> 64)
+	..setArtTarget(Abilities.mirrorImageCaster)
+
+
+init
+	EventListener.onCast(ABIL_ID) (unit caster) ->
+		let dummy = new DummyCaster()
+		..owner(caster.getOwner())
+		..origin(caster.getPos())
+		..delay(1)
+		let lvl = caster.getAbilityLevel(ABIL_ID)
+		for i = 1 to NUMBER_OF_IMAGES[lvl - 1]
+			dummy.castTarget(DUMMY_ABIL_ID, lvl, 852274, caster)
+
+	EventListener.add(EVENT_PLAYER_UNIT_SUMMON) () ->
+		let u = EventData.getSummonedUnit()
+		if u.isIllusion()
+			u.getOwner().select(u)
+			flashEffect(Abilities.mirrorImageCaster, u, "chest")

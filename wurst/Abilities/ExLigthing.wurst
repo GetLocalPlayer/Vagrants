@@ -1,0 +1,109 @@
+package ExLigthing
+import LinkedList
+
+
+public class ExLigthing
+    private lightning light
+    private unit targetStart
+    private unit targetEnd
+    private var targetStartOffset = ZERO3
+    private var targetEndOffset = ZERO3
+    private var posStart = ZERO3
+    private var posEnd = ZERO3
+    private var clr = colorA(255, 255, 255, 255)
+    private var lifetime = 0.
+    private var fadepoint = 0.
+    private var expiring = false
+
+    private static let timerOnUpdate = CreateTimer()
+    private static let updateInterval = 0.02
+    private static let listOnUpdate = new LinkedList<ExLigthing>
+
+    construct(string codeName, vec2 posStart, vec2 posEnd)
+        constructor(codeName, posStart.withTerrainZ(), posEnd.withTerrainZ(), null, null, ZERO3, ZERO3)
+
+    construct(string codeName, vec3 posStart, vec3 posEnd)
+        constructor(codeName, posStart, posEnd, null, null, ZERO3, ZERO3)
+
+    construct(string codeName, vec2 posStart, unit target)
+        constructor(codeName, posStart.withTerrainZ(), target.getPos3Real(), null, target, ZERO3, ZERO3)
+
+    construct(string codeName, vec3 posStart, unit target, vec3 targetOffset)
+        constructor(codeName, posStart, target.getPos3Real() + targetOffset, null, target, ZERO3, targetOffset)
+
+    construct(string codeName, unit target, vec2 posEnd)
+        constructor(codeName, target.getPos3Real(), posEnd.withTerrainZ(), target, null, ZERO3, ZERO3)
+
+    construct(string codeName, unit target, vec3 posEnd, vec3 targetOffset)
+        constructor(codeName, target.getPos3Real() + targetOffset, posEnd, target, null, targetOffset, ZERO3)
+
+    construct(string codeName, unit targetStart, unit targetEnd)
+        constructor(codeName, targetStart.getPos3Real(), targetEnd.getPos3Real(), targetStart, targetEnd, ZERO3, ZERO3)
+
+    construct(string codeName, unit targetStart, unit targetEnd, vec3 targetStartOffset, vec3 targetEndOffset)
+        constructor(codeName, targetStart.getPos3Real() + targetStartOffset, targetEnd.getPos3Real() + targetEndOffset, targetStart, targetEnd, targetStartOffset, targetEndOffset)
+
+    private function constructor(string codeName, vec3 posStart, vec3 posEnd, unit targetStart, unit targetEnd, vec3 targetStartOffset, vec3 targetEndOffset)
+        this.light = addLightning(codeName, true, posStart, posEnd)
+        this.posStart = posStart
+        this.posEnd = posEnd
+        this.targetStart = targetStart
+        this.targetEnd = targetEnd
+        this.targetStartOffset = targetStartOffset
+        this.targetEndOffset = targetEndOffset
+        if targetStart != null or targetEnd != null
+            listOnUpdate.add(this)
+            if listOnUpdate.size() == 1
+                timerOnUpdate.startPeriodic(updateInterval, function updateAll)
+
+    private static function updateAll()
+        for instance in ExLigthing.listOnUpdate
+            if instance.targetStart != null or instance.targetEnd != null
+                instance.updatePos()
+            if instance.lifetime > 0.
+                instance.updateLifetime(GetExpiredTimer().getElapsed())
+
+    private function updatePos()
+        if targetStart != null
+            posStart = targetStart.getPos3Real() + targetStartOffset 
+        if targetEnd != null
+            posEnd = targetEnd.getPos3Real() + targetEndOffset
+        light.move(true, posStart, posEnd)
+
+    private function updateLifetime(real elapsedTime)
+        lifetime -= elapsedTime
+        if lifetime <= 0.
+            destroy this
+        else if lifetime < fadepoint
+            light.setColor(colorA(clr.red, clr.green, clr.blue, (clr.alpha * lifetime / fadepoint).toInt()))
+
+    function setLifetime(real lifetime)
+        if not expiring
+            this.lifetime = lifetime
+            expiring = true
+            if not listOnUpdate.has(this)
+                listOnUpdate.add(this)
+                if listOnUpdate.size() == 1
+                    timerOnUpdate.startPeriodic(updateInterval, function updateAll)
+    
+    function setFadepoint(real fadepoint)
+        this.fadepoint = fadepoint
+
+    function setColor(colorA newClr)
+        clr = newClr
+        light.setColor(colorA(clr.red, clr.green, clr.blue, expiring and lifetime < fadepoint ? (clr.alpha * lifetime / fadepoint).toInt() : clr.alpha))
+
+    function setColor(color newClr)
+        clr = newClr.withAlpha(clr.alpha)
+        light.setColor(colorA(clr.red, clr.green, clr.blue, expiring and lifetime < fadepoint ? (clr.alpha * lifetime / fadepoint).toInt() : clr.alpha))
+
+    function getColor() returns colorA
+        return clr
+
+    ondestroy
+        targetStart = null
+        targetEnd = null
+        light.destr()
+        listOnUpdate.remove(this)
+        if listOnUpdate.size() == 0
+            timerOnUpdate.pause()

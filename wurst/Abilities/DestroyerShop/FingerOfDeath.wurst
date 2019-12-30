@@ -1,0 +1,106 @@
+package FingerOfDeath
+import ClosureEvents
+import ClosureForGroups
+import ClosureTimers
+import ExLigthing
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import DestroyerShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNCorpseExplode
+constant NAME = "Findger of Death"
+constant DESCRIPTION = "Instantly turns a creature inside-out, dealing huge damage. The pieces of flesh, torn from the target's body, deal a part of damage to the enemies behind the target."
+
+constant LIGHTNING_TYPE = LIGHTNING_FINGER_OF_DEATH
+constant LIGHTNING_HIT_EFFECT = Abilities.demonBoltImpact
+constant real LIGHTING_LIFETIME = 1.
+constant real LIGHTING_LAUNCH_IMPACT_Z = 50
+constant real array DAMAGE = [350., 500., 650., 800., 950.]
+
+constant FLESH_PROJECTILE_MODEL = Abilities.meatwagonMissile
+constant real FLESH_PROJECTILE_SCALE = 1.
+constant real FLESH_PROJECTILE_SPEED = 350.
+constant real FLESH_PROJECTILE_LAUNCH_IMPACT_Z = 50
+constant real FLESH_DAMAGE_FACTOR = 0.25
+constant real FLESH_CONE_RANGE = 400.
+constant real FLESH_CONE_ANGLE = 90.
+
+constant real CAST_RANGE = 450.
+constant real COOLDOWN = 25.
+constant int array MANACOST = [150, 175, 200, 225, 250]
+constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1].toInt())
+	..addTooltipProperty("Flesh Damage", (int lvl) -> (FLESH_DAMAGE_FACTOR * 100).toInt().toString() + "%")
+	..addTooltipProperty("Flesh Range", (int lvl) -> FLESH_CONE_RANGE.toInt())
+	..presetCastRange((int lvl) -> CAST_RANGE)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..tooltipStopListen()
+	..presetOption(Option.VISIBLE, true)
+	..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1)
+	..presetCastingTime((int lvl) -> 0)
+	..presetTargetsAllowed((lvl) -> TARGETS_ALLOWED)
+	..setAnimationNames("spell")
+	destroyerShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init
+	EventListener.onCast(ABIL_ID) (unit caster) ->
+		let damage = DAMAGE[caster.getAbilityLevel(ABIL_ID) - 1]
+		let target = EventData.getSpellTargetUnit()
+		let targetPos = target.getPos()
+		let vecToTarget =  caster.getPos().normalizedPointerTo(targetPos)
+		let angleRange = (FLESH_CONE_ANGLE / 2).asAngleDegrees().cos()
+		let lightingOffset = vec3(0, 0, LIGHTING_LAUNCH_IMPACT_Z)
+		new ExLigthing(LIGHTNING_TYPE, caster, target, lightingOffset, lightingOffset)
+		..setLifetime(LIGHTING_LIFETIME)
+		..setFadepoint(LIGHTING_LIFETIME)
+		flashEffect(LIGHTNING_HIT_EFFECT, target, "origin")
+		caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
+		forUnitsInRange(targetPos, FLESH_CONE_RANGE, true) (unit u) ->
+			if u != target and u.isEnemyOf(caster) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and u.isAlive()
+				let vecToUnit = targetPos.normalizedPointerTo(u.getPos())
+				let dot = vecToTarget.dot(vecToUnit)
+				if dot.isBetween(angleRange, 1)
+					let fleshDamage = damage * FLESH_DAMAGE_FACTOR
+					let projectile = addEffect(FLESH_PROJECTILE_MODEL, target.getPos3Real().add(0, 0, FLESH_PROJECTILE_LAUNCH_IMPACT_Z))
+					..setScale(FLESH_PROJECTILE_SCALE)
+					let timerPeriod = 0.02
+					let projectileStep = FLESH_PROJECTILE_SPEED * timerPeriod
+					let projectileStepSq = projectileStep.squared()
+					doPeriodically(timerPeriod) (CallbackPeriodic cb) ->
+						let pos = projectile.getPos3()
+						let uPos = u.getPos3Real().add(0, 0, FLESH_PROJECTILE_LAUNCH_IMPACT_Z)
+						if pos.distanceToSq(uPos) > projectileStepSq
+							projectile.setPos(pos.moveTowards(uPos, projectileStep))
+						else
+							projectile..setPos(uPos)
+							..destr()
+							caster.damageTarget(u, fleshDamage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+							destroy cb

@@ -1,0 +1,116 @@
+package StoneSpears
+import ClosureTimers
+import ClosureEvents
+import ClosureForGroups
+import Interpolation
+
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import EarthServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = "ReplaceableTextures\\CommandButtons\\PASBTNStoneSpears.blp"
+constant NAME = "Stone Spears"
+constant DESCRIPTION = "The hero's attacks have a chance to spawn a stone shard on hit. The shard attacks the target's location or the first enemy on its path, dealing damage in an area. |n|n[|cffff0000Attack Modifier|r]"
+constant BUFF_DESCRIPTION = "Ground beneath this unit's feet is shaking."
+constant TARGETS_ALLOWED = "air,ground,enemy"
+constant int array CHANCE = [35, 45, 55, 65, 75]
+constant real DAMAGE = 80
+constant real SPAWN_RANGE = 75
+constant real SPAWN_TIME = 0.5
+constant real PROJECTILE_SPEED = 1500
+constant real PROJECTILE_COLLISIONO_SIZE = 20
+constant PROJECTILE_MODEL = "Abilities\\StoneSpear\\StoneSpear.mdx"
+constant real AOE = 175
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPaladinDevotionAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setArtTarget("")
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE.toInt())
+	..addTooltipProperty("Chance", (int lvl) -> CHANCE[lvl - 1])
+	..presetAreaofEffect((lvl) -> AOE)
+	..tooltipStopListen()
+	..presetTargetsAllowed((lvl) -> "none")
+	earthServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionFrostDamageBonus(ORB_ABIL_ID)
+	..setMissileArt("")
+	..setArtTarget("")
+	..setArtSpecial("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setDamageBonus(1, 0)
+	..setEnabledAttackIndex(1, 1)
+	..setTargetsAllowed(1, TARGETS_ALLOWED)
+	..setBuffs(1, ORB_BUFF_ID.toRawCode())
+	new BuffDefinition(ORB_BUFF_ID, 'Basl')
+	..setArtTarget(1, "")
+
+
+init
+	CreateTrigger()..registerAbilitySoldEvent(ABIL_ID)
+	..addCondition(Condition(()->not EventData.getBuyingUnit().hasAbility(ORB_ABIL_ID)))
+	..addAction() ->
+		EventData.getBuyingUnit()..addAbility(ORB_ABIL_ID)
+		..makeAbilityPermanent(ORB_ABIL_ID, true)
+
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
+		let target = EventData.getTriggerUnit()
+		if target.hasAbility(ORB_BUFF_ID)
+			target.removeAbility(ORB_BUFF_ID)
+			let attacker = EventData.getEventDamageSource()
+			if GetRandomInt(1, 100) <= CHANCE[attacker.getAbilityLevel(ABIL_ID) - 1]
+				let attackerPos = attacker.getPos()
+				let spawnDirection = attackerPos.normalizedPointerTo(target.getPos()).rotate((GetRandomReal(120., 220.)) .asAngleDegrees())
+				let startSpawnPos = attackerPos.withTerrainZ() + spawnDirection * SPAWN_RANGE
+				let endSpawnPos = attackerPos.withTerrainZ(200) + spawnDirection * SPAWN_RANGE * 2
+				let projectile = addEffect(PROJECTILE_MODEL, startSpawnPos)
+				..setYaw(startSpawnPos.angleTo2d(target.getPos()))
+				let targetPos = target.getPos3Real()
+				let timerInterval = 0.02
+				let callAmount = (SPAWN_TIME / timerInterval).toInt()
+				doPeriodicallyCounted(timerInterval, callAmount) (CallbackCounted cbSpawn) ->
+					projectile..setPos(startSpawnPos.lerp(endSpawnPos, (callAmount - cbSpawn.getCount())/callAmount))
+					..setRoll(projectile.getPos().angleTo(target.getPos()))
+					if cbSpawn.isLast()
+						let projectileOffset = PROJECTILE_SPEED * timerInterval
+						let projectileOffsetSq = projectileOffset.squared()
+						doPeriodically(timerInterval) (CallbackPeriodic cbMove) ->
+							let projectilePos = projectile.getPos3()
+							ENUM_GROUP.enumUnitsInRange(projectilePos.toVec2(), PROJECTILE_COLLISIONO_SIZE + MAX_COLLISION_SIZE, null)
+							for u in ENUM_GROUP
+								if u.isAllyOf(attacker) or not u.isAlive() or u.isType(UNIT_TYPE_MAGIC_IMMUNE) or not u.isInRange(projectilePos.toVec2(), PROJECTILE_COLLISIONO_SIZE)
+									ENUM_GROUP.removeUnit(u)
+							let isCollided = not ENUM_GROUP.isEmpty()
+							ENUM_GROUP.clear()
+							if not isCollided and projectilePos.distanceToSq(targetPos) > projectileOffsetSq
+								projectile..setPos(projectilePos.moveTowards(targetPos, projectileOffset))
+								..setYaw(projectilePos.angleTo2d(targetPos.toVec2()))
+							else
+								if not isCollided
+									projectile.setPos(targetPos)
+								projectile.destr()
+								destroy cbMove
+								forUnitsInRange(projectile.getPos(), AOE, true) (unit u) ->
+									if u.isEnemyOf(attacker) and u.isAlive() and not u.isType(UNIT_TYPE_MAGIC_IMMUNE)
+										attacker.damageTarget(u, DAMAGE, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)

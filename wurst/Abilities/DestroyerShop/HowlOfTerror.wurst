@@ -1,0 +1,57 @@
+package HowlOfTerror
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DestroyerShop
+import HotkeyFactory
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNHowlOfTerror
+constant NAME = "Howl of Terror"
+constant DESCRIPTION = "Lets loose a terrifying howl that reduces nearby enemy units' attack damage."
+constant BUFF_DESCRIOPTION = "This unit has heard the Howl of Terror; it deals less damage for a duration."
+constant AOE = 500.
+constant DAMAGE_REDUCTION = [0.2, 0.25, 0.3, 0.35, 0.4]
+constant DURATION = 10.
+constant COOLDOWN = 15.
+constant MANACOST = [75, 85, 95, 105, 120]
+constant TARGETS_ALLOWED = "air,ground,enemy,neutral"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPitLordHowlofTerror(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetManaCost((lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((lvl) -> COOLDOWN)
+	..presetDurationNormal((lvl) -> DURATION)
+	..addTooltipProperty("Damage Reduction", (int lvl) -> (DAMAGE_REDUCTION[lvl - 1] * 100).toInt().toString() + "%")
+	..presetAreaofEffect((lvl) -> AOE)
+	..tooltipStopListen()
+	..presetDurationHero((lvl) -> DURATION)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	destroyerShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setName(1, NAME)
+	..setIcon(ICON)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIOPTION)
+	..setArtTarget(1, Abilities.howlTarget)

@@ -1,0 +1,89 @@
+IncludeFile "ui\framedef\ui\escmenutemplates.fdf",
+
+
+Frame "BUTTON" "CameraMenuButton" {
+    ControlBackdrop "CameraControlButtonBackdrop",
+    Frame "BACKDROP" "CameraControlButtonBackdrop" {
+        BackdropBlendAll,
+        BackdropMirrored,
+        BackdropBackground  "ui\widgets\glues\gluescreen-campaignbutton-backdropbackgroundcamera.blp",
+    }
+
+    ControlPushedBackdrop "CameraControlPushedButtonBackdrop",
+    Frame "BACKDROP" "CameraControlPushedButtonBackdrop" {
+        BackdropBlendAll,
+        BackdropMirrored,
+        BackdropBackground  "ui\widgets\glues\gluescreen-campaignbutton-backdropbackgroundcamera-down.blp",
+    }
+}
+
+
+Frame "BACKDROP" "CameraMenuBackdrop" {
+    Width 0.15,
+    Height 0.035,
+
+    BackdropBackground "ui\widgets\tooltips\human\human-tooltip-background.blp",
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize 0.01,
+    BackdropBackgroundInsets 0.0025 0.0025 0.0025 0.0025,
+    BackdropEdgeFile "UI\Widgets\ToolTips\Human\human-tooltip-border.blp",
+
+    Frame "SLIDER" "CameraMenuSlider" INHERITS WITHCHILDREN "EscMenuSliderTemplate" {
+        UseActiveContext,
+        Width 0.14,
+        SetPoint CENTER, "CameraMenuBackdrop", CENTER, 0.0, -0.006,
+        SliderInitialValue 1650,
+        SliderMaxValue 2500,
+        SliderMinValue 700,
+        SliderStepSize 10,
+    }
+
+    Frame "TEXT" "CameraMenuLabel" INHERITS WITHCHILDREN "EscMenuLabelTextSmallTemplate" {
+        UseActiveContext,
+        Text "Camera distance: ",
+        SetPoint BOTTOMLEFT, "CameraMenuSlider", TOPLEFT, 0.001, 0.001,
+    }
+
+    Frame "TEXT" "CameraMenuValueLabel" INHERITS WITHCHILDREN "EscMenuLabelTextSmallTemplate" {
+        UseActiveContext,
+        SetPoint LEFT, "CameraMenuLabel", RIGHT, 0.001, 0.0,
+    }
+}
+
+
+Frame "BACKDROP" "CameraMenuButtonTooltip" {
+    Width 0.29,
+    Height 0.045,
+    
+    BackdropBackground "ui\widgets\tooltips\human\human-tooltip-background.blp",
+    BackdropCornerFlags "UL|UR|BL|BR|T|L|B|R",
+    BackdropCornerSize 0.008,
+    BackdropBackgroundInsets 0.0025 0.0025 0.0025 0.0025,
+    BackdropEdgeFile "UI\Widgets\ToolTips\Human\human-tooltip-border.blp",
+
+    Frame "TEXT" "CameraMenuButtonTooltipTitle" {
+       UseActiveContext,
+       DecorateFileNames,
+       SetPoint TOPLEFT, "CameraMenuButtonTooltip", TOPLEFT, 0.005, -0.005,
+       SetPoint TOPRIGHT, "CameraMenuButtonTooltip", TOPRIGHT, -0.005, -0.005,
+       FontFlags "FIXEDSIZE",
+       FrameFont "MasterFont", 0.011, "",
+       FontColor 1.0 1.0 1.0 1.0,
+       FontShadowColor 0.0 0.0 0.0 0.9,
+       FontShadowOffset 0.001 -0.001,
+       Text "Camera distance",
+   }
+ 
+   Frame "TEXT" "CameraMenuButtonTooltipDescription" {
+       UseActiveContext,
+       DecorateFileNames,
+       SetPoint TOPLEFT, "CameraMenuButtonTooltip", TOPLEFT, 0.005, -0.02,
+       SetPoint BOTTOMRIGHT,  "CameraMenuButtonTooltip", BOTTOMRIGHT, -0.005, 0.005,
+       FontFlags "FIXEDSIZE",
+       FrameFont "MasterFont", 0.011, "",
+       FontColor 1.0 1.0 1.0 1.0,
+       FontShadowColor 0.0 0.0 0.0 0.9,
+       FontShadowOffset 0.001 -0.001,
+       Text "Opens a menu that allows you to adjust the distance from the camera to its target.",
+   }
+}

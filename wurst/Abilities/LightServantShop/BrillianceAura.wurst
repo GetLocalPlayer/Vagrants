@@ -1,0 +1,49 @@
+package BrillianceAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import LightServantShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNBrilliance
+constant NAME = "Brilliance Aura"
+constant DESCRIPTION = "Gives additional mana regeneration to nearby friendly units."
+constant BUFF_DESCRIPTION = "This unit's mana regeneration is increased."
+constant AOE = 600.
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant real array REGENERATION = [1.25, 2, 2.75, 3.5, 4.25]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionArchMageBrillianceAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetAreaofEffect((lvl) -> AOE)
+	..addTooltipProperty("MP per second", (int lvl) -> REGENERATION[lvl - 1])
+	..tooltipStopListen()
+	..presetManaRegenerationIncrease(lvl -> REGENERATION[lvl - 1])
+	..presetPercentBonus((lvl) -> false)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	lightServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, Abilities.generalAuraTarget)

@@ -1,0 +1,49 @@
+package EnduranceAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import GnomeShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNCommand
+constant NAME = "Endurance Aura"
+constant DESCRIPTION = "Increases nearby friendly units' movement speed and attack rate."
+constant BUFF_DESCRIPTION = "This unit is under the effects of Endurance Aura; it has an increased movement speed and attack rate."
+constant AOE = 600.
+constant ATTACK_RATE_BONUS = [0.14, 0.18, 0.22, 0.26, 0.30]
+constant MOVE_SPEED_BONUS = 0.05
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionTaurenChieftainEnduranceAura(ABIL_ID)
+	..setHeroAbility(true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Attack Rate Bonus", (int lvl) -> (ATTACK_RATE_BONUS[lvl - 1] * 100).toInt().toString() + "%")
+	..addTooltipProperty("Move Speed Bonus", (int lvl) -> (MOVE_SPEED_BONUS * 100).toInt().toString() + "%")
+	..presetAreaofEffect((int lvl) -> AOE)
+	..tooltipStopListen()
+	..presetAttackSpeedIncrease((int lvl) -> ATTACK_RATE_BONUS[lvl - 1])
+	..presetMovementSpeedIncrease((int lvl) -> MOVE_SPEED_BONUS)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	gnomeShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)

@@ -1,0 +1,34 @@
+package BaseHealing
+import ClosureEvents
+
+
+constant COMMAND_OFF = "-DisableBaseRestoration"
+constant SHORT_COMMAND_OFF = "-dbr"
+constant COMMAND_ON = "-EnableBaseRestoration"
+constant SHORT_COMMAND_ON = "-ebr"
+constant HEALING_INTERVAL = 0.2
+
+let baseRect = gg_rct_Base
+
+function healBase()
+	ENUM_GROUP.enumUnitsInRect(baseRect, Filter(() -> GetFilterUnit().isType(UNIT_TYPE_HERO) and GetFilterUnit().isAlive()))
+	for u in ENUM_GROUP
+		u.setLife(u.getMaxHP())
+		u.setMana(u.getMaxMana())
+	ENUM_GROUP.clear()
+		
+
+init
+	let t = CreateTimer()
+	..startPeriodic(HEALING_INTERVAL, function healBase)
+	
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			let msg = EventData.getChatMessage().toLowerCase()
+			if msg == COMMAND_OFF.toLowerCase() or msg == SHORT_COMMAND_OFF.toLowerCase()
+				t.pause()
+				print("Restoration at base has beend disabled")
+			if msg == COMMAND_ON.toLowerCase() or msg == SHORT_COMMAND_ON.toLowerCase()
+				t.startPeriodic(HEALING_INTERVAL, function healBase)
+				print("Restoration at base has beend enabled")

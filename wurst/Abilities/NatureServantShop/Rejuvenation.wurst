@@ -1,0 +1,63 @@
+package Rejuvenation
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant ICON = Icons.bTNRejuvenation
+constant HOTKEY = getHotkey()
+constant NAME = "Rejuvenation"
+constant DESCRIPTION = "Restores a target ally unit's health over time."
+constant BUFF_DESCRIPTION = "This unit's restoring health."
+constant BUFF_ART_TARGET = Abilities.rejuvenationTarget
+constant real array HEALING = [350, 450, 550, 650, 750]
+constant CAST_RANGE = 500.
+constant real DURATION = 20
+constant real COOLDOWN = 7
+constant int array MANACOST = [125, 145, 165, 185, 205]
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionRejuvination(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCastRange((lvl) -> CAST_RANGE)
+	..presetDurationNormal(lvl -> DURATION)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..addTooltipProperty("Healing", (int lvl) -> HEALING[lvl - 1])
+	..tooltipStopListen()
+	..presetHitPointsGained(lvl -> HEALING[lvl - 1])
+	..presetNoTargetRequired(lvl -> false)
+	..presetAllowWhenFull(lvl -> 3)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetDurationHero(lvl -> DURATION)
+	..presetBuffs( lvl -> BUFF_ID.toRawCode())
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, BUFF_ART_TARGET)
+	..setTargetAttachmentPoint0(1, "chest")

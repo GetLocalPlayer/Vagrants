@@ -1,0 +1,33 @@
+package EarthServantShop
+import ClosureForGroups
+import MapBounds
+
+import Assets
+import ObjEditingCommons
+import ObjectIdGenerator
+import public AbitilyShop
+
+
+let shopId = compiletime(UNIT_ID_GEN.next())
+let originalShopId = 'n009'
+
+
+public AbilityShopPreset earthServantShopDef
+
+
+@compiletime function build()
+	earthServantShopDef = new AbilityShopPreset(shopId, Icons.bTNTauren, "Earth Servant", Soundsets.tauren, Units.tauren)
+	..setGroundTexture("")
+	..setCollisionSize(0)
+	..setMovementType(MovementType.Fly)
+	..setPathingMap("")
+	..setSelectionScale(2)
+	..setScalingValue(1.5)
+
+
+init
+	forUnitsInRect(playableMapRect) (unit u) ->
+		if u.getTypeId() == originalShopId
+			u..addAbility('Aloc')
+			..setVertexColor(255, 255, 255, 0)
+			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())

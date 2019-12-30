@@ -1,0 +1,47 @@
+package CleavingAttack
+import ClosureEvents
+
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DestroyerShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNCleavingAttack
+constant NAME = "Cleaving Attack"
+constant DESCRIPTION = "The hero strikes with such force that a part of his |cffffaf00melee|r attacks' damage strikes through to enemies near the primary attacked unit. |cff969696Cleaving damage does not ignore armor.|r"
+constant AOE = 200.
+constant TARGETS_ALLOWED = "air,ground,enemy"
+constant DAMAGE_FACOTOR = [0.20, 0.25, 0.30, 0.35, 0.40]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPitLordCleavingAttack(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetAreaofEffect((int lvl) -> AOE)
+	..addTooltipProperty("Damage",(int lvl) -> (DAMAGE_FACOTOR[lvl - 1] * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetDistributedDamageFactor((int lvl) -> DAMAGE_FACOTOR[lvl - 1])
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	destroyerShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init 
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) () ->
+		let attacker = EventData.getEventDamageSource()
+		if attacker.hasAbility(ABIL_ID) and EventData.getDamageAttackType() != ATTACK_TYPE_NORMAL and EventData.getDamageType() == DAMAGE_TYPE_ENHANCED
+			EventData.setDamageType(DAMAGE_TYPE_NORMAL)
+		

@@ -1,0 +1,55 @@
+package UnholyAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DarkServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant ICON = Icons.pASBTNUnholyAura
+constant NAME = "Unholy Aura"
+constant DESCRIPTION = "Increases friendly units' movement speed and life regeneration rate."
+constant BUFF_DESCRIPTION = "This unit's movement speed and health regeneration are increased."
+constant BUFF_ART_TARGET = Abilities.generalAuraTarget
+constant ABIL_ART_TARGET = Abilities.unholyAura
+constant real array HEALTH_REGENERATION = [2, 4, 6, 8, 10]
+constant real MOVEMENT_SPEED_INCREASE = 0.05
+constant real AOE = 600
+constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionDeathKnightUnholyAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setArtTarget(ABIL_ART_TARGET)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)	
+	..presetAreaofEffect(lvl -> AOE)
+	..addTooltipProperty("HP per second", (int lvl) -> HEALTH_REGENERATION[lvl - 1])
+	..addTooltipProperty("Movement Speed Bonus", (int lvl) -> (MOVEMENT_SPEED_INCREASE * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetMovementSpeedIncrease(lvl -> MOVEMENT_SPEED_INCREASE)
+	..presetLifeRegenerationIncrease(lvl -> HEALTH_REGENERATION[lvl - 1])
+	..presetPercentBonus(lvl -> false)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	darkServantShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, BUFF_ART_TARGET)

@@ -1,0 +1,146 @@
+package EnvenomedSpears
+import ErrorHandling
+import EventHelper
+import HashMap
+import TimerUtils
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import AssasinShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNEnvenomedSpear
+constant NAME = "Envenomed Spears"
+constant DESCRIPTION = "Deals poison damage per second. |cff969696Stacks with other units' envenomed spears.|r"
+constant BUFF_DESCRIPTION = "This unit is poisoned; it will take damage over time."
+constant TARGETS_ALLOWED = "air,ground,organic,enemy"
+constant DURATION = 15
+constant DAMAGE = [20., 35., 50., 65., 80.]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_BUFF_ID = compiletime(BUFF_ID_GEN.next())
+constant DUMMY_BUFF = compiletime(createDummyBuffObject(NAME, BUFF_DESCRIPTION, ICON, Abilities.poisonStingTarget, "chest"))
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPaladinDevotionAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setArtTarget("")
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1].toInt())
+	..tooltipStopListen()
+	..presetTargetsAllowed((int lvl) -> "none")
+	assasinShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionFrostDamageBonus(ORB_ABIL_ID)
+	..setMissileArt("")
+	..setArtTarget("")
+	..setArtSpecial("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setDamageBonus(1, 0)
+	..setEnabledAttackIndex(1, 1)
+	..setTargetsAllowed(1, TARGETS_ALLOWED)
+	..setBuffs(1, ORB_BUFF_ID.toRawCode())
+	new BuffDefinition(ORB_BUFF_ID, 'Basl')
+	..setArtTarget(1, "")
+
+
+init
+	CreateTrigger()..registerAbilitySoldEvent(ABIL_ID)
+	..addCondition(Condition(()->not EventData.getBuyingUnit().hasAbility(ORB_ABIL_ID)))
+	..addAction() ->
+		EventData.getBuyingUnit()..addAbility(ORB_ABIL_ID)
+		..makeAbilityPermanent(ORB_ABIL_ID, true)
+
+
+class Venom
+	private timer t
+	private int duration
+	private int remaining
+	private unit caster
+	private unit target
+	private real damage
+
+	private static let envenomedUnits = new HashMap<unit, HashMap<unit, Venom>>
+
+	construct(unit caster, unit target, real damage, int duration)
+		this.caster = caster
+		this.target = target
+		setDuration(duration)
+		setDamage(damage)
+		this.t = getTimer()
+		..setData(this castTo int)
+		..startPeriodic(1) ->
+			(GetExpiredTimer().getData() castTo Venom).update()
+		if not envenomedUnits.has(target)
+			envenomedUnits.put(target, new HashMap<unit, Venom>)
+		envenomedUnits.get(target).put(caster, this)
+		target.addAbility(DUMMY_BUFF.abilId)
+		caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_PLANT, WEAPON_TYPE_WHOKNOWS)
+
+	private function update()
+		caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_PLANT, WEAPON_TYPE_WHOKNOWS)
+		remaining--
+		if remaining <= 0
+			destroy this
+
+	ondestroy
+		t.release()
+		envenomedUnits.get(target).getAndRemove(caster)
+		if envenomedUnits.get(target).size() == 0
+			destroy envenomedUnits.getAndRemove(target)
+			target..removeAbility(DUMMY_BUFF.abilId)
+			..removeAbility(DUMMY_BUFF.buffId)
+
+	static function find(unit caster, unit target) returns Venom
+		if caster == null or target == null
+			error("Cannot get a Venom instance without both caster and target unuts.")
+			return null
+		else
+			if envenomedUnits.has(target) and envenomedUnits.get(target).has(caster)
+				return envenomedUnits.get(target).get(caster)
+			else
+				return null
+
+	function setDuration(int duration)
+		if duration <= 0
+			error("Venom's duration must be greater than zero.")
+		this.duration = duration
+		remaining = duration
+
+	function setDamage(real damage)
+		if damage <= 0
+			error("Venom's damage must be greater than zero.")
+		this.damage = damage
+
+
+init
+	let cond = Condition() ->
+		let target = EventData.getTriggerUnit()
+		return target.hasAbility(ORB_BUFF_ID) and not target.isType(UNIT_TYPE_MAGIC_IMMUNE) and target.isAlive()
+	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_DAMAGING)
+	..addCondition(cond)
+	..addAction() ->
+		let attacker = EventData.getEventDamageSource()
+		let target = EventData.getTriggerUnit()
+		target.removeAbility(ORB_BUFF_ID)
+		let venom = Venom.find(attacker, target)
+		if venom != null
+			venom..setDuration(DURATION)
+			..setDamage(DAMAGE[attacker.getAbilityLevel(ABIL_ID) - 1])
+		else
+			new Venom(attacker, target, DAMAGE[attacker.getAbilityLevel(ABIL_ID) - 1], DURATION)

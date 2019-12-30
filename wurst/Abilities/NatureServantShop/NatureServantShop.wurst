@@ -1,0 +1,33 @@
+package NatureServantShop
+import ClosureForGroups
+import MapBounds
+
+import Assets
+import ObjEditingCommons
+import ObjectIdGenerator
+import public AbitilyShop
+
+
+let shopId = compiletime(UNIT_ID_GEN.next())
+let originalShopId = 'n00A'
+
+
+public AbilityShopPreset natureServantShopDef
+
+
+@compiletime function build()
+	natureServantShopDef = new AbilityShopPreset(shopId, Icons.bTNDruidOfTheTalon, "Nature Servant", Soundsets.malFurion, Units.druidoftheTalon)
+	..setGroundTexture("")
+	..setCollisionSize(0)
+	..setMovementType(MovementType.Fly)
+	..setPathingMap("")
+	..setSelectionScale(2)
+	..setScalingValue(2)
+
+
+init
+	forUnitsInRect(playableMapRect) (unit u) ->
+		if u.getTypeId() == originalShopId
+			u..addAbility('Aloc')
+			..setVertexColor(255, 255, 255, 0)
+			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())

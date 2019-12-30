@@ -1,0 +1,246 @@
+package CustomHero
+import ClosureEvents
+import MapBounds
+import HashMap
+import HashList
+import ClosureTimers
+
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import public ObjEditingCommons
+
+
+/* Helps to build custom heroes with two forms - melee and ranged. */
+
+@configurable constant COLLISION_SIZE = 32.
+
+@configurable constant int MELEE_ATTACK_DAMAGE_BASE = 46
+@configurable constant int MELEE_ATTACK_DAMAGE_NUMBER_OF_DICE = 2
+@configurable constant int MELEE_ATTACK_DAMAGE_SIDES_PER_DICE = 4
+@configurable constant int RANGER_ATTACK_DAMAGE_BASE = 7
+@configurable constant int RANGER_ATTACK_DAMAGE_NUMBER_OF_DICE = 1
+@configurable constant int RANGER_ATTACK_DAMAGE_SIDES_PER_DICE = 47
+@configurable constant real ATTACK_COOLDOWN = 1.9
+@configurable constant int ATTACK_RANGE = 600
+@configurable constant ATTACK_TARGETS_ALLOWED = "ground,structure,debris,air,item,ward,enemy"
+@configurable constant int MINIMUM_ATTACK_RANGE = 250 // For ranged attacks
+@configurable constant MIMIMUM_RANGE_CIRCLE_COLOR = colorA(150, 150, 150, 150)
+
+@configurable constant int MAX_HP = 350
+@configurable constant int MAX_MANA = 50
+@configurable constant real HP_REGEN = 1.
+@configurable constant real MANA_REGEN = 0.5
+@configurable constant real PROJECTILE_ARC = 0.15
+@configurable constant int PROJECTILE_SPEED = 900
+@configurable constant int SIGHT_RADIUS_DAY = 1800
+@configurable constant int SIGHT_RADIUS_NIGHT = 800
+
+@configurable constant int LUMBER_PER_LEVEL = 1
+@configurable constant int STR_PER_ABIL_LEVEL = 1
+@configurable constant int AGI_PER_ABIL_LEVEL = 1
+@configurable constant int INT_PER_ABIL_LEVEL = 1
+/** Each hero already has 1 skill point at first level. */
+@configurable constant int STARTING_BONUS_SKILL_POINTS = 9
+/** Each hero gets 1 skill point on level up by default. */
+@configurable constant int BONUS_SKILL_POINTS_PER_LEVEL = 2 
+@configurable constant int ATTR_ABIL_MAX_LEVEL = 50
+constant STR_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant AGI_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant INT_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant STR_ICON = "ReplaceableTextures\\CommandButtons\\BTNstr.blp"
+constant AGI_ICON = "ReplaceableTextures\\CommandButtons\\BTNagi.blp"
+constant INT_ICON = "ReplaceableTextures\\CommandButtons\\BTNint.blp"
+constant STR_ABIL_HOTKEY = "Q"
+constant AGI_ABIL_HOTKEY = "W"
+constant INT_ABIL_HOTKEY = "E"
+constant PRIMARY_ATTRIBUTE = "INT"
+
+constant ATTACK_SWITCHER_HOTKEY = "C"
+constant real ATTACK_SWITCHER_COOLDOWN = 5.
+constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r - [|cffffcc00" + ATTACK_SWITCHER_HOTKEY + "|r]"
+constant ATTACK_SWITCHER_TOOLTIP_EXTENDED = "Changes the hero's attack type from melee to ranged and vice versa."
+constant ATTACK_SWITCHER_MELEE = "Melee"
+constant ATTACK_SWITCHER_RANGER = "Ranger"
+constant ATTACK_SWITCHER_ENABLE_MELEE_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableMelee.blp"
+constant ATTACK_SWITCHER_ENABLE_RANGER_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableRanger.blp"
+constant ATTACK_SWITCHER_START_WITH_MELEE = true
+constant ATTACK_SWITCHER_MARKER = "SwapMeleeRange" /* Marker that used to determine if a form swap ability is cast whatever its id is. */
+
+
+public interface ICustomHeroBuilCallback
+	function call(HeroDefinition def, bool isMelee)
+
+
+ICustomHeroBuilCallback initBuilCallback = (def, isMelee) -> begin
+	def..setProperNamesUsed(0)
+	..setName(isMelee ? "Melee" : "Ranger")
+	..setProjectileImpactZ(60)
+	..setHeroAbilities("{0},{1},{2}".format(STR_ABIL_ID.toRawCode(), AGI_ABIL_ID.toRawCode(), INT_ABIL_ID.toRawCode()))
+	..setMovementType(MovementType.Foot)
+	..setCollisionSize(COLLISION_SIZE)
+	..setAttack1TargetsAllowed(ATTACK_TARGETS_ALLOWED)
+	..setAttack1AttackType(isMelee ? AttackType.Normal : AttackType.Pierce)
+	..setAttack1DamageBase(isMelee ? MELEE_ATTACK_DAMAGE_BASE : RANGER_ATTACK_DAMAGE_BASE)
+	..setAttack1DamageSidesperDie(isMelee ? MELEE_ATTACK_DAMAGE_SIDES_PER_DICE : RANGER_ATTACK_DAMAGE_SIDES_PER_DICE)
+	..setAttack1DamageNumberofDice(isMelee ? MELEE_ATTACK_DAMAGE_NUMBER_OF_DICE : RANGER_ATTACK_DAMAGE_NUMBER_OF_DICE)
+	..setAttack1Range(isMelee ? 128 : ATTACK_RANGE)
+	..setMinimumAttackRange(isMelee ? 0 : MINIMUM_ATTACK_RANGE)
+	..setAttack1ProjectileSpeed(isMelee ? 0 : PROJECTILE_SPEED)
+	..setAttack1ProjectileArc(isMelee ? 0 : PROJECTILE_ARC)
+	..setAttack1WeaponType(isMelee ? WeaponType.Normal : WeaponType.Missile)
+	..setAttack1ProjectileHomingEnabled(true)
+	..setAttacksEnabled(1)
+	..setProjectileLaunchX(0)
+	..setProjectileLaunchY(0)
+	..setProjectileLaunchZ(100)
+	..setStartingStrength(0)
+	..setStartingAgility(0)
+	..setStartingIntelligence(0)
+	..setStrengthPerLevel(0)
+	..setAgilityPerLevel(0)
+	..setIntelligencePerLevel(0)
+	..setPrimaryAttribute(PRIMARY_ATTRIBUTE)
+	..setHitPointsMaximumBase(MAX_HP)
+	..setManaMaximum(MAX_MANA)
+	..setHitPointsRegenerationRate(HP_REGEN)
+	..setManaRegeneration(MANA_REGEN)
+	..setHitPointsRegenerationType("always")
+	..hideHeroDeathMsg(true)
+	..setSightRadiusDay(SIGHT_RADIUS_DAY)
+	..setSightRadiusNight(SIGHT_RADIUS_NIGHT)
+	..setFoodCost(0)
+end
+
+
+public function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rangerFormDef, ICustomHeroBuilCallback cb)
+	let swapFormAbilDef = new AbilityDefinitionIllidanMetamorphosis(ABIL_ID_GEN.next())
+	..setLevels(1)
+	..setLevelSkipRequirement(0)
+	..setHeroAbility(false)
+	..setAlternateFormHitPointBonus(1, 0)
+	..setManaCost(1, 0)
+	..setHotkeyNormal(ATTACK_SWITCHER_HOTKEY)
+	..setCooldown(1, ATTACK_SWITCHER_COOLDOWN)
+	..setDurationHero(1, 0)
+	..setDurationNormal(1, 0)
+	..setTooltipNormal(1, ATTACK_SWITCHER_TOOLTIP.format(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_MELEE : ATTACK_SWITCHER_RANGER))
+	..setTooltipNormalExtended(1, ATTACK_SWITCHER_TOOLTIP_EXTENDED)
+	..setButtonPositionNormalX(0)
+	..setButtonPositionNormalY(0)
+	..setNormalFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? meleeFormDef.getNewId().toRawCode() : rangerFormDef.getNewId().toRawCode())
+	..setAlternateFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? rangerFormDef.getNewId().toRawCode() : meleeFormDef.getNewId().toRawCode())
+	..setIconNormal(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_ENABLE_RANGER_ICON : ATTACK_SWITCHER_ENABLE_MELEE_ICON)
+	..setLightningEffects(ATTACK_SWITCHER_MARKER)
+	initBuilCallback.call(meleeFormDef, true)
+	meleeFormDef.setNormalAbilities("Ane2,Asud,AInv," + swapFormAbilDef.getNewId().toRawCode())
+	initBuilCallback.call(rangerFormDef, false)
+	rangerFormDef.setNormalAbilities("Ane2,Asud,AInv," + swapFormAbilDef.getNewId().toRawCode())
+	if cb != null
+		cb.call(meleeFormDef, true)
+		cb.call(rangerFormDef, false)
+
+
+public function buildCustomHero(int meleeFormId, int rangerFormId, int originId, ICustomHeroBuilCallback cb)
+	buildCustomHero(new HeroDefinition(meleeFormId, originId), new HeroDefinition(rangerFormId, originId), cb)
+
+
+public function buildCustomHero(int meleeFormId, int originId, ICustomHeroBuilCallback cb)
+	buildCustomHero(meleeFormId, HERO_ID_GEN.next(), originId, cb)
+
+
+public function buildCustomHero(int meleeFormId, ICustomHeroBuilCallback cb)
+	buildCustomHero(meleeFormId, HERO_ID_GEN.next(), 'Hpal', cb)
+
+
+@compiletime function buildAttibuteLearningAbilities()
+	new AbilityDefinitionIllidanChannel(STR_ABIL_ID)
+	..setLevels(ATTR_ABIL_MAX_LEVEL)
+	..setIconResearch(STR_ICON)
+	..setHotkeyLearn(STR_ABIL_HOTKEY)
+	..setTooltipLearn("Increases the hero's strength by {0} [|cffffcc00Q|r]".format(STR_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearnExtended("")
+	..setButtonPositionResearchX(0)
+	..setButtonPositionResearchY(0)
+	new AbilityDefinitionIllidanChannel(AGI_ABIL_ID)
+	..setLevels(ATTR_ABIL_MAX_LEVEL)
+	..setIconResearch(AGI_ICON)
+	..setHotkeyLearn(AGI_ABIL_HOTKEY)
+	..setTooltipLearn("Increases the hero's agility by {0} [|cffffcc00W|r]".format(AGI_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearnExtended("")
+	..setButtonPositionResearchX(1)
+	..setButtonPositionResearchY(0)
+	new AbilityDefinitionIllidanChannel(INT_ABIL_ID)
+	..setLevels(ATTR_ABIL_MAX_LEVEL)
+	..setIconResearch(INT_ICON)
+	..setHotkeyLearn(INT_ABIL_HOTKEY)
+	..setTooltipLearn("Increases the hero's intelligence by {0} [|cffffcc00E|r]".format(INT_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearnExtended("")
+	..setButtonPositionResearchX(2)
+	..setButtonPositionResearchY(0)
+	
+
+init
+	EventListener.add(EVENT_PLAYER_HERO_LEVEL) ->
+		EventData.getLevelingUnit()..addSkillPoints(BONUS_SKILL_POINTS_PER_LEVEL)
+		.getOwner().addLumber(LUMBER_PER_LEVEL)
+
+	CreateTrigger()
+	..registerEnterRegion(playableMapRegion, Filter(() -> GetFilterUnit().isType(UNIT_TYPE_HERO)))
+	..addAction(() -> EventData.getEnteringUnit().addSkillPoints(BONUS_SKILL_POINTS_PER_LEVEL))
+
+	EventListener.add(EVENT_PLAYER_HERO_SKILL) ->
+		switch EventData.getLearnedSkill()
+			case STR_ABIL_ID
+				EventData.getTriggerUnit().addStr(STR_PER_ABIL_LEVEL)
+			case AGI_ABIL_ID
+				EventData.getTriggerUnit().addAgi(AGI_PER_ABIL_LEVEL)
+			case INT_ABIL_ID
+				EventData.getTriggerUnit().addInt(INT_PER_ABIL_LEVEL)
+
+
+let userTriggers = new HashList<trigger>
+
+public function trigger.registerAttackTypeSwitchEvent()
+	if not userTriggers.has(this)
+		userTriggers.add(this)
+
+init
+	let rangedCircles = new HashMap<unit, effect>
+	let circlesCallback = new HashMap<effect, CallbackPeriodic>
+
+	EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) ->
+		let abilId = EventData.getSpellAbilityId()
+		if GetAbilityEffectById(abilId, EFFECT_TYPE_LIGHTNING, 0) == ATTACK_SWITCHER_MARKER
+			let u = EventData.getTriggerUnit()
+			let isMelee = u.isType(UNIT_TYPE_MELEE_ATTACKER)
+			setAbilityIcon(abilId, isMelee ? ATTACK_SWITCHER_ENABLE_MELEE_ICON : ATTACK_SWITCHER_ENABLE_RANGER_ICON)
+			setAbilityTooltip(abilId, ATTACK_SWITCHER_TOOLTIP.format(isMelee ? ATTACK_SWITCHER_RANGER : ATTACK_SWITCHER_MELEE), 0)
+			for trg in userTriggers
+				if trg.isEnabled() and trg.evaluate()
+					trg.execute()
+			// Attack range Circle
+			if isMelee
+				let eff = addEffect("Abilities\\AttackRangeCircle\\AttackRangeCircle.mdx", u.getPos())
+				..setScale(MINIMUM_ATTACK_RANGE.toReal() + u.getCollisionSize())
+				let clr = MIMIMUM_RANGE_CIRCLE_COLOR.withoutAlpha().withAlpha(u.getOwner() == localPlayer ? MIMIMUM_RANGE_CIRCLE_COLOR.alpha : 0)
+				eff.setColor(clr)
+				let cb = doPeriodically(0.01) (CallbackPeriodic cb) ->
+					eff.setPos(u.getPos3Real())
+				rangedCircles.put(u, eff)
+				circlesCallback.put(eff, cb)
+			else
+				if rangedCircles.has(u)
+					let eff = rangedCircles.getAndRemove(u)
+					destroy circlesCallback.getAndRemove(eff)
+					eff.destr()
+
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
+		let u = EventData.getDyingUnit()
+		if rangedCircles.has(u)
+			let eff = rangedCircles.getAndRemove(u)
+			destroy circlesCallback.getAndRemove(eff)
+			eff.destr()
+		for trg in userTriggers
+			if trg.isEnabled() and trg.evaluate()
+				trg.execute()

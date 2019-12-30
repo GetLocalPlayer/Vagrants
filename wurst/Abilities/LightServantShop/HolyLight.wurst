@@ -1,0 +1,84 @@
+package HolyLight
+import ClosureEvents
+import ClosureTimers
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import LightServantShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNHolyBolt
+constant NAME = "Holy Light"
+constant DESCRIPTION = "Divine energy that blesses all the units in a target area. After a short delay, the allies restore health and the enemies take damage."
+constant real CAST_RANGE = 500.
+constant real AOE = 150.
+constant real COOLDOWN = 8.
+constant int array MANACOST = [100, 115, 130, 145, 160]
+constant real array HEALING = [300, 350, 400, 450, 500]
+constant real DAMAGE_FACTOR = 0.5
+constant real DELAY = 2
+constant AREA_EFFECT = Abilities.darkPortalTarget
+constant TARGET_EFFECT = Abilities.holyBoltSpecialArt
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setArtEffect(AREA_EFFECT)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..addTooltipProperty("Healing", (int lvl) -> HEALING[lvl - 1])
+	..addTooltipProperty("Damage", (int lvl) -> (DAMAGE_FACTOR * 100).toInt().toString() + "% of healing")
+	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TargetsAllowed.enemies)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, true)
+	..presetTargetType((int lvl) -> Targettype.POINT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+init
+	EventListener.onPointCast(ABIL_ID) (caster, target) ->
+		let affectedUnits = CreateGroup()
+		..enumUnitsInRange(target, AOE)
+		for u in affectedUnits
+			if not u.isAlive() or u.isType(UNIT_TYPE_MAGIC_IMMUNE) or not u.isInRange(target, AOE)
+				affectedUnits.removeUnit(u)
+		if affectedUnits.isEmpty()
+			affectedUnits.destr()
+		else
+			doAfter(DELAY) () ->
+				let lvl = caster.getAbilityLevel(ABIL_ID)
+				let healing = HEALING[lvl - 1]
+				let damage = healing * DAMAGE_FACTOR
+				for u in affectedUnits
+					if u.isAlive() and not u.isType(UNIT_TYPE_MAGIC_IMMUNE)
+						flashEffect(TARGET_EFFECT, u, "overhead")
+						if u.isAllyOf(caster)
+							u.setHP(u.getHP() + healing)
+						else
+							caster.damageTarget(u, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_DIVINE, WEAPON_TYPE_WHOKNOWS)
+				affectedUnits.destr()

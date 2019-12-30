@@ -1,0 +1,146 @@
+package LawaSpawn
+import ClosureTimers
+import ClosureForGroups
+import ClosureEvents
+import Interpolation
+import HashMap
+
+import Assets
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import EarthServantShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+
+constant ICON = Icons.bTNLavaSpawn
+constant HOTKEY = getHotkey()
+constant NAME = "Lava Spawn"
+constant DESCRIPTION = "Summons fire creatures from the bowels of the earth to fight the hero's enemies. Each summoned creature deals damage on landing."
+
+constant int array MANACOST = [110, 125, 140, 155, 170]
+constant real array CHANNELING_TIME = [0.4, 0.6, 0.8, 1., 1.2]
+constant real AOE = 175.
+constant real COOLDOWN = 7.
+
+constant real LANDING_DAMAGE = 40.
+constant real LANDING_AOE = 200.
+
+constant real SPAWN_LIFETIME = 9.5
+constant real SPAWN_INTERVAL = 0.2
+constant int SPAWN_SIGHT_RADIUS = 400
+constant int SPAWN_HEALTH = 100
+constant int SPAWN_DAMAGE_BASE = 8
+constant int SPAWN_DAMAGE_DICE = 2
+constant int SPAWN_DAMAGE_SIDE = 2
+constant int SPAWN_MOVEMENT_SPEED = 200
+constant real SPAWN_ATTACK_RANGE = 350.
+constant real SPAWN_COLLISION_SIZE = 10.
+constant real SPAWN_SCALE = .8
+constant real SPAWN_BIRTH_ANIM_DURATION = 0.667
+constant SPAWN_EFFECT = Abilities.ancientProtectorMissile
+
+constant PROJECTILE_MODEL = Abilities.lavaSpawnBirthMissile
+constant real PROJECTILE_ARC_HEIGHT = 300.
+constant real PROJECTILE_FLIGHT_TIME = 1.5
+
+constant ABIL_ID = compiletime(HERO_ID_GEN.next())
+constant SUMMON_ID = compiletime(UNIT_ID_GEN.next())
+
+
+@compiletime function buildLawaSpawn()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setName(NAME)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..addTooltipProperty("Follow Through Time", (int lvl) -> CHANNELING_TIME[lvl - 1].toString())
+	..addTooltipProperty("Spawn Interval", (int lvl) -> SPAWN_INTERVAL.toString() + " sec.")
+	..addTooltipProperty("Spawn Lifetime", (int lvl) -> SPAWN_LIFETIME.toString() + " sec.")
+	..addTooltipProperty("Spawn Damage", (int lvl) -> "{0}-{1}".format((SPAWN_DAMAGE_BASE + SPAWN_DAMAGE_DICE).toString(),(SPAWN_DAMAGE_BASE + SPAWN_DAMAGE_DICE*SPAWN_DAMAGE_SIDE).toString()))
+	..addTooltipProperty("Landing AoE", (int lvl) -> LANDING_AOE.toInt())
+	..addTooltipProperty("Landing Damage", (int lvl) -> LANDING_DAMAGE.toInt())
+	..tooltipStopListen()
+	..presetFollowThroughTime((int lvl) -> CHANNELING_TIME[lvl - 1] + SPAWN_INTERVAL/2)
+	..presetTargetsAllowed(lvl -> TargetsAllowed.enemies)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, true)
+	..presetTargetType((int lvl) -> Targettype.POINT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetArtDuration((int lvl) -> CHANNELING_TIME[lvl - 1])
+	..presetCastingTime((int lvl) -> 0)
+	earthServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new UnitDefinition(SUMMON_ID, UnitIds.lavaspawn)
+	..setAttack1AttackType(AttackType.Pierce)
+	..setAttack1DamageBase(SPAWN_DAMAGE_BASE)
+	..setAttack1DamageNumberofDice(SPAWN_DAMAGE_DICE)
+	..setAttack1DamageSidesperDie(SPAWN_DAMAGE_SIDE)
+	..setArmorType(ArmorType.Normal)
+	..setSpeedBase(SPAWN_MOVEMENT_SPEED)
+	..setCollisionSize(SPAWN_COLLISION_SIZE)
+	..setSightRadiusDay(SPAWN_SIGHT_RADIUS)
+	..setSightRadiusNight(SPAWN_SIGHT_RADIUS)
+	..setScalingValue(SPAWN_SCALE)
+	..setSelectionScale(SPAWN_SCALE)
+	..setHitPointsMaximumBase(SPAWN_HEALTH)
+
+
+let channelingUnits = new HashMap<unit, CallbackCounted>
+
+
+function onCastActions()
+	let caster = EventData.getTriggerUnit()
+	let target = EventData.getSpellTargetPos()
+	let lvl = caster.getAbilityLevel(ABIL_ID)
+	let cbChanneling = doPeriodicallyTimed(SPAWN_INTERVAL, CHANNELING_TIME[lvl - 1]) cbChanneling ->
+		let start = caster.getPos().polarOffset(GetRandomReal(PI, -PI).asAngleRadians(), AOE * 0.5).withTerrainZ(50)
+		let finish = target.polarOffset(GetRandomReal(PI, -PI).asAngleRadians(), GetRandomReal(0, AOE - SPAWN_COLLISION_SIZE)).withTerrainZ()
+		let control = start.lerp(finish, 0.5).add(0, 0, 2 * PROJECTILE_ARC_HEIGHT - 0.5 * finish.z - 0.5 * start.z)
+		let projectile = addEffect(PROJECTILE_MODEL, start)
+		..setYaw(start.angleTo2d(finish))
+		..setScale(SPAWN_SCALE)
+		let timerPeriod = 0.02
+		var elapsed = 0.
+		addEffect(PROJECTILE_MODEL, start)..setScale(SPAWN_SCALE)..destr()
+		doPeriodicallyTimed(timerPeriod, PROJECTILE_FLIGHT_TIME) cbProjectile ->
+			if not cbProjectile.isLast()
+				elapsed += timerPeriod
+				projectile.setPos(start.bezier3(control, finish, elapsed/PROJECTILE_FLIGHT_TIME))
+			else
+				projectile..setPos(finish)
+				..destr()
+				forUnitsInRange(finish.toVec2(), LANDING_AOE) (unit target) ->
+					if caster.isEnemyOf(target.getOwner())
+						caster.damageTarget(target, LANDING_DAMAGE, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+				let spawn = createUnit(caster.getOwner(), SUMMON_ID, finish, start.angleTo2d(finish))
+				..setTimedLife(SPAWN_LIFETIME)
+				..setAnimation("birth")
+				doAfter(SPAWN_BIRTH_ANIM_DURATION) () ->
+					spawn.setAnimation("stand")
+				flashEffect(PROJECTILE_MODEL, finish)
+		if cbChanneling.isLast()
+			channelingUnits.remove(caster)
+			destroy cbChanneling
+	channelingUnits.put(caster, cbChanneling)  
+
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_SPELL_CAST) () ->
+		if EventData.getSpellAbilityId() == ABIL_ID
+			onCastActions()
+
+	EventListener.add(EVENT_PLAYER_UNIT_SPELL_ENDCAST) () ->
+		if channelingUnits.has(EventData.getTriggerUnit())
+			destroy channelingUnits.getAndRemove(EventData.getTriggerUnit())

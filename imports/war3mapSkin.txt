@@ -1,0 +1,25 @@
+[CustomSkin]
+LumberIcon=SkillPoints.blp
+ToolTipLumberIcon=TooltipSkillPoints.blp
+
+[Errors]
+Notancient=TRIGSTR_5082
+Targetancient=TRIGSTR_5081
+
+[FrameDef]
+KEY_QUESTS=TRIGSTR_5083
+QUESTS=TRIGSTR_5084
+QUESTSMAIN=TRIGSTR_2618
+QUESTSOPTIONAL=TRIGSTR_2619
+UPPER_BUTTON_QUEST_TIP=TRIGSTR_5085
+UPPER_BUTTON_QUEST_TIP=TRIGSTR_5085
+PRIMARY_ATTRIBUTE="Each point increases mana point regeneration"
+BONUS_DAMAGE="rate"
+BONUS_MANAREGEN="|n|cFF969696Hero attributes can be adjusted in ''Hero Attributes'' menu.|r"
+LUMBER="Skill points"
+COLON_LUMBER="Skill points:"
+RESOURCE_UBERTIP_LUMBER="Received on each levelup or as a reward for deeds."
+DAMAGE_PIERCE="Type: |cffffcc00Ranger|r"
+DAMAGETIP_MELEE="|cFF969696Need to get closer to pet a good boy.|r"
+DAMAGETIP_PIERCE="|cFF969696Has the minimum required range.|r"
+

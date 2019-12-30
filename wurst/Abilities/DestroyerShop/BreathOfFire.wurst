@@ -1,0 +1,65 @@
+package BreathOfFire
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DestroyerShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNBreathOfFire
+constant NAME = "Breath of Fire"
+constant DESCRIPTION = "Breathes a cone of fire at enemy units, dealing damage. Units that have Drunken Haze on them will ignite and burn."
+constant BUFF_DESCRIOPTION = "This unit has been hit by Breath of Fire; it will take damage over time."
+constant BUFF_EFFECT = Abilities.breathOfFireDamage
+constant real array DAMAGE = [65, 110, 155, 200, 245]
+constant real array DAMAGE_PER_SECOND = [7, 14, 21, 28, 35]
+constant real FINAL_AOE = 300
+constant real AOE = 125.
+constant real CAST_RANGE = 375.
+constant real DURATION = 10.
+constant real COOLDOWN = 10.
+constant int MANACOST = 70
+constant TARGETS_ALLOWED = "air,ground,enemy"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionBrewmasterBreathofFire(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetManaCost((lvl) -> MANACOST)
+	..presetCooldown((lvl) -> COOLDOWN)
+	..presetDurationNormal((lvl) -> DURATION)
+	..presetCastRange((lvl) -> CAST_RANGE)
+	..presetDamage((lvl) -> DAMAGE[lvl - 1])
+	..presetDamagePerSecond((lvl) -> DAMAGE_PER_SECOND[lvl - 1])
+	..tooltipStopListen()
+	..presetAreaofEffect((lvl) -> AOE)
+	..presetFinalArea((lvl) -> FINAL_AOE)
+	..presetDurationHero((lvl) -> DURATION)
+	..presetMaxDamage((lvl) -> 999999)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	destroyerShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setName(1, NAME)
+	..setIcon(ICON)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIOPTION)
+	..setArtTarget(1, BUFF_EFFECT)

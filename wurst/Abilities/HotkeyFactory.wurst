@@ -1,0 +1,13 @@
+package HotkeyFactory
+
+
+let availableHotkeys = "QWERTDFGZXVBNY"
+var current = 0
+
+
+public function getHotkey() returns string
+	let result = availableHotkeys.charAt(current)
+	current++
+	if current >= availableHotkeys.length()
+		current = 0
+	return result

@@ -1,0 +1,28 @@
+package OrderStringFactory_config
+import LinkedList
+
+
+let bannedOrders = asList<string>(
+	"metamorphosis", // Melee/Range switcher
+	"thunderclap",
+	"drunkenhaze",
+	"avatar",
+	"howlofterror",
+	"breathoffire",
+	"rainoffire",
+	"acidbomb",
+	"immolation",
+	"unimmolation",
+	"innerfire",
+	"innerfireon",
+	"innerfireoff",
+	"carrionswarm",
+	"unholyfrenzy",
+	"frostarmor",
+	"rejuvination",
+	"frostnova",
+	"forkedlightning")
+
+
+@config function isOrderBanned(string _order) returns boolean
+	return bannedOrders.has(_order)

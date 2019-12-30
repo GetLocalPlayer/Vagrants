@@ -1,0 +1,53 @@
+package FrostNova
+
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import NatureServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNGlacier
+constant NAME = "Frost Nova"
+constant DESCRIPTION = "Blasts a target with a wave of frost, dealing damage to the target and the enemies around it. Cold damage slows units' movement and attack rate."
+constant real array DAMAGE = [110, 125,  140, 155, 170]
+constant real AOE_DAMAGE_FACTOR = 0.5
+constant real CAST_RANGE = 600
+constant real AOE = 200
+constant real DURATION = 4
+constant real COOLDOWN = 6
+constant int array MANACOST = [100, 110, 120, 130, 140]
+constant TARGETS_ALLOWED = "ground,air,organic,enemies"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionLichFrostNova(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetAreaofEffect(lvl -> AOE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..presetDurationNormal(lvl -> DURATION)
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1])
+	..addTooltipProperty("Area Damage", (int lvl) -> (AOE_DAMAGE_FACTOR * DAMAGE[lvl - 1]).toInt())
+	..tooltipStopListen()
+	..presetDurationHero(lvl -> DURATION)
+	..presetAreaofEffectDamage(lvl -> DAMAGE[lvl - 1] * AOE_DAMAGE_FACTOR)
+	..presetSpecificTargetDamage(lvl -> DAMAGE[lvl - 1])
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	natureServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

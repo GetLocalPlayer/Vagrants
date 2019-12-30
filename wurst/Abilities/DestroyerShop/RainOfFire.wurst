@@ -1,0 +1,55 @@
+package RainOfFire
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DestroyerShop
+import HotkeyFactory
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNFire
+constant NAME = "Rain of Fire"
+constant DESCRIPTION = "Calls down waves of fire that damage units in an area. Each wave deals initial damage and damage per second."
+constant int NUMBER_OF_WAVES = 3
+constant int NUMBER_OF_SHARDS = 4
+constant real array DAMAGE = [70, 80, 90, 100, 110]
+constant real array DAMAGE_PER_SECOND = [5, 10, 15, 20, 25]
+constant real AOE = 200.
+constant real CAST_RANGE = 600.
+constant real DURATION = 3.
+constant real COOLDOWN = 6.
+constant int array MANACOST = [90, 100, 110, 120, 130]
+constant TARGETS_ALLOWED = "air,ground,enemy"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionRainofFire(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCastRange((lvl) -> CAST_RANGE)
+	..presetAreaofEffect((lvl) -> AOE)
+	..presetCooldown((lvl) -> COOLDOWN)
+	..presetDurationNormal((lvl) -> DURATION)
+	..presetManaCost((lvl) -> MANACOST[lvl - 1])
+	..presetNumberofWaves((lvl) -> NUMBER_OF_WAVES)
+	..presetDamage((lvl) -> DAMAGE[lvl - 1])
+	..presetDamagePerSecond((lvl) -> DAMAGE_PER_SECOND[lvl - 1])
+	..tooltipStopListen()
+	..presetDurationHero((lvl) -> DURATION)
+	..presetNumberofShards((lvl) -> NUMBER_OF_SHARDS)
+	..presetMaximumDamageperWave((lvl) -> 999999)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	destroyerShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

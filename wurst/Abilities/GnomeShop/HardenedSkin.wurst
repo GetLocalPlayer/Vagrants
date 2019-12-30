@@ -1,0 +1,39 @@
+package HardenedSkin
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import GnomeShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNHardenedSkin
+constant NAME = "Hardened Skin"
+constant DESCRIPTION = "Gives a chance to reduce an attack's damage against the hero but not below some value."
+constant CHANCE = 55
+constant BLOCKED_DAMAGE = [12., 17., 22., 27., 32.]
+constant MINIMUM_DAMAGE = [3., 5., 7., 9., 11.]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionHardenedSkin(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Chance", (int lvl) -> CHANCE)
+	..addTooltipProperty("Blocked Damage", (int lvl) -> BLOCKED_DAMAGE[lvl - 1].toInt())
+	..addTooltipProperty("Minimum Damage", (int lvl) -> MINIMUM_DAMAGE[lvl - 1].toInt())
+	..tooltipStopListen()
+	..presetIgnoredDamage((int lvl) -> BLOCKED_DAMAGE[lvl - 1]) 
+	..presetMinimumDamage((int lvl) -> MINIMUM_DAMAGE[lvl - 1])
+	gnomeShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)

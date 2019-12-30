@@ -1,0 +1,189 @@
+package StormHammer
+import EventHelper
+import Interpolation
+import ClosureTimers
+import HashMap
+import ClosureForGroups
+import TimerUtils
+import ExLigthing
+import Stun
+
+import Assets
+import BuffObjEditing
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import GnomeShop
+import HotkeyFactory
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNStormBolt
+constant NAME = "Storm Hammer"
+constant DESCRIPTION = "Hurls a magic hammer in the center of a target area that deals damage on landing. While the hammer exists it's hitting a nearby random enemy with lightning, dealing slight damage and marking the target. Strom Hammer deals incresed damage to the marked enemies on landing, stunning them."
+constant MANACOST = [145, 165, 185, 205, 225]
+constant STUN_DURATION = 2.
+constant COOLDOWN = 10.
+constant AOE = 200.
+constant CAST_RANGE = 750.
+
+constant LANDING_DAMAGE = [75., 90., 105., 120., 135.]
+constant LANDING_EFFECT = Abilities.thunderclapCaster
+
+constant HAMMER_LIFETIME = 10.
+
+constant LIGHTNING_DAMAGE = [10., 12., 14., 16., 18.]
+constant LIGHTNING_INTERVAL = 1.
+constant LIGHTNING_CODE = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
+constant LIGHTNING_IMPACT_EFFECT = Abilities.boltImpact
+
+constant MARK_BUFF = compiletime(createDummyBuffObject(NAME, "This unit is marked by a storm hammer.", ICON, "Abilities\\StromHammer\\StormHammerTarget.mdx", "chest"))
+constant MARK_DURATION = 15.
+constant MARK_DAMAGE_MULTIPLIER = 2
+
+constant PROJECTILE_MODEL =  "Abilities\\StromHammer\\StormHammerMissile.mdx" // Uses "birth" animation for the flight and "stand" for the lightning attacks.
+constant PROJECTILE_SCALE = 1.5
+constant PROJECTILE_BIRTH_TIME_SCALE = 3.5
+constant PROJECTILE_STAND_TIME_SCALE = 1.
+constant PROJECTILE_DEATH_TIME_SCALE = 1.
+constant PROJECTILE_SPEED = 375.
+constant PROJECTILE_ARC = 450./CAST_RANGE
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget("")
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetManaCost((int lvl) -> MANACOST[lvl - 1])
+	..presetCooldown((int lvl) -> COOLDOWN)
+	..addTooltipProperty("Landing Damage", (int lvl) -> LANDING_DAMAGE[lvl - 1].toInt())
+	..addTooltipProperty("Hammer Difetime", (int lvl) -> HAMMER_LIFETIME.toString() + " sec.")
+	..addTooltipProperty("Lightning Damage", (int lvl) -> LIGHTNING_DAMAGE[lvl - 1].toInt())
+	..addTooltipProperty("Mark Duration", (int lvl) -> MARK_DURATION.toString() + " sec.")
+	..addTooltipProperty("Mark Damage Multiplier", (int lvl) -> MARK_DAMAGE_MULTIPLIER)
+	..addTooltipProperty("Stun Duration", (int lvl) -> STUN_DURATION.toString() + " sec.")
+	..presetAreaofEffect(lvl -> AOE)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..tooltipStopListen()
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, true)
+	..presetTargetType((int lvl) -> Targettype.POINT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	gnomeShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+
+
+class Vortex
+	private unit caster
+	private real damage
+	private real aoe
+	private vec3 center
+	private real duration
+	private real markDuration
+
+	private static let lightningCode = LIGHTNING_CODE
+	private static let impactInterval = LIGHTNING_INTERVAL
+	private static let impactEffect = LIGHTNING_IMPACT_EFFECT
+	private static let markedUnits = new HashMap<unit, timer>
+
+	construct(unit caster, vec2 center, real aoe, real damage, real duration, real markDuration)
+		this.caster = caster
+		this.center = center.withTerrainZ()
+		this.aoe = aoe
+		this.damage = damage
+		this.duration = duration
+		this.markDuration = markDuration
+		getTimer()..setData(this castTo int)
+		..startPeriodic(impactInterval, function staticCallback)
+
+	private static function staticCallback()
+		let tim = GetExpiredTimer()
+		let vortex = tim.getData() castTo Vortex
+		vortex.duration -= tim.getElapsed()
+		if vortex.duration < 0.
+			destroy vortex
+			tim.release()
+		else
+			vortex.doLightningAttack()
+
+	private function doLightningAttack()
+		let unmarkedUnits = CreateGroup()
+		let targetUnits = CreateGroup()
+		forUnitsInRange(center.toVec2(), aoe, true) (unit u) ->
+			if u.isEnemyOf(caster) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and not u.isInvulnerable() and u.isAlive()
+				targetUnits.addUnit(u)
+				if not markedUnits.has(u)
+					unmarkedUnits.addUnit(u)
+		let target = not unmarkedUnits.isEmpty() ? unmarkedUnits.getRandomUnit() : targetUnits.getRandomUnit()
+		if target != null
+			let light = new ExLigthing(lightningCode, center, target, vec3(0, 0, 50))
+			let clr = light.getColor()
+			light..setColor(colorA(clr.red, clr.green, clr.blue, (clr.alpha / 2).toInt()))
+			..setLifetime(impactInterval)
+			..setFadepoint(LIGHTNING_INTERVAL/2)
+			flashEffect(impactEffect, target, "chest")
+			caster.damageTarget(target, damage, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+			if markedUnits.has(target)
+				markedUnits.get(target).doAfter(markDuration, markedUnits.get(target).getData() castTo CallbackSingle)
+			else
+				target.addAbility(MARK_BUFF.abilId)
+				let tim = getTimer()
+				..doAfter(markDuration) () ->
+					markedUnits.remove(target)
+					target.removeAbility(MARK_BUFF.abilId)
+					target.removeAbility(MARK_BUFF.buffId)
+				markedUnits.put(target, tim)
+
+
+function onCast()
+	let caster = EventData.getTriggerUnit()
+	let start = caster.getPos3Real()
+	let target = EventData.getSpellTargetPos().withTerrainZ()
+	let distance = start.distanceTo2d(target)
+	let control = start.lerp(target, 1.).add(0, 0, 2 * distance * PROJECTILE_ARC - 0.5 * target.z - 0.5 * start.z)
+	let projectile = addEffect(PROJECTILE_MODEL, start)
+	..setScale(PROJECTILE_SCALE)
+	..playAnimation(ANIM_TYPE_BIRTH, PROJECTILE_BIRTH_TIME_SCALE)
+	..setYaw(start.angleTo2d(target))
+	let lvl = caster.getAbilityLevel(EventData.getSpellAbilityId())
+	var distanceTraveled = 0.
+	// Projectile
+	doPeriodicallyTimed(0.02, distance/PROJECTILE_SPEED) (CallbackCounted cb) ->
+		if not cb.isLast()
+			distanceTraveled += GetExpiredTimer().getElapsed() * PROJECTILE_SPEED
+			projectile.setPos(start.bezier3(control, target, distanceTraveled/distance))
+		else
+			forUnitsInRange(target.toVec2(), AOE, true) (unit u) ->
+				if caster.isEnemyOf(u) and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and not u.isInvulnerable()
+					var amount = LANDING_DAMAGE[lvl - 1]
+					if u.hasAbility(MARK_BUFF.abilId)
+						amount *= MARK_DAMAGE_MULTIPLIER
+						u.stun(STUN_DURATION)
+					caster.damageTarget(u, amount, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+			projectile..setPos(target)
+			..playAnimation(ANIM_TYPE_STAND, PROJECTILE_STAND_TIME_SCALE)
+			flashEffect(LANDING_EFFECT, target)
+			doAfter(HAMMER_LIFETIME, () -> projectile..setTimeScale(PROJECTILE_DEATH_TIME_SCALE)..destr())
+			new Vortex(caster, target.toVec2(), AOE, LIGHTNING_DAMAGE[lvl - 1], HAMMER_LIFETIME, MARK_DURATION)
+			destroy cb
+
+
+init
+	CreateTrigger()
+	..registerAnyUnitEvent(EVENT_PLAYER_UNIT_SPELL_CAST)
+	..addCondition(Condition(() -> EventData.getSpellAbilityId() == ABIL_ID))
+	..addAction(function onCast)

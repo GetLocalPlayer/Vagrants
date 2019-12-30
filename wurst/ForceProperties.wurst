@@ -1,0 +1,60 @@
+package ForceProperties
+import LinkedList
+
+
+let allies = new LinkedList<player>
+let enemy = Player(11)
+
+
+init
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		let p = players[i]
+		if p.getController() == MAP_CONTROL_USER and p.getSlotState() == PLAYER_SLOT_STATE_PLAYING
+			allies.add(p)
+
+	for p in allies
+		p.setPlayerAlliance(enemy, ALLIANCE_PASSIVE, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_VISION, true)
+		p.setPlayerAlliance(enemy, ALLIANCE_HELP_REQUEST, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_HELP_RESPONSE, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_XP, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_SPELLS, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_CONTROL, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_ADVANCED_CONTROL, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_RESCUABLE, false)
+		p.setPlayerAlliance(enemy, ALLIANCE_SHARED_VISION_FORCED, false)
+
+		enemy.setPlayerAlliance(p, ALLIANCE_PASSIVE, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_VISION, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_HELP_REQUEST, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_HELP_RESPONSE, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_XP, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_SPELLS, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_CONTROL, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_ADVANCED_CONTROL, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_RESCUABLE, false)
+		enemy.setPlayerAlliance(p, ALLIANCE_SHARED_VISION_FORCED, false)
+		
+		for otherPlayer in allies
+			if p != otherPlayer
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_PASSIVE, true)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_VISION, true)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_HELP_REQUEST, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_HELP_RESPONSE, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_XP, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_SPELLS, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_CONTROL, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_ADVANCED_CONTROL, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_RESCUABLE, false)
+				p.setPlayerAlliance(otherPlayer, ALLIANCE_SHARED_VISION_FORCED, false)
+
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_PASSIVE, true)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_VISION, true)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_HELP_REQUEST, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_HELP_RESPONSE, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_XP, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_SPELLS, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_CONTROL, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_ADVANCED_CONTROL, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_RESCUABLE, false)
+				otherPlayer.setPlayerAlliance(p, ALLIANCE_SHARED_VISION_FORCED, false)

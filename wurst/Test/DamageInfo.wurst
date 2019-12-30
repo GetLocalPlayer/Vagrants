@@ -1,0 +1,176 @@
+package DamageInfo
+import ClosureEvents
+
+
+constant COMMAND_ON = "-ShowDamageInfo"
+constant SHORT_COMMAND_ON = "-sdi"
+constant COMMAND_OFF = "-HideDamageInfo"
+constant SHORT_COMMAND_OFF = "-hdi"
+
+
+attacktype array attackTypes
+damagetype array damageTypes
+weapontype array weaponTypes
+
+string array attackTypeNames
+string array damageTypeNames
+string array weaponTypeNames
+
+bool array showToPlayer
+
+
+function onDamageEvent()
+	let attType = EventData.getDamageAttackType()
+	let dmgType = EventData.getDamageType()
+	let wpnType = EventData.getDamageWeaponType()
+	var s = ""
+	var i = 0
+	while attType != attackTypes[i]
+		i++
+	s += "Attack: |cffffcc00" + attackTypeNames[i]  + "|r"
+	i = 0
+	while dmgType != damageTypes[i]
+		i++
+	s += " Damage: |cffc3dbff" + damageTypeNames[i]  + "|r"
+	i = 0
+	while wpnType != weaponTypes[i]
+		i++
+	s += " Weapon: |cffd35e27" + weaponTypeNames[i]  + "|r"
+	if EventData.getEventId() == EVENT_PLAYER_UNIT_DAMAGING
+		print(" ")
+		print("Dealing damage = {0}".format(EventData.getEventDamage().toString()))
+		print(s)
+	else 
+		print("Taken damage = {0}".format(EventData.getEventDamage().toString()))
+		print(s)
+		print("Damage source - |cffbda8d1" + EventData.getEventDamageSource().getName() + "|r")
+		print("Damage victim - |cff6cbb72" + EventData.getTriggerUnit().getName() + "|r")	
+
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
+		if showToPlayer[localPlayer.getId()]
+			onDamageEvent()
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) ->
+		if showToPlayer[localPlayer.getId()]
+			onDamageEvent()
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) ->
+		let msg = EventData.getChatMessage().toLowerCase()
+		if msg.startsWith(COMMAND_ON.toLowerCase()) or msg.startsWith(SHORT_COMMAND_ON.toLowerCase())
+			EventData.getTriggerPlayer().print("Now you will receive damage information.")
+			showToPlayer[EventData.getTriggerPlayer().getId()] = true
+		if msg.startsWith(COMMAND_OFF.toLowerCase()) or msg.startsWith(SHORT_COMMAND_OFF.toLowerCase())
+			showToPlayer[EventData.getTriggerPlayer().getId()] = false
+			EventData.getTriggerPlayer().print("You won't receive damage information anymore.")
+
+
+init
+	attackTypes[0] = ATTACK_TYPE_NORMAL
+	attackTypes[1] = ATTACK_TYPE_MELEE
+	attackTypes[2] = ATTACK_TYPE_PIERCE
+	attackTypes[3] = ATTACK_TYPE_SIEGE
+	attackTypes[4] = ATTACK_TYPE_MAGIC
+	attackTypes[5] = ATTACK_TYPE_CHAOS
+	attackTypes[6] = ATTACK_TYPE_HERO
+	attackTypeNames[0] = "NORMAL"
+	attackTypeNames[1] = "MELEE"
+	attackTypeNames[2] = "PIERCE"
+	attackTypeNames[3] = "SIEGE"
+	attackTypeNames[4] = "MAGIC"
+	attackTypeNames[5] = "CHAOS"
+	attackTypeNames[6] = "HERO"
+
+	damageTypes[0] = DAMAGE_TYPE_UNKNOWN
+	damageTypes[4] = DAMAGE_TYPE_NORMAL
+	damageTypes[5] = DAMAGE_TYPE_ENHANCED
+	damageTypes[8] = DAMAGE_TYPE_FIRE
+	damageTypes[9] = DAMAGE_TYPE_COLD
+	damageTypes[10] = DAMAGE_TYPE_LIGHTNING
+	damageTypes[11] = DAMAGE_TYPE_POISON
+	damageTypes[12] = DAMAGE_TYPE_DISEASE
+	damageTypes[13] = DAMAGE_TYPE_DIVINE
+	damageTypes[14] = DAMAGE_TYPE_MAGIC
+	damageTypes[15] = DAMAGE_TYPE_SONIC
+	damageTypes[16] = DAMAGE_TYPE_ACID
+	damageTypes[17] = DAMAGE_TYPE_FORCE
+	damageTypes[18] = DAMAGE_TYPE_DEATH
+	damageTypes[19] = DAMAGE_TYPE_MIND
+	damageTypes[20] = DAMAGE_TYPE_PLANT
+	damageTypes[21] = DAMAGE_TYPE_DEFENSIVE
+	damageTypes[22] = DAMAGE_TYPE_DEMOLITION
+	damageTypes[23] = DAMAGE_TYPE_SLOW_POISON
+	damageTypes[24] = DAMAGE_TYPE_SPIRIT_LINK
+	damageTypes[25] = DAMAGE_TYPE_SHADOW_STRIKE
+	damageTypes[26] = DAMAGE_TYPE_UNIVERSAL
+	damageTypeNames[0] = "UNKNOWN"
+	damageTypeNames[4] = "NORMAL"
+	damageTypeNames[5] = "ENHANCED"
+	damageTypeNames[8] = "FIRE"
+	damageTypeNames[9] = "COLD"
+	damageTypeNames[10] = "LIGHTNING"
+	damageTypeNames[11] = "POISON"
+	damageTypeNames[12] = "DISEASE"
+	damageTypeNames[13] = "DIVINE"
+	damageTypeNames[14] = "MAGIC"
+	damageTypeNames[15] = "SONIC"
+	damageTypeNames[16] = "ACID"
+	damageTypeNames[17] = "FORCE"
+	damageTypeNames[18] = "DEATH"
+	damageTypeNames[19] = "MIND"
+	damageTypeNames[20] = "PLANT"
+	damageTypeNames[21] = "DEFENSIVE"
+	damageTypeNames[22] = "DEMOLITION"
+	damageTypeNames[23] = "SLOW_POISON"
+	damageTypeNames[24] = "SPIRIT_LINK"
+	damageTypeNames[25] = "SHADOW_STRIKE"
+	damageTypeNames[26] = "UNIVERSAL"
+
+	weaponTypes[0] = WEAPON_TYPE_WHOKNOWS
+	weaponTypes[1] = WEAPON_TYPE_METAL_LIGHT_CHOP
+	weaponTypes[2] = WEAPON_TYPE_METAL_MEDIUM_CHOP
+	weaponTypes[3] = WEAPON_TYPE_METAL_HEAVY_CHOP
+	weaponTypes[4] = WEAPON_TYPE_METAL_LIGHT_SLICE
+	weaponTypes[5] = WEAPON_TYPE_METAL_MEDIUM_SLICE
+	weaponTypes[6] = WEAPON_TYPE_METAL_HEAVY_SLICE
+	weaponTypes[7] = WEAPON_TYPE_METAL_MEDIUM_BASH
+	weaponTypes[8] = WEAPON_TYPE_METAL_HEAVY_BASH
+	weaponTypes[9] = WEAPON_TYPE_METAL_MEDIUM_STAB
+	weaponTypes[10] = WEAPON_TYPE_METAL_HEAVY_STAB
+	weaponTypes[11] = WEAPON_TYPE_WOOD_LIGHT_SLICE
+	weaponTypes[12] = WEAPON_TYPE_WOOD_MEDIUM_SLICE
+	weaponTypes[13] = WEAPON_TYPE_WOOD_HEAVY_SLICE
+	weaponTypes[14] = WEAPON_TYPE_WOOD_LIGHT_BASH
+	weaponTypes[15] = WEAPON_TYPE_WOOD_MEDIUM_BASH
+	weaponTypes[16] = WEAPON_TYPE_WOOD_HEAVY_BASH
+	weaponTypes[17] = WEAPON_TYPE_WOOD_LIGHT_STAB
+	weaponTypes[18] = WEAPON_TYPE_WOOD_MEDIUM_STAB
+	weaponTypes[19] = WEAPON_TYPE_CLAW_LIGHT_SLICE
+	weaponTypes[20] = WEAPON_TYPE_CLAW_MEDIUM_SLICE
+	weaponTypes[21] = WEAPON_TYPE_CLAW_HEAVY_SLICE
+	weaponTypes[22] = WEAPON_TYPE_AXE_MEDIUM_CHOP
+	weaponTypes[23] = WEAPON_TYPE_ROCK_HEAVY_BASH
+	weaponTypeNames[0] = "WHOKNOWS"
+	weaponTypeNames[1] = "METAL_LIGHT_CHOP"
+	weaponTypeNames[2] = "METAL_MEDIUM_CHOP"
+	weaponTypeNames[3] = "METAL_HEAVY_CHOP"
+	weaponTypeNames[4] = "METAL_LIGHT_SLICE"
+	weaponTypeNames[5] = "METAL_MEDIUM_SLICE"
+	weaponTypeNames[6] = "METAL_HEAVY_SLICE"
+	weaponTypeNames[7] = "METAL_MEDIUM_BASH"
+	weaponTypeNames[8] = "METAL_HEAVY_BASH"
+	weaponTypeNames[9] = "METAL_MEDIUM_STAB"
+	weaponTypeNames[10] = "METAL_HEAVY_STAB"
+	weaponTypeNames[11] = "WOOD_LIGHT_SLICE"
+	weaponTypeNames[12] = "WOOD_MEDIUM_SLICE"
+	weaponTypeNames[13] = "WOOD_HEAVY_SLICE"
+	weaponTypeNames[14] = "WOOD_LIGHT_BASH"
+	weaponTypeNames[15] = "WOOD_MEDIUM_BASH"
+	weaponTypeNames[16] = "WOOD_HEAVY_BASH"
+	weaponTypeNames[17] = "WOOD_LIGHT_STAB"
+	weaponTypeNames[18] = "WOOD_MEDIUM_STAB"
+	weaponTypeNames[19] = "CLAW_LIGHT_SLICE"
+	weaponTypeNames[20] = "CLAW_MEDIUM_SLICE"
+	weaponTypeNames[21] = "CLAW_HEAVY_SLICE"
+	weaponTypeNames[22] = "AXE_MEDIUM_CHOP"
+	weaponTypeNames[23] = "ROCK_HEAVY_BASH"

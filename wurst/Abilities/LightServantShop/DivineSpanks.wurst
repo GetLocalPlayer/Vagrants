@@ -1,0 +1,144 @@
+package DivineSpanks
+import LinkedList
+import HashMap
+import ClosureEvents
+import ClosureTimers
+import AttackPrevention
+
+import Assets
+import BuffObjEditing
+import ChannelAbilityPreset
+import AbilityTooltipGenerator
+import HotkeyFactory
+import LightServantShop
+
+
+constant int SHOP_COST = 1
+constant int LEVELS = 5
+constant HOTKEY = getHotkey()
+constant ICON = "ReplaceableTextures\\CommandButtons\\BTNDivineSlaps.blp"
+constant NAME = "Divine Spanks"
+constant DESCRIPTION = "|cff7bfdb6Passive|r|nThe hero now can attack allied heroes but instead of damaging his attacks heal an ally target.|n|n|cff7bfdb6Active|r:|nMarks an ally hero. Marked heroes share healing from Divine Spanks."
+constant BUFF_NAME = "|cff00ff00Other Hand|r"
+constant BUFF_DESCRIPTION = "This unit receives healing."
+
+constant real array HEALING_FACTOR = [0.5, 0.55, 0.65, 0.70, 0.75]
+constant real CAST_RANGE = 550
+constant real DURATION = 20
+constant real array COOLDOWN = [15, 14, 12, 10, 8]
+constant int MANACOST = 110
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,hero"
+
+constant ORB_MISSILE_ART = Abilities.holyBoltMissile
+constant BUFF_ART_TARGET = Abilities.spiritLinkTarget
+constant ABIL_ART_TARGET = Abilities.spiritLinkZapTarget
+constant ATTACK_ART_TARGET = Abilities.healBottleMissile
+constant SECOND_TARGET_ART_TARGET = Abilities.vampiricAuraTarget
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF = compiletime(createDummyBuffObject(BUFF_NAME, BUFF_DESCRIPTION, ICON, BUFF_ART_TARGET, "chest"))
+constant ORB_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setArtTarget(ABIL_ART_TARGET)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST)
+	..presetCooldown(lvl -> COOLDOWN[lvl - 1])
+	..addTooltipProperty("Attack Damage as Healing", (int lvl) -> (HEALING_FACTOR[lvl - 1] * 100).toInt().toString() + "%")
+	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetOption(Option.VISIBLE, true)
+	..presetOption(Option.TARGETIMAGE, false)
+	..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
+	..presetDisableOtherAbilities((int lvl) -> false)
+	..presetFollowThroughTime((int lvl) -> 1.)
+	..presetArtDuration((int lvl) -> 1) 
+	..presetCastingTime((int lvl) -> 0)
+	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionFrostDamageBonus(ORB_ABIL_ID)
+	..setMissileArt(ORB_MISSILE_ART)
+	..setArtTarget("")
+	..setArtSpecial("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setDamageBonus(1, 0)
+	..setEnabledAttackIndex(1, 1)
+	..setTargetsAllowed(1, TARGETS_ALLOWED)
+	..setBuffs(1, ORB_BUFF_ID.toRawCode())
+	new BuffDefinition(ORB_BUFF_ID, 'Basl')
+	..setArtTarget(1, "")
+
+
+init
+	CreateTrigger()..registerAbilitySoldEvent(ABIL_ID)
+	..addCondition(Condition(()->not EventData.getBuyingUnit().hasAbility(ORB_ABIL_ID)))
+	..addAction() ->
+		EventData.getBuyingUnit()..addAbility(ORB_ABIL_ID)
+		..makeAbilityPermanent(ORB_ABIL_ID, true)
+
+
+init
+	// <affected unit, caster>
+	let affectedUnits = new HashMap<unit, unit>
+	// <affected unit, timer callback>
+	let buffCallbacks = new HashMap<unit, CallbackSingle>
+	// <caster, <list of affected units>
+	let castersTargets = new HashMap<unit, LinkedList<unit>>
+
+	EventListener.onTargetCast(ABIL_ID) (unit caster, unit target) ->
+		if not affectedUnits.has(target)
+			target.addAbility(BUFF.abilId)
+		else
+			destroy buffCallbacks.getAndRemove(target)
+			let oldCaster = affectedUnits.get(target)
+			if oldCaster != caster
+				let list = castersTargets.get(oldCaster)
+				list.remove(target)
+				if list.isEmpty()
+					destroy list
+					castersTargets.remove(oldCaster)
+		affectedUnits.put(target, caster)
+		if not castersTargets.has(caster)
+			castersTargets.put(caster, new LinkedList<unit>)
+		castersTargets.get(caster).add(target)
+		let buffCb = doAfter(DURATION) () ->
+			affectedUnits.remove(target)
+			buffCallbacks.remove(target)
+			castersTargets.get(caster).remove(target)
+			if castersTargets.get(caster).isEmpty()
+				destroy castersTargets.getAndRemove(caster)
+			target..removeAbility(BUFF.abilId)
+			..removeAbility(BUFF.buffId)
+		buffCallbacks.put(target, buffCb)
+
+	onAttackPreventionCheck() (unit attacker, unit target) ->
+		return not (attacker.hasAbility(ABIL_ID) and target.isType(UNIT_TYPE_HERO))
+
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
+		let target = EventData.getTriggerUnit()
+		if target.removeAbility(ORB_BUFF_ID)
+			flashEffect(ATTACK_ART_TARGET, target, "chest")
+			let attacker = EventData.getEventDamageSource()
+			let lvl = attacker.getAbilityLevel(ABIL_ID)
+			var healing = HEALING_FACTOR[lvl - 1] * EventData.getEventDamage()
+			EventData.setDamage(0)
+			if castersTargets.has(attacker)
+				let list = castersTargets.get(attacker)
+				healing /= list.size() + 1
+				for u in list
+					u.setLife(u.getLife() + healing)
+					flashEffect(SECOND_TARGET_ART_TARGET, u, "origin")
+			target.setLife(target.getLife() + healing)

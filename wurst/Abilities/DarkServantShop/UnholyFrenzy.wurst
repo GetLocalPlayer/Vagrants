@@ -1,0 +1,59 @@
+package UnholyFrenzy
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import DarkServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNUnholyFrenzy
+constant NAME = "Unholy Frenzy"
+constant DESCRIPTION = "Increases the attack rate of a target unit but drains hit points each second."
+constant BUFF_DESCRIPTION = "This unit has Unholy Frenzy; its attack rate is increased, but it takes damage over time."
+constant BUFF_EFFECT = Abilities.unholyFrenzyTarget
+constant real array ATTACK_SPEED_BONUS = [0.20, 0.25, 0.30, 0.35, 0.40]
+constant real array DAMAGE_PER_SECOND = [7, 10.5,  14, 17.5, 21]
+constant real CAST_RANGE = 500
+constant real DURATION = 15
+constant real COOLDOWN = 10
+constant int array MANACOST = [50, 60, 70, 80, 90]
+constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionUnholyFrenzy(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetAttackSpeedBonus(lvl -> ATTACK_SPEED_BONUS[lvl - 1])
+	..presetDamageperSecond(lvl -> DAMAGE_PER_SECOND[lvl - 1])
+	..presetDurationNormal(lvl -> DURATION)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	darkServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, BUFF_EFFECT)

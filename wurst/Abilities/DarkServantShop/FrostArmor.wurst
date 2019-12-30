@@ -1,0 +1,64 @@
+package FrostArmor
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import HotkeyFactory
+import DarkServantShop
+
+
+constant int LEVELS = 5
+constant int SHOP_COST = 1
+constant HOTKEY = getHotkey()
+constant ICON = Icons.bTNFrostArmor
+constant NAME = "Frost Armor"
+constant DESCRIPTION = "Creates a shield of frost around a target friendly hero. The shield adds armor and slows melee units that attack it."
+constant BUFF_DESCRIPTION = "This unit's armor is increase; Enemies that attack it are slowed."
+constant BUFF_EFFECT_TARGET = Abilities.frostArmorTarget
+constant BUFF_EFFECT_SPECIAL = Abilities.frostArmorDamage
+constant real array ARMOR = [3, 4, 5, 6, 7]
+constant real CAST_RANGE = 800
+constant real DURATION = 20
+constant real SLOW_DURATION = 5
+constant real COOLDOWN = 7
+constant int array MANACOST = [35, 45, 55, 65, 75]
+constant TARGETS_ALLOWED = "air,ground,friend,self,neutral,hero"
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionLichFrostArmor(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..presetHotkey(HOTKEY)
+	..presetArmorBonus(lvl -> ARMOR[lvl - 1])
+	..presetArmorDuration(lvl -> DURATION)
+	..addTooltipProperty("Slow Duration", (int lvl) -> SLOW_DURATION)
+	..presetCooldown(lvl -> COOLDOWN)
+	..presetCastRange(lvl -> CAST_RANGE)
+	..presetManaCost(lvl -> MANACOST[lvl - 1])
+	..tooltipStopListen()
+	..presetDurationNormal(lvl -> SLOW_DURATION)
+	..presetDurationHero(lvl -> SLOW_DURATION)
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	darkServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+	..setArtTarget(1, BUFF_EFFECT_TARGET)
+	..setArtSpecial(1, BUFF_EFFECT_SPECIAL)
+	..setTargetAttachmentPoint0(1, "chest")

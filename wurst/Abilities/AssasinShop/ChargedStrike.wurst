@@ -1,0 +1,117 @@
+package ChargedStrike
+import EventHelper
+import ClosureTimers
+import ExLigthing
+
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import AssasinShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNStormHammer
+constant NAME = "Charged Strike"
+constant DESCRIPTION = "Gives a chance to hurl a lightning on each hit that bounces to nearby inemies.|n|n[|cffff0000Attack Modifier|r]"
+constant AOE = 450.
+constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+constant CHANCE = 55
+constant DAMAGE = [50., 70., 90., 110., 130.]
+constant NUMBER_OF_TARGETS = 5
+constant LIGHTNING_LIFETIME = 1.
+constant LIGHTNING_HIT_DELAY = 0.5
+constant LIGHTING_TYPE = LIGHTNING_CHAIN_LIGHTNING_SEECONDARY
+constant LIGHTNING_HIT_EFFECT = Abilities.boltImpact
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant ORB_BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionPaladinDevotionAura(ABIL_ID)
+	..setIconNormal(ICON)
+	..setArtTarget("")
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Chance", (int lvl) -> CHANCE.toString())
+	..addTooltipProperty("Damage", (int lvl) -> DAMAGE[lvl - 1].toInt())
+	..addTooltipProperty("Number of Targets", (int lvl) -> NUMBER_OF_TARGETS)
+	..presetAreaofEffect((lvl) -> AOE)
+	..tooltipStopListen()
+	..presetTargetsAllowed((int lvl) -> "none")
+	assasinShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new AbilityDefinitionFrostDamageBonus(ORB_ABIL_ID)
+	..setMissileArt("")
+	..setArtTarget("")
+	..setArtSpecial("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..setDamageBonus(1, 0)
+	..setEnabledAttackIndex(1, 1)
+	..setTargetsAllowed(1, TARGETS_ALLOWED)
+	..setBuffs(1, ORB_BUFF_ID.toRawCode())
+	new BuffDefinition(ORB_BUFF_ID, 'Basl')
+	..setArtTarget(1, "")
+
+
+init
+	CreateTrigger()..registerAbilitySoldEvent(ABIL_ID)
+	..addCondition(Condition(()->not EventData.getBuyingUnit().hasAbility(ORB_ABIL_ID)))
+	..addAction() ->
+		EventData.getBuyingUnit()..addAbility(ORB_ABIL_ID)
+		..makeAbilityPermanent(ORB_ABIL_ID, true)
+
+function onHit()
+	let attacker = EventData.getEventDamageSource()
+	let target = EventData.getTriggerUnit()
+	target.removeAbility(ORB_BUFF_ID)
+	if GetRandomInt(1, 100) <= CHANCE
+		return
+	let lvl = attacker.getAbilityLevel(ABIL_ID)
+	attacker.damageTarget(target, DAMAGE[lvl - 1], false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
+	let lightningOffset = vec3(0, 0, 75)
+	new ExLigthing(LIGHTING_TYPE, attacker, target, lightningOffset, lightningOffset)
+	..setLifetime(LIGHTNING_LIFETIME)
+	..setFadepoint(LIGHTNING_LIFETIME)
+	flashEffect(LIGHTNING_HIT_EFFECT, target, "origin")
+	let damagedTargets = CreateGroup()
+	..addUnit(target)
+	var previousTarget = target
+	doPeriodicallyCounted(LIGHTNING_HIT_DELAY, NUMBER_OF_TARGETS - 1) (CallbackCounted cb) ->
+		let pos = previousTarget.getPos()
+		let tmp = previousTarget
+		previousTarget = null
+		ENUM_GROUP.enumUnitsInRange(pos, AOE + MAX_COLLISION_SIZE)
+		for u in ENUM_GROUP
+			if u.isEnemyOf(attacker) and not target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not damagedTargets.contains(u) and u.isInRange(pos, AOE) 
+				attacker.damageTarget(u, DAMAGE[lvl - 1], false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
+				new ExLigthing(LIGHTING_TYPE, tmp, u, lightningOffset, lightningOffset)
+				..setLifetime(LIGHTNING_LIFETIME)
+				..setFadepoint(LIGHTNING_LIFETIME)
+				flashEffect(LIGHTNING_HIT_EFFECT, u, "origin")
+				previousTarget = u
+				damagedTargets.addUnit(u)
+				break
+		ENUM_GROUP.clear()
+		if previousTarget == null
+			destroy cb
+
+
+init
+	let cond = Condition() ->
+		let target = EventData.getTriggerUnit()
+		return target.hasAbility(ORB_BUFF_ID) and not target.isType(UNIT_TYPE_MAGIC_IMMUNE) and target.isAlive()
+	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_DAMAGING)
+	..addCondition(cond)
+	..addAction(function onHit)

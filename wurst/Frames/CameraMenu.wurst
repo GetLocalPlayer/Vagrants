@@ -1,0 +1,43 @@
+package CameraMenu
+import ErrorHandling
+import ClosureTimers
+import EventHelper
+
+
+
+init
+	if not loadTOCFile("Frames\\CameraMenu\\CameraMenu.toc")
+		error("CameraMenu.toc has not been loaded")
+
+	let originButton = getOriginFrame(ORIGIN_FRAME_MINIMAP_BUTTON, 0)
+	..hide()
+
+	let tooltip = createFrame("CameraMenuButtonTooltip")
+	..setAbsPoint(FRAMEPOINT_BOTTOMRIGHT, 0.8, 0.163)
+
+	let menuButton = createFrame("CameraMenuButton", GAME_UI, 0, 0)
+	..setPoint(FRAMEPOINT_CENTER, originButton, FRAMEPOINT_CENTER)
+	..setSize(originButton.getWidth(), originButton.getHeight())
+	..setTooltip(tooltip)
+	CreateTrigger()..registerFrameEvent(getFrame("CameraMenuButton"), FRAMEEVENT_CONTROL_CLICK)
+	..addAction() ->
+		let cameraMenu = getFrame("CameraMenuBackdrop")
+		if cameraMenu.isVisible()
+			cameraMenu.hide()
+		else
+			cameraMenu.show()
+
+	createFrame("CameraMenuBackdrop", GAME_UI, 0, 0)
+	..setPoint(FRAMEPOINT_LEFT, menuButton, FRAMEPOINT_RIGHT, 0.005, 0.0)
+	..hide()
+
+	getFrame("CameraMenuValueLabel")
+	..setText(getFrame("CameraMenuSlider").getValue().toInt().toString())
+	CreateTrigger()..registerFrameEvent(getFrame("CameraMenuSlider"), FRAMEEVENT_SLIDER_VALUE_CHANGED)
+	..addAction() ->
+		getFrame("CameraMenuValueLabel").setText(EventData.getTriggerFrame().getValue().toInt().toString())
+
+	let slider = getFrame("CameraMenuSlider")
+	doPeriodically(0.02) (CallbackPeriodic cb) ->
+		SetCameraField(CAMERA_FIELD_TARGET_DISTANCE, slider.getValue(), 0)
+

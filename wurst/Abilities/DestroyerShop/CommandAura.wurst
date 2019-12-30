@@ -1,0 +1,50 @@
+package CommandAura
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import BuffObjEditing
+import AbilityObjEditing
+import AbilityTooltipGenerator
+import DestroyerShop
+
+
+constant SHOP_COST = 1
+constant LEVELS = 5
+constant ICON = Icons.pASBTNGnollCommandAura
+constant NAME = "Command Aura"
+constant DESCRIPTION = "Gives extra damage to the attacks of nearby friendly |cffffaf00melee|r units based on their base attack damage."
+constant BUFF_DESCRIPTION = "Attack damage is increased."
+constant AOE = 600.
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant DAMAGE_BONUS = [0.20, 0.25, 0.30, 0.35, 0.40]
+
+constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
+	new AbilityDefinitionAuraCommandCreep(ABIL_ID)
+	..setIconNormal(ICON)
+	..setHeroAbility(true)
+	..setRequirements("")
+	..setRace(Race.Human)
+	..setName(NAME)
+	..registerTooltipGenerator(tooltipGen)
+	..tooltipStartListen()
+	..setLevels(LEVELS)
+	..addTooltipProperty("Damage Bonus", (int lvl) -> (DAMAGE_BONUS[lvl - 1] * 100).toInt().toString() + "%")
+	..presetAreaofEffect((int lvl) -> AOE)
+	..tooltipStopListen()
+	..presetAttackDamageIncrease((int lvl) -> DAMAGE_BONUS[lvl - 1])
+	..presetMeleeBonus((int lvl) -> true)
+	..presetRangedBonus((int lvl) -> false)
+	..presetFlatBonus((int lvl) -> false)
+	..presetTargetsAllowed((int lvl) -> TARGETS_ALLOWED)
+	..presetBuffs((int lvl) -> BUFF_ID.toRawCode())
+	destroyerShopDef.addAbilitySold(ABIL_ID, true, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
+	new BuffDefinition(BUFF_ID, 'Basl')
+	..setIcon(ICON)
+	..setName(1, NAME)
+	..setTooltipNormal(1, NAME)
+	..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
