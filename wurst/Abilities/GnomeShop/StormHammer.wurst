@@ -5,7 +5,7 @@ import ClosureTimers
 import HashMap
 import ClosureForGroups
 import TimerUtils
-import ExLigthing
+import LigthingEx
 import Stun
 
 import Assets
@@ -130,7 +130,7 @@ class Vortex
 					unmarkedUnits.addUnit(u)
 		let target = not unmarkedUnits.isEmpty() ? unmarkedUnits.getRandomUnit() : targetUnits.getRandomUnit()
 		if target != null
-			let light = new ExLigthing(lightningCode, center, target, vec3(0, 0, 50))
+			let light = new LigthingEx(lightningCode, center, target, vec3(0, 0, 50))
 			let clr = light.getColor()
 			light..setColor(colorA(clr.red, clr.green, clr.blue, (clr.alpha / 2).toInt()))
 			..setLifetime(impactInterval)

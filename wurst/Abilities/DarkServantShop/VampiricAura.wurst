@@ -19,7 +19,7 @@ constant BUFF_ART_TARGET = Abilities.generalAuraTarget
 constant ABIL_ART_TARGET = Abilities.vampiricAura
 constant real array VAMPIRISM = [0.10, 0.15, 0.20, 0.25, 0.30]
 constant real AOE = 600
-constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic,neutral"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant BUFF_ID = compiletime(BUFF_ID_GEN.next())

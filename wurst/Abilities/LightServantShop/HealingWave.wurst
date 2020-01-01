@@ -1,7 +1,7 @@
 package HealingWave
 import ClosureEvents
 import ClosureTimers
-import ExLigthing
+import LigthingEx
 
 import Assets
 import ChannelAbilityPreset
@@ -29,7 +29,7 @@ constant real CAST_RANGE = 700.
 constant real AOE = 500.
 constant real COOLDOWN = 2.5
 constant int array MANACOST = [50, 55, 60, 65, 70]
-constant TARGETS_ALLOWED = "air,ground,friend,allies,self,vuln,invu,organic"
+constant TARGETS_ALLOWED = "air,ground,friend,ally,self,vuln,invu,organic,neutral"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
@@ -68,7 +68,7 @@ constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 init
 	EventListener.onCast(ABIL_ID) (unit caster) ->
 		let target = EventData.getSpellTargetUnit()
-		new ExLigthing(LIGHTNING_TYPE, caster, target, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
+		new LigthingEx(LIGHTNING_TYPE, caster, target, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
 		..setLifetime(LIGHTNING_LIFETIME)
 		..setFadepoint(LIGHTNING_LIFETIME)
 		var healing = HEALING[caster.getAbilityLevel(ABIL_ID) - 1]
@@ -88,7 +88,7 @@ init
 			if newTarget != null
 				healing *= HEALING_REDUCTION
 				newTarget.setLife(newTarget.getLife() + healing)
-				new ExLigthing(LIGHTNING_TYPE, previousTarget, newTarget, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
+				new LigthingEx(LIGHTNING_TYPE, previousTarget, newTarget, LIGHTING_LAUNCH_IMPACT_OFFSET, LIGHTING_LAUNCH_IMPACT_OFFSET)
 				..setLifetime(LIGHTNING_LIFETIME)
 				..setFadepoint(LIGHTNING_LIFETIME)
 				previousTarget = newTarget

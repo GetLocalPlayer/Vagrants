@@ -24,7 +24,7 @@ constant CAST_RANGE = 500.
 constant real DURATION = 20
 constant real COOLDOWN = 5
 constant int array MANACOST = [35, 45, 55, 65, 75]
-constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,neutral"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant BUFF_ID = compiletime(BUFF_ID_GEN.next())

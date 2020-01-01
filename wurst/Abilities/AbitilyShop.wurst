@@ -135,7 +135,7 @@ init
 				..makeAbilityPermanent(abilId, true)
 				for i = 0 to bj_MAX_PLAYER_SLOTS - 1
 					if players[i] != buyer.getOwner()
-						players[i].print(MSG_ABILITY_LEARNT.format(GetObjectName(abilId)))
+						players[i].print(MSG_ABILITY_LEARNT.format(buyer.getOwner().getNameColored(), GetObjectName(abilId)))
 				flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
 				if localPlayer == buyer.getOwner()
 					let x = buyersCache.get(buyer) mod 4

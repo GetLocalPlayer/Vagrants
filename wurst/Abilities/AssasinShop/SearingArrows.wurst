@@ -13,7 +13,7 @@ constant HOTKEY = getHotkey()
 constant ICON = Icons.bTNSearingArrowsOn
 constant NAME = "Searing Arrows"
 constant DESCRIPTION = "Adds bonus fire damage to an attack against enemies, but drains mana with each shot fired.|n|n[|cffff0000Attack Modifier|r]"
-constant TARGETS_ALLOWED = "air,ground,structure,enemy,neutral"
+constant TARGETS_ALLOWED = "air,ground,structure,enemy"
 constant DAMAGE = [35, 45, 55, 65, 75]
 constant MANACOST = [9, 12, 15, 18, 21]
 

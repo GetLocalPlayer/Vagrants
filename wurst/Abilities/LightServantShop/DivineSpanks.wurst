@@ -18,7 +18,7 @@ constant int LEVELS = 5
 constant HOTKEY = getHotkey()
 constant ICON = "ReplaceableTextures\\CommandButtons\\BTNDivineSlaps.blp"
 constant NAME = "Divine Spanks"
-constant DESCRIPTION = "|cff7bfdb6Passive|r|nThe hero now can attack allied heroes but instead of damaging his attacks heal an ally target.|n|n|cff7bfdb6Active|r:|nMarks an ally hero. Marked heroes share healing from Divine Spanks."
+constant DESCRIPTION = "|cff7bfdb6Passive|r|nThe hero now can attack allied heroes but instead of damaging his attacks heal the target.|n|n|cff7bfdb6Active|r:|nMarks an ally hero. Marked heroes share healing from Divine Spanks."
 constant BUFF_NAME = "|cff00ff00Other Hand|r"
 constant BUFF_DESCRIPTION = "This unit receives healing."
 
@@ -27,7 +27,7 @@ constant real CAST_RANGE = 550
 constant real DURATION = 20
 constant real array COOLDOWN = [15, 14, 12, 10, 8]
 constant int MANACOST = 110
-constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,hero"
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,hero,neutral"
 
 constant ORB_MISSILE_ART = Abilities.holyBoltMissile
 constant BUFF_ART_TARGET = Abilities.spiritLinkTarget
@@ -129,9 +129,10 @@ init
 
 	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
 		let target = EventData.getTriggerUnit()
-		if target.removeAbility(ORB_BUFF_ID)
+		target.removeAbility(ORB_BUFF_ID)
+		let attacker = EventData.getEventDamageSource()
+		if  attacker.hasAbility(ABIL_ID) and attacker.isAllyOf(target) and target.isType(UNIT_TYPE_HERO) and EventData.getDamageAttackType() != ATTACK_TYPE_NORMAL and EventData.getDamageType() == DAMAGE_TYPE_NORMAL
 			flashEffect(ATTACK_ART_TARGET, target, "chest")
-			let attacker = EventData.getEventDamageSource()
 			let lvl = attacker.getAbilityLevel(ABIL_ID)
 			var healing = HEALING_FACTOR[lvl - 1] * EventData.getEventDamage()
 			EventData.setDamage(0)

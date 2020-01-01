@@ -35,7 +35,7 @@ constant real AOE = 300
 constant real DURATION = 18.
 constant real COOLDOWN = 8.
 constant int array MANACOST = [90, 100, 110, 120, 130]
-constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+constant TARGETS_ALLOWED = "air,ground,enemy,organic"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant BUFF_ID = compiletime(BUFF_ID_GEN.next())

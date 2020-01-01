@@ -15,7 +15,7 @@ constant NAME = "Devotion Aura"
 constant DESCRIPTION = "Gives additional armor to nearby friendly units based on their base armor."
 constant BUFF_DESCRIPTION = "This unit's armor is increased."
 constant AOE = 600.
-constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,neutral"
 constant real array ARMOR_BONUS = [2, 3, 4, 5, 6]
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())

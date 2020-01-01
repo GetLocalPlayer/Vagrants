@@ -57,7 +57,7 @@ constant INT_ABIL_HOTKEY = "E"
 constant PRIMARY_ATTRIBUTE = "INT"
 
 constant ATTACK_SWITCHER_HOTKEY = "C"
-constant real ATTACK_SWITCHER_COOLDOWN = 5.
+constant real ATTACK_SWITCHER_COOLDOWN = 1
 constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r - [|cffffcc00" + ATTACK_SWITCHER_HOTKEY + "|r]"
 constant ATTACK_SWITCHER_TOOLTIP_EXTENDED = "Changes the hero's attack type from melee to ranged and vice versa."
 constant ATTACK_SWITCHER_MELEE = "Melee"
@@ -133,9 +133,9 @@ public function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rang
 	..setIconNormal(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_ENABLE_RANGER_ICON : ATTACK_SWITCHER_ENABLE_MELEE_ICON)
 	..setLightningEffects(ATTACK_SWITCHER_MARKER)
 	initBuilCallback.call(meleeFormDef, true)
-	meleeFormDef.setNormalAbilities("Ane2,Asud,AInv," + swapFormAbilDef.getNewId().toRawCode())
+	meleeFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
 	initBuilCallback.call(rangerFormDef, false)
-	rangerFormDef.setNormalAbilities("Ane2,Asud,AInv," + swapFormAbilDef.getNewId().toRawCode())
+	rangerFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
 	if cb != null
 		cb.call(meleeFormDef, true)
 		cb.call(rangerFormDef, false)

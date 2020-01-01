@@ -4,16 +4,16 @@ import OrderIds
 import LinkedList
 
 
-let preventionCheckCallbacks = new LinkedList<IAttackPreventionCheckCallback>
+let preventionCheckCallbacks = new LinkedList<AttackPreventionCheckCallback>
 
 /** An attack order and an attack will be prevented if the callback returns 'true' value.
 Works only with ally units. */
-public function onAttackPreventionCheck(IAttackPreventionCheckCallback cb)
+public function onAttackPreventionCheck(AttackPreventionCheckCallback cb)
 	preventionCheckCallbacks.add(cb)
 
 
-interface IAttackPreventionCheckCallback
-	function call(unit attacker, unit target) returns bool
+abstract class AttackPreventionCheckCallback
+	abstract function call(unit attacker, unit target) returns bool
 
 	ondestroy
 		preventionCheckCallbacks.remove(this)

@@ -22,10 +22,13 @@ init
 	CreateTrigger()..registerFrameEvent(getFrame("CameraMenuButton"), FRAMEEVENT_CONTROL_CLICK)
 	..addAction() ->
 		let cameraMenu = getFrame("CameraMenuBackdrop")
-		if cameraMenu.isVisible()
-			cameraMenu.hide()
-		else
-			cameraMenu.show()
+		let btn = getFrame("CameraMenuButton")
+		if localPlayer == EventData.getTriggerPlayer()
+			btn.setFocus(false)
+			if cameraMenu.isVisible()
+				cameraMenu.hide()
+			else
+				cameraMenu.show()
 
 	createFrame("CameraMenuBackdrop", GAME_UI, 0, 0)
 	..setPoint(FRAMEPOINT_LEFT, menuButton, FRAMEPOINT_RIGHT, 0.005, 0.0)

@@ -2,7 +2,7 @@ package FingerOfDeath
 import ClosureEvents
 import ClosureForGroups
 import ClosureTimers
-import ExLigthing
+import LigthingEx
 
 import Assets
 import ChannelAbilityPreset
@@ -35,7 +35,7 @@ constant real FLESH_CONE_ANGLE = 90.
 constant real CAST_RANGE = 450.
 constant real COOLDOWN = 25.
 constant int array MANACOST = [150, 175, 200, 225, 250]
-constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+constant TARGETS_ALLOWED = "air,ground,enemy,organic"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
@@ -78,7 +78,7 @@ init
 		let vecToTarget =  caster.getPos().normalizedPointerTo(targetPos)
 		let angleRange = (FLESH_CONE_ANGLE / 2).asAngleDegrees().cos()
 		let lightingOffset = vec3(0, 0, LIGHTING_LAUNCH_IMPACT_Z)
-		new ExLigthing(LIGHTNING_TYPE, caster, target, lightingOffset, lightingOffset)
+		new LigthingEx(LIGHTNING_TYPE, caster, target, lightingOffset, lightingOffset)
 		..setLifetime(LIGHTING_LIFETIME)
 		..setFadepoint(LIGHTING_LIFETIME)
 		flashEffect(LIGHTNING_HIT_EFFECT, target, "origin")

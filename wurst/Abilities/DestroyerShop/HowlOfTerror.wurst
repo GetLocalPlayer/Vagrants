@@ -21,7 +21,7 @@ constant DAMAGE_REDUCTION = [0.2, 0.25, 0.3, 0.35, 0.4]
 constant DURATION = 10.
 constant COOLDOWN = 15.
 constant MANACOST = [75, 85, 95, 105, 120]
-constant TARGETS_ALLOWED = "air,ground,enemy,neutral"
+constant TARGETS_ALLOWED = "air,ground,enemy"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant BUFF_ID = compiletime(BUFF_ID_GEN.next())

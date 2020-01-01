@@ -17,7 +17,7 @@ constant NAME = "Thunder Clap"
 constant DESCRIPTION = "Slams the ground, dealing damage to nearby enemy units and slowing their movement and attack rate."
 constant BUFF_DESCRIPTION = "This unit has been hit by Thunder Clap; its movement speed and attack rate are reduced."
 
-constant TARGETS_ALLOWED = "air,ground,neutral,organic"
+constant TARGETS_ALLOWED = "air,ground,organic,enemy"
 constant AOE = 300.
 constant DURATION = 2.
 constant COOLDOWN = 5.

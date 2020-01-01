@@ -1,8 +1,8 @@
-package ExLigthing
+package LigthingEx
 import LinkedList
 
 
-public class ExLigthing
+public class LigthingEx
     private lightning light
     private unit targetStart
     private unit targetEnd
@@ -17,7 +17,7 @@ public class ExLigthing
 
     private static let timerOnUpdate = CreateTimer()
     private static let updateInterval = 0.02
-    private static let listOnUpdate = new LinkedList<ExLigthing>
+    private static let listOnUpdate = new LinkedList<LigthingEx>
 
     construct(string codeName, vec2 posStart, vec2 posEnd)
         constructor(codeName, posStart.withTerrainZ(), posEnd.withTerrainZ(), null, null, ZERO3, ZERO3)
@@ -57,7 +57,7 @@ public class ExLigthing
                 timerOnUpdate.startPeriodic(updateInterval, function updateAll)
 
     private static function updateAll()
-        for instance in ExLigthing.listOnUpdate
+        for instance in LigthingEx.listOnUpdate
             if instance.targetStart != null or instance.targetEnd != null
                 instance.updatePos()
             if instance.lifetime > 0.

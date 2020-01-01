@@ -1,7 +1,7 @@
 package ChargedStrike
 import EventHelper
 import ClosureTimers
-import ExLigthing
+import LigthingEx
 
 import Assets
 import ObjectIds
@@ -18,7 +18,7 @@ constant ICON = Icons.pASBTNStormHammer
 constant NAME = "Charged Strike"
 constant DESCRIPTION = "Gives a chance to hurl a lightning on each hit that bounces to nearby inemies.|n|n[|cffff0000Attack Modifier|r]"
 constant AOE = 450.
-constant TARGETS_ALLOWED = "air,ground,enemy,neutral,organic"
+constant TARGETS_ALLOWED = "air,ground,enemy,organic"
 constant CHANCE = 55
 constant DAMAGE = [50., 70., 90., 110., 130.]
 constant NUMBER_OF_TARGETS = 5
@@ -81,31 +81,31 @@ function onHit()
 	let lvl = attacker.getAbilityLevel(ABIL_ID)
 	attacker.damageTarget(target, DAMAGE[lvl - 1], false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
 	let lightningOffset = vec3(0, 0, 75)
-	new ExLigthing(LIGHTING_TYPE, attacker, target, lightningOffset, lightningOffset)
+	new LigthingEx(LIGHTING_TYPE, attacker, target, lightningOffset, lightningOffset)
 	..setLifetime(LIGHTNING_LIFETIME)
 	..setFadepoint(LIGHTNING_LIFETIME)
 	flashEffect(LIGHTNING_HIT_EFFECT, target, "origin")
 	let damagedTargets = CreateGroup()
 	..addUnit(target)
-	var previousTarget = target
+	var _previousTarget = target
 	doPeriodicallyCounted(LIGHTNING_HIT_DELAY, NUMBER_OF_TARGETS - 1) (CallbackCounted cb) ->
-		let pos = previousTarget.getPos()
-		let tmp = previousTarget
-		previousTarget = null
+		let pos = _previousTarget.getPos()
 		ENUM_GROUP.enumUnitsInRange(pos, AOE + MAX_COLLISION_SIZE)
 		for u in ENUM_GROUP
-			if u.isEnemyOf(attacker) and not target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not damagedTargets.contains(u) and u.isInRange(pos, AOE) 
-				attacker.damageTarget(u, DAMAGE[lvl - 1], false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
-				new ExLigthing(LIGHTING_TYPE, tmp, u, lightningOffset, lightningOffset)
-				..setLifetime(LIGHTNING_LIFETIME)
-				..setFadepoint(LIGHTNING_LIFETIME)
-				flashEffect(LIGHTNING_HIT_EFFECT, u, "origin")
-				previousTarget = u
-				damagedTargets.addUnit(u)
-				break
-		ENUM_GROUP.clear()
-		if previousTarget == null
+			if not u.isAlive() or not u.isEnemyOf(attacker) or target.isType(UNIT_TYPE_MAGIC_IMMUNE) or damagedTargets.contains(u) or not u.isInRange(pos, AOE) 
+				ENUM_GROUP.removeUnit(u)
+		let randomUnit = ENUM_GROUP.getRandomUnit()
+		if randomUnit != null
+			attacker.damageTarget(randomUnit, DAMAGE[lvl - 1], false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_LIGHTNING, WEAPON_TYPE_WHOKNOWS)
+			new LigthingEx(LIGHTING_TYPE, _previousTarget, randomUnit, lightningOffset, lightningOffset)
+			..setLifetime(LIGHTNING_LIFETIME)
+			..setFadepoint(LIGHTNING_LIFETIME)
+			flashEffect(LIGHTNING_HIT_EFFECT, randomUnit, "origin")
+			_previousTarget = randomUnit
+			damagedTargets.addUnit(randomUnit)
+		else
 			destroy cb
+		ENUM_GROUP.clear()
 
 
 init

@@ -15,7 +15,7 @@ constant NAME = "Command Aura"
 constant DESCRIPTION = "Gives extra damage to the attacks of nearby friendly |cffffaf00melee|r units based on their base attack damage."
 constant BUFF_DESCRIPTION = "Attack damage is increased."
 constant AOE = 600.
-constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu"
+constant TARGETS_ALLOWED = "air,ground,friend,self,vuln,invu,neutral"
 constant DAMAGE_BONUS = [0.20, 0.25, 0.30, 0.35, 0.40]
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())

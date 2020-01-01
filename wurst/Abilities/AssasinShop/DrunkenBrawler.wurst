@@ -14,6 +14,7 @@ constant DESCRIPTION = "Gives a chance to dodge an attack and a chance to deal i
 constant DAMAGE_MULTIPLIER = 1.65
 constant CHANCE_TO_EVADE = 0.1
 constant CHANCE_TO_CRITICAL_STRIKE = [25, 30, 35, 40, 45]
+constant TARGETS_ALLOWED = "air,ground,enemy,neutral,ally,friend"
 
 constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
@@ -34,6 +35,7 @@ constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 	..addTooltipProperty("- increase damage", (int lvl) ->  CHANCE_TO_CRITICAL_STRIKE[lvl - 1].toString() +"%")
 	..addTooltipProperty("Damage increased to", (int lvl) -> (DAMAGE_MULTIPLIER * 100).toInt().toString() + "%")
 	..tooltipStopListen()
+	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
 	..presetChancetoCriticalStrike((int lvl) -> CHANCE_TO_CRITICAL_STRIKE[lvl - 1].toReal())
 	..presetChancetoEvade((int lvl) -> CHANCE_TO_EVADE)
 	..presetDamageMultiplier((int lvl) -> DAMAGE_MULTIPLIER) 
