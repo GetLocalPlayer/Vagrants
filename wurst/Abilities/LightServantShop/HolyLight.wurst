@@ -55,7 +55,7 @@ constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 	..presetTargetType((int lvl) -> Targettype.POINT castTo int)
 	..presetDisableOtherAbilities((int lvl) -> false)
 	..presetFollowThroughTime((int lvl) -> 1.)
-	..presetArtDuration((int lvl) -> 1) 
+	..presetArtDuration((int lvl) -> 5) 
 	..presetCastingTime((int lvl) -> 0)
 	lightServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
 
