@@ -20,8 +20,8 @@ constant real MANA_REG_RATE = 0.5
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let abilDef = createManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let abilDef = buildManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -39,11 +39,8 @@ constant real MANA_REG_RATE = 0.5
 		..setButtonPositionX(SHOP_X)
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
-		..setName(NAME)
 		..setInterfaceIcon(ICON)
-		..setDescription(tooltipGenerator.getDescription())
-		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
-		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		tooltipGenerator.applyToItemDef(def)
 		if isAlias
 			fleaMarket.addItemSold(def.getNewId())
 		else

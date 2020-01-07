@@ -21,9 +21,9 @@ constant real MANA_REG_RATE = 0.25
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let intDef = createIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
-	let manaRegRateDef = createManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+	let manaRegRateDef = buildManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)

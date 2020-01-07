@@ -20,8 +20,8 @@ constant int STRENGTH = 3
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let abilDef = createStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let abilDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)

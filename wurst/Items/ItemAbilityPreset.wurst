@@ -3,8 +3,12 @@ import ObjectIdGenerator
 import AbilityObjEditing
 
 
-public function createAttributeBonus(string name, string icon, int strength, int agility, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+public constant ITEM_ABILITY_RACE = Race.Other
+
+
+public function buildAttributeBonus(string name, string icon, int strength, int agility, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
 	let def = new AbilityDefinitionAllPlus1(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -21,43 +25,48 @@ public function createAttributeBonus(string name, string icon, int strength, int
 		tg.addProperty("Intelligence", (int lvl) -> intelligence.toString())
 	return def
 
-public function createStrengthBonus(string name, string icon, int strength, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
-	let def = createAttributeBonus(name, icon, strength, 0, 0, null)
+public function buildStrengthBonus(string name, string icon, int strength, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = buildAttributeBonus(name, icon, strength, 0, 0, null)
+	..setRace(ITEM_ABILITY_RACE)
 	..setEditorSuffix("Strength ({0})".format(strength.toString()))
 	if tg != null
 		tg.addProperty("Strength", (int lvl) -> strength.toString())
 	return def
 
-public function createAgilityBonus(string name, string icon, int agility, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
-	let def = createAttributeBonus(name, icon, 0, agility, 0, null)
+public function buildAgilityBonus(string name, string icon, int agility, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = buildAttributeBonus(name, icon, 0, agility, 0, null)
+	..setRace(ITEM_ABILITY_RACE)
 	..setEditorSuffix("Agility ({0})".format(agility.toString()))
 	if tg != null
 		tg.addProperty("Ability", (int lvl) -> agility.toString())
 	return def
 
-public function createIntelligenceBonus(string name, string icon, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
-	let def = createAttributeBonus(name, icon, 0, 0, intelligence, null)
+public function buildIntelligenceBonus(string name, string icon, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = buildAttributeBonus(name, icon, 0, 0, intelligence, null)
+	..setRace(ITEM_ABILITY_RACE)
 	..setEditorSuffix("Intelligence ({0})".format(intelligence.toString()))
 	if tg != null
 		tg.addProperty("Intelligence", (int lvl) -> intelligence.toString())
 	return def
 
-public function createDefenceBonus(string name, string icon, int defence, TooltipGenerator tg) returns AbilityDefinitionDefenseBonusPlus1
+public function buildDefenseBonus(string name, string icon, int defense, TooltipGenerator tg) returns AbilityDefinitionDefenseBonusPlus1
 	let def = new AbilityDefinitionDefenseBonusPlus1(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
 	..setCheckDependencies(false)
 	..setName(name)
-	..setEditorSuffix("Defence ({0})".format(defence.toString()))
+	..setEditorSuffix("Defense ({0})".format(defense.toString()))
 	..setIconNormal(icon)
-	..setDefenseBonus(1, defence)
+	..setDefenseBonus(1, defense)
 	if tg != null
-		tg.addProperty("Defence", (int lvl) -> defence.toString())
+		tg.addProperty("Defense", (int lvl) -> defense.toString())
 	return def
 
-public function createAttackBonus(string name, string icon, int damage, TooltipGenerator tg) returns AbilityDefinitionAttackBonus
+public function buildAttackBonus(string name, string icon, int damage, TooltipGenerator tg) returns AbilityDefinitionAttackBonus
 	let def = new AbilityDefinitionAttackBonus(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -70,8 +79,9 @@ public function createAttackBonus(string name, string icon, int damage, TooltipG
 		tg.addProperty("Attack Damage", (int lvl) -> damage.toString())
 	return def
 
-public function createMovementSpeedBonus(string name, string icon, int speed, TooltipGenerator tg) returns AbilityDefinitionMoveSpeedBonus
+public function buildMovementSpeedBonus(string name, string icon, int speed, TooltipGenerator tg) returns AbilityDefinitionMoveSpeedBonus
 	let def = new AbilityDefinitionMoveSpeedBonus(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -84,8 +94,9 @@ public function createMovementSpeedBonus(string name, string icon, int speed, To
 		tg.addProperty("Movement Speed", (int lvl) -> speed.toString())
 	return def
 
-public function createHitPointsBonus(string name, string icon, int hitPoints, TooltipGenerator tg) returns AbilityDefinitionMaxLifeBonusGreater
+public function buildHitPointsBonus(string name, string icon, int hitPoints, TooltipGenerator tg) returns AbilityDefinitionMaxLifeBonusGreater
 	let def = new AbilityDefinitionMaxLifeBonusGreater(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -98,8 +109,9 @@ public function createHitPointsBonus(string name, string icon, int hitPoints, To
 		tg.addProperty("Hit Points", (int lvl) -> hitPoints.toString())
 	return def
 
-public function createManaBonus(string name, string icon, int mana, TooltipGenerator tg) returns AbilityDefinitionMaxManaBonusLeast
+public function buildManaBonus(string name, string icon, int mana, TooltipGenerator tg) returns AbilityDefinitionMaxManaBonusLeast
 	let def = new AbilityDefinitionMaxManaBonusLeast(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -112,8 +124,9 @@ public function createManaBonus(string name, string icon, int mana, TooltipGener
 		tg.addProperty("Mana", (int lvl) -> mana.toString())
 	return def
 
-public function createLifeRegenerationBonus(string name, string icon, int hpPerSecond, TooltipGenerator tg) returns AbilityDefinitionRegenLife
+public function buildLifeRegenerationBonus(string name, string icon, int hpPerSecond, TooltipGenerator tg) returns AbilityDefinitionRegenLife
 	let def = new AbilityDefinitionRegenLife(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -126,8 +139,9 @@ public function createLifeRegenerationBonus(string name, string icon, int hpPerS
 		tg.addProperty("Hit Points per Second", (int lvl) -> hpPerSecond.toString())
 	return def
 
-public function createManaRegenerationBonus(string name, string icon, real rate, TooltipGenerator tg) returns AbilityDefinitionItemRegenMana
+public function buildManaRegenerationBonus(string name, string icon, real rate, TooltipGenerator tg) returns AbilityDefinitionItemRegenMana
 	let def = new AbilityDefinitionItemRegenMana(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)
@@ -140,8 +154,9 @@ public function createManaRegenerationBonus(string name, string icon, real rate,
 		tg.addProperty("Mana Regeneration", (int lvl) -> (rate * 100).toInt().toString() + "%")
 	return def
 
-public function createAttackSpeedBonus(string name, string icon, real attackRate, TooltipGenerator tg) returns AbilityDefinitionAttackSpeedIncrease
+public function buildAttackSpeedBonus(string name, string icon, real attackRate, TooltipGenerator tg) returns AbilityDefinitionAttackSpeedIncrease
 	let def = new AbilityDefinitionAttackSpeedIncrease(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)
 	..setItemAbility(true)
 	..setLevels(1)

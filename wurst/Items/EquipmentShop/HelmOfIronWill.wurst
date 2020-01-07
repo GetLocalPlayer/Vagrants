@@ -21,9 +21,9 @@ constant int HP_PER_SECOND = 4
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let defenceDef = createDefenceBonus(NAME, ICON, DEFENCE, tooltipGenerator)
-	let hpRegDef = createLifeRegenerationBonus(NAME, ICON, HP_PER_SECOND, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let defenseDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
+	let hpRegDef = buildLifeRegenerationBonus(NAME, ICON, HP_PER_SECOND, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -46,4 +46,4 @@ constant int HP_PER_SECOND = 4
 		if isAlias
 			equipmentShop.addItemSold(def.getNewId())
 		else
-			def.setAbilities("{0},{1}".format(defenceDef.getNewId().toRawCode(), hpRegDef.getNewId().toRawCode()))
+			def.setAbilities("{0},{1}".format(defenseDef.getNewId().toRawCode(), hpRegDef.getNewId().toRawCode()))

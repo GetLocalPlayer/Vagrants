@@ -20,8 +20,8 @@ constant int INTELLIGENCE = 10
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let abilDef = createIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let abilDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -39,11 +39,8 @@ constant int INTELLIGENCE = 10
 		..setButtonPositionX(SHOP_X)
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
-		..setName(NAME)
 		..setInterfaceIcon(ICON)
-		..setDescription(tooltipGenerator.getDescription())
-		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
-		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		tooltipGenerator.applyToItemDef(def)
 		if isAlias
 			equipmentShop.addItemSold(def.getNewId())
 		else

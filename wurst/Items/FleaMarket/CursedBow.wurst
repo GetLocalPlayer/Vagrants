@@ -21,9 +21,9 @@ constant real ATTACK_RATE = 0.1
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let armorDef = createDefenceBonus(NAME, ICON, DEFENCE, tooltipGenerator)
-	let attackRateDef = createAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let armorDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
+	let attackRateDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -41,11 +41,8 @@ constant real ATTACK_RATE = 0.1
 		..setButtonPositionX(SHOP_X)
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
-		..setName(NAME)
 		..setInterfaceIcon(ICON)
-		..setDescription(tooltipGenerator.getDescription())
-		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
-		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		tooltipGenerator.applyToItemDef(def)
 		if isAlias
 			fleaMarket.addItemSold(def.getNewId())
 		else

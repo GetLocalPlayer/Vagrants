@@ -15,5 +15,5 @@ import LinkedList
 	"Mana Regeneration",
 	"Attack Damage",
 	"Attack Speed",
-	"Defence",
+	"Defense",
 	"Movement Speed")

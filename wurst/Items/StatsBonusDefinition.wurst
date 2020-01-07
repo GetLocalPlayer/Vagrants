@@ -168,9 +168,9 @@ public class StatsBonusDefinition extends AbilityDefinitionSpellBook
 				addTooltipProperty("HP/Second", (int lvl) -> value)
 			case IntStatsBonusType.DEFENCE
 				(def castTo AbilityDefinitionDefenseBonusPlus1)
-				..setEditorSuffix("Defence ({0})".format(value.toString()))
+				..setEditorSuffix("Defense ({0})".format(value.toString()))
 				..setDefenseBonus(1, value)
-				addTooltipProperty("Defence", (int lvl) -> value)
+				addTooltipProperty("Defense", (int lvl) -> value)
 			case IntStatsBonusType.ATTACK_DAMAGE
 				(def castTo AbilityDefinitionAttackBonus)
 				..setEditorSuffix("Attack Damage ({0})".format(value.toString()))
@@ -214,7 +214,7 @@ public class StatsBonusDefinition extends AbilityDefinitionSpellBook
 	function setLifeRegenerationBonus(int value)
 		setBonus(IntStatsBonusType.LIFE_REGENERATION, value)
 
-	function setDefenceBonus(int value)
+	function setDefenseBonus(int value)
 		setBonus(IntStatsBonusType.DEFENCE, value)
 
 	function setAttackDamageBonus(int value)

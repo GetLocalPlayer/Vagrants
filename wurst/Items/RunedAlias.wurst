@@ -4,9 +4,9 @@ import ObjectIds
 import ObjectIdGenerator
 
 import HashMap
-import MapBounds
 import ClosureEvents
 import ClosureTimers
+import LinkedListModule
 
 
 /* An item alias is an item that clones all the fields of a specific item,
@@ -65,6 +65,16 @@ function buildItemWithAlias(ItemDefinition actualItemDef, ItemDefinition aliasIt
 public function buildItemWithAlias(int actualItemId, int aliasItemId, IItemWithAliasCallback cb)
 	buildItemWithAlias(new ItemDefinition(actualItemId, 'afac'), new ItemDefinition(aliasItemId, 'afac'), cb)
 
+public function buildItemWithAlias(int actualItemId, IItemWithAliasCallback cb)
+	buildItemWithAlias(actualItemId, ITEM_ID_GEN.next(), cb)
+
+
+abstract class AliasedItemGivenCallback
+	use LinkedListModule
+	abstract function call(unit u, item givenItem)
+
+public function onAliasedItemGiven(AliasedItemGivenCallback _cb)
+
 
 init
 	let actualItemIds = new IterableMap<int, int>
@@ -97,16 +107,21 @@ init
 		let aliasId = _item.getTypeId()
 		if aliasItemIds.has(aliasId)
 			let u = EventData.getTriggerUnit()
-			if not u.isInventoryFull()
-				u.addItemById(aliasItemIds.get(aliasId))
-				.setPlayer(_item.getPlayer(), true)
-			else
-				let pos = _item.getPos()
-				let p = _item.getPlayer()
-				_item.setPos(playableMax)
-				_item.remove()
+			let pos = _item.getPos()
+			let p = _item.getPlayer()
+			let charges = _item.getCharges()
+			_item.remove()
+			let isInventoryFull = u.isInventoryFull()
+			let newItem = not isInventoryFull ? u.addItemById(aliasItemIds.get(aliasId)) : createItem(aliasItemIds.get(aliasId), pos)
+			newItem..setPlayer(p, true)
+			..setCharges(charges)
+			for cb in AliasedItemGivenCallback
+				cb.call(u, newItem)
+			if newItem.getTypeId() != 0 and isInventoryFull
+				newItem.remove()
 				createItem(aliasId, pos)
-				.setPlayer(p, true)
+				..setPlayer(p, true)
+				..setCharges(charges)
 
 	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM) ->
 		let _item = EventData.getManipulatedItem()
@@ -115,9 +130,8 @@ init
 			nullTimer() () ->
 				let p = _item.getPlayer()
 				let pos = _item.getPos()
-				_item.setPos(playableMax)
+				let charges = _item.getCharges()
 				_item.remove()
 				createItem(actualItemIds.get(itemId), pos)
 				..setPlayer(p, true)
-
-		
+				..setCharges(charges)

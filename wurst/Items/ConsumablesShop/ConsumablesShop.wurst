@@ -1,0 +1,32 @@
+package ConsumablesShop
+import Assets
+import ObjectIdGenerator
+import UnitObjEditing
+import ItemShopPreset
+
+import ClosureForGroups
+import MapBounds
+
+
+let shopId = compiletime(UNIT_ID_GEN.next())
+let originalShopId = 'n00S'
+
+public ItemShopPreset consumablesShop
+
+
+@compiletime function build()
+	consumablesShop = new ItemShopPreset(shopId, Icons.bTNWitchDoctor, "Consumables", Soundsets.witchDoctor, Units.witchDoctor1)
+	..setGroundTexture("")
+	..setCollisionSize(0)
+	..setMovementType(MovementType.Fly)
+	..setPathingMap("")
+	..setScalingValue(1.1)
+	..setSelectionScale(1.1)
+
+
+init
+	forUnitsInRect(playableMapRect) (unit u) ->
+		if u.getTypeId() == originalShopId
+			u..addAbility('Aloc')
+			..setVertexColor(255, 255, 255, 0)
+			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())

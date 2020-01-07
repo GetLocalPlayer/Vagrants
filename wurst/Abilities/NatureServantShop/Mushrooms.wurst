@@ -17,7 +17,7 @@ constant HOTKEY = getHotkey()
 constant NAME = "Mushrooms"
 constant DESCRIPTION = "Mushrooms grow beneath the hero's feet, whose spores heal allies every second."
 
-constant ART_CASTER = Objects.nEDeath
+constant ART_CAST = Objects.nEDeath
 constant ART_TARGET = Abilities.vampiricAuraTarget
 constant MUSHROOM_MODEL = Doodads.ashenShrooms0
 constant MUSHROOM_ART_DEATH = Abilities.mirrorImageDeathCaster
@@ -46,7 +46,8 @@ constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 	..setRace(Race.Human)
 	..setArtTarget("")
 	..setArtEffect("")
-	..setArtCaster(ART_CASTER)
+	..setArtCaster("")
+	..setArtSpecial("")
 	..setName(NAME)
 	..registerTooltipGenerator(tooltipGen)
 	..tooltipStartListen()
@@ -72,6 +73,7 @@ constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 init
 	EventListener.onCast(ABIL_ID) (unit caster) ->
 		let casterPos = caster.getPos()
+		flashEffect(ART_CAST, casterPos)
 		let startPos = casterPos.add(-AOE, -AOE)
 		let areaSq = AOE.squared()
 		let offsetRange = AOE * 2 / MUSHROOMS_DENSITY

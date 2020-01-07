@@ -20,8 +20,8 @@ constant int DEFENCE = 2
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let abilDef = createDefenceBonus(NAME, ICON, DEFENCE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+	let abilDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -39,11 +39,8 @@ constant int DEFENCE = 2
 		..setButtonPositionX(SHOP_X)
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
-		..setName(NAME)
 		..setInterfaceIcon(ICON)
-		..setDescription(tooltipGenerator.getDescription())
-		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
-		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		tooltipGenerator.applyToItemDef(def)
 		if isAlias
 			equipmentShop.addItemSold(def.getNewId())
 		else

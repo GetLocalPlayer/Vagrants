@@ -1,0 +1,76 @@
+package HealthStone
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import ConsumablesShop
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+import EventHelper
+
+
+constant int GOLD_COST = 60
+constant CLASSIFICATION = "Charged"
+constant NAME = "Health Stone"
+constant ICON = Icons.bTNHealthStone
+constant int SHOP_X = 0
+constant int SHOP_Y = 0
+constant int HP_PER_SEC = 1
+constant int HEALING = 200
+constant real COOLDOWN = 30
+constant ACTIVE_DESCRIPTION = "Can be consumed to restore {0} hit points ({1} sec. cooldown).".format(HEALING.toString(), COOLDOWN.toInt().toString())
+
+constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
+
+
+@compiletime function build()
+	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	..setActiveProperty(ACTIVE_DESCRIPTION)
+	let lifeRegDef = buildLifeRegenerationBonus(NAME, ICON, HP_PER_SEC, tooltipGenerator)
+	let healingDef = new AbilityDefinitionItemHealGreater(ABIL_ID_GEN.next())
+	..setRace(ITEM_ABILITY_RACE)
+	..setName(NAME)
+	..setIconNormal(ICON)
+	..setEditorSuffix("Healing ({0})".format(HEALING.toString()))
+	..setLevels(1)
+	..setHitPointsGained(1, HEALING)
+	..setCooldown(1, COOLDOWN)
+	buildItemWithAlias(ITEM_ID) (def, isAlias) ->
+		def..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(1)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setNumberofCharges(1)
+		..setCanBeDropped(true)
+		..setPerishable(true)
+		..setActivelyUsed(true)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		..setCooldownGroup(healingDef.getNewId().toRawCode())
+		tooltipGenerator.applyToItemDef(def)
+		if isAlias
+			consumablesShop.addItemSold(def.getNewId())
+		else
+			def.setAbilities("{0},{1}".format(healingDef.getNewId().toRawCode(), lifeRegDef.getNewId().toRawCode()))
+
+
+init
+	onAliasedItemGiven() (unit u, item givenItem) ->
+		if givenItem.getTypeId() == ITEM_ID
+			for i in EventData.getTriggerUnit().inventory()
+				if i.getTypeId() == ITEM_ID and i != givenItem
+					let charges = givenItem.getCharges()
+					givenItem.remove()
+					i.setCharges(i.getCharges() + charges)
+					break
