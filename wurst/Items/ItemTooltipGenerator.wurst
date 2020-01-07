@@ -1,0 +1,87 @@
+package ItemTooltipGenerator
+import AbilityObjEditing
+import ItemObjEditing
+import HashMap
+import LinkedList
+
+
+@configurable constant SHOP_HOTKEY_COLOR = "|cFFFFCC00"
+@configurable constant SHOP_GOLD_COST_COLOR = "|cFF969696"
+@configurable constant BONUS_COLOR = "|cFF00FF00"
+@configurable constant NEGATE_BONUS_COLOR = "|cFFFF0000"
+@configurable constant ACTIVE_COLOR = "|cffc3dbff"
+@configurable constant COMMENT_COLOR = "|cFF969696"
+@configurable constant PROPERTY_ORDER = asList<string>()
+
+
+/** Use this tooltip generator in abilities that will be a part of*/
+public class ItemTooltipGenerator implements TooltipGenerator
+	protected let properties = new IterableMap<string, StringLevelClosure>
+	protected let propertyOrder = PROPERTY_ORDER.copy()
+	protected var name = ""
+	protected var shopHotkey = ""
+	protected var shopCost = 0
+	protected var activeEffectDescription = ""
+	protected var comment = ""
+
+	construct(string name, string shopHotkey, int shopCost, string comment)
+		this.name = name
+		this.shopHotkey = shopHotkey
+		this.comment = comment
+		this.shopCost = shopCost
+
+	override function addProperty(string name, StringLevelClosure cl)
+		properties.put(name, cl)
+
+	function setActiveProperty(string description)
+		activeEffectDescription = description
+
+	function setComment(string comment)
+		this.comment = comment
+	
+	override function applyToDef(AbilityDefinition def)
+		compileError("Does not implement ''apllyToDef'' method for AbilityDefinition.")
+
+	function applyToItemDef(ItemDefinition def)
+		def..setName(name)
+		..setDescription(getDescription())
+		..setTooltipBasic(getTooltipBasic())
+		..setTooltipExtended(getTooltipExtended())
+
+	function getDescription() returns string
+		let comment = this.comment
+		this.comment = ""
+		let result = getTooltipExtended()
+		this.comment = comment
+		return result
+
+	function getTooltipBasic() returns string
+		let shopHotkey = this.shopHotkey.isNotBlank() ? ", [{1}{2}|r]".format(SHOP_HOTKEY_COLOR, this.shopHotkey) : ""
+		let shopCost = this.shopCost > 0 ?  " {0}- {1}|r".format(SHOP_GOLD_COST_COLOR, this.shopCost.toString()) : ""
+		return name + shopHotkey + shopCost
+
+	private function getPropertyString(string prop, string value) returns string
+		var resultValue = value
+		let numberValue = value.toReal()
+		if numberValue > 0
+			resultValue = "{0}+{1}|r".format(BONUS_COLOR, resultValue)
+		if numberValue < 0
+			resultValue = "{0}{1}|r".format(NEGATE_BONUS_COLOR, resultValue)
+		return "{0} {1}".format(resultValue, prop)
+		
+	function getTooltipExtended() returns string
+		var result = ""
+		let propertiesCopy = properties.copy()
+		for prop in propertyOrder
+			if propertiesCopy.has(prop)
+				result += getPropertyString(prop, propertiesCopy.getAndRemove(prop).run(1)) + "|n"
+		for prop in propertiesCopy
+			result += getPropertyString(prop, propertiesCopy.getAndRemove(prop).run(1)) + "|n"
+		destroy propertiesCopy
+		if activeEffectDescription.isNotBlank()
+			result = "{0}{1}{2}|r|n".format(result, ACTIVE_COLOR, activeEffectDescription)
+		if comment.isNotBlank()
+			result = "{0}|n{1}{2}|r".format(result, COMMENT_COLOR, comment)
+		else
+			result = result.substring(0, result.length() - 2)
+		return result

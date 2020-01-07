@@ -1,0 +1,227 @@
+package StatsBonusDefinition
+import Assets
+import ObjectIdGenerator
+import AbilityObjEditing
+import ObjectIds
+import HashMap
+
+
+public enum IntStatsBonusType
+	STRENGTH
+	AGILITY
+	INTELLIGENCE
+	HIT_POINTS
+	MANA_POINTS
+	LIFE_REGENERATION
+	DEFENCE
+	ATTACK_DAMAGE
+	MOVEMENT_SPEED
+
+public enum RealStatsBonusType
+	MANA_REGENERATION_RATE
+	ATTACK_SPEED_RATE
+
+public class StatsBonusDefinition extends AbilityDefinitionSpellBook
+	protected let abilitiesInt = new IterableMap<IntStatsBonusType, AbilityDefinition>
+	protected let abilitiesReal = new IterableMap<RealStatsBonusType, AbilityDefinition>
+	protected var icon = Icons.bTNSpellBookBLS
+	protected var name = "Stats Bonus Spell Book"
+	protected var strValue = 0
+	protected var agiValue = 0
+	protected var intValue = 0
+
+	construct(int newId, string name, string icon)
+		super(newId)
+		setHeroAbility(false)
+		setItemAbility(true)
+		setLevels(1)
+		setBaseOrderID(1, "")
+		setMinimumSpells(1, 0)
+		setMaximumSpells(1, 0)
+		setName(name)
+		setIconNormal(icon)
+		setEditorSuffix("(Stats Bonus Collection)")
+
+	override function setLevels(int level)
+		if level > 1
+			compileError("Can't be more than 1 level.")
+		super.setLevels(level)
+
+	override function setName(string name)
+		this.name = name
+		super.setName(name)
+		abilitiesInt.forEach((key, value) -> value.setName(name))
+		abilitiesReal.forEach((key, value) -> value.setName(name))
+
+	override function setIconNormal(string icon)
+		this.icon = icon
+		super.setIconNormal(icon)
+		abilitiesInt.forEach((key, value) -> value.setIconNormal(icon))
+		abilitiesReal.forEach((key, value) -> value.setIconNormal(icon))
+
+	private function updateSpellList()
+		var abilList = ""
+		for bonusType in abilitiesInt
+			let rawCode = abilitiesInt.get(bonusType).getNewId().toRawCode()
+			if not abilList.contains(rawCode)
+				abilList += rawCode + ","
+		for bonusType in abilitiesReal
+			let rawCode = abilitiesReal.get(bonusType).getNewId().toRawCode()
+			if not abilList.contains(rawCode)
+				abilList += rawCode + ","
+		super.setSpellList(1, abilList)
+		setMinimumSpells(1, abilitiesInt.size() + abilitiesReal.size())
+		setMaximumSpells(1, abilitiesInt.size() + abilitiesReal.size())
+
+	private function initBonus(IntStatsBonusType bonusType) returns AbilityDefinition
+		if abilitiesInt.has(bonusType)
+			return abilitiesInt.get(bonusType)
+		else
+			AbilityDefinition def
+			switch bonusType
+				case IntStatsBonusType.STRENGTH
+					def = new AbilityDefinitionAttributeModifierSkill(ABIL_ID_GEN.next())
+				case IntStatsBonusType.AGILITY
+					def = new AbilityDefinitionAttributeModifierSkill(ABIL_ID_GEN.next())
+				case IntStatsBonusType.INTELLIGENCE
+					def = new AbilityDefinitionAttributeModifierSkill(ABIL_ID_GEN.next())
+				case IntStatsBonusType.HIT_POINTS
+					def = new AbilityDefinitionMaxLifeBonusGreater(ABIL_ID_GEN.next())
+				case IntStatsBonusType.MANA_POINTS
+					def = new AbilityDefinitionMaxManaBonusLeast(ABIL_ID_GEN.next())
+				case IntStatsBonusType.LIFE_REGENERATION
+					def = new AbilityDefinitionRegenLife(ABIL_ID_GEN.next())
+				case IntStatsBonusType.DEFENCE
+					def = new AbilityDefinitionDefenseBonusPlus1(ABIL_ID_GEN.next())
+				case IntStatsBonusType.ATTACK_DAMAGE
+					def = new AbilityDefinitionAttackBonus(ABIL_ID_GEN.next())
+				case IntStatsBonusType.MOVEMENT_SPEED
+					def = new AbilityDefinitionMoveSpeedBonus(ABIL_ID_GEN.next())
+			def..setHeroAbility(false)
+			..setItemAbility(true)
+			..setLevels(getLevels())
+			..setName(name)
+			..setIconNormal(icon)
+			if bonusType == IntStatsBonusType.STRENGTH or bonusType == IntStatsBonusType.AGILITY or bonusType == IntStatsBonusType.INTELLIGENCE
+				abilitiesInt.put(IntStatsBonusType.STRENGTH, def)
+				abilitiesInt.put(IntStatsBonusType.AGILITY, def)
+				abilitiesInt.put(IntStatsBonusType.INTELLIGENCE, def)
+			else
+				abilitiesInt.put(bonusType, def)
+			updateSpellList()
+			return def
+
+	private function initBonus(RealStatsBonusType bonusType) returns AbilityDefinition
+		if abilitiesReal.has(bonusType)
+			return abilitiesReal.get(bonusType)
+		else
+			AbilityDefinition def
+			switch bonusType
+				case RealStatsBonusType.MANA_REGENERATION_RATE
+					def = new AbilityDefinitionItemRegenMana(ABIL_ID_GEN.next())
+				case RealStatsBonusType.ATTACK_SPEED_RATE
+					def = new AbilityDefinitionAttackSpeedIncrease(ABIL_ID_GEN.next())
+			def..setHeroAbility(false)
+			..setItemAbility(true)
+			..setLevels(getLevels())
+			..setName(name)
+			..setIconNormal(icon)
+			abilitiesReal.put(bonusType, def)
+			updateSpellList()
+			return def
+
+	function setBonus(IntStatsBonusType bonusType, int value)
+		let def = initBonus(bonusType)
+		switch bonusType
+			case IntStatsBonusType.STRENGTH
+				strValue = value
+				(def castTo AbilityDefinitionAttributeModifierSkill)
+				..setStrengthBonus(1, strValue)
+				..setEditorSuffix("Attributes [str({0}) / agi({1}) / int({2})]".format(strValue.toString(), agiValue.toString(), intValue.toString()))
+				addTooltipProperty("Strength", (int lvl) -> value)
+			case IntStatsBonusType.AGILITY
+				agiValue = value
+				(def castTo AbilityDefinitionAttributeModifierSkill)
+				..setAgilityBonus(1, agiValue)
+				..setEditorSuffix("Attributes [str({0}) / agi({1}) / int({2})]".format(strValue.toString(), agiValue.toString(), intValue.toString()))
+				addTooltipProperty("Agility", (int lvl) -> value)
+			case IntStatsBonusType.INTELLIGENCE
+				intValue = value
+				(def castTo AbilityDefinitionAttributeModifierSkill)
+				..setIntelligenceBonus(1, intValue)
+				..setEditorSuffix("Attributes [str({0}) / agi({1}) / int({2})]".format(strValue.toString(), agiValue.toString(), intValue.toString()))
+				addTooltipProperty("Intelligence", (int lvl) -> value)
+			case IntStatsBonusType.HIT_POINTS
+				(def castTo AbilityDefinitionMaxLifeBonusGreater)
+				..setEditorSuffix("Hit Points ({0})".format(value.toString()))
+				..setMaxLifeGained(1, value)
+				addTooltipProperty("Hit Points", (int lvl) -> value)
+			case IntStatsBonusType.MANA_POINTS
+				(def castTo AbilityDefinitionMaxManaBonusLeast)
+				..setEditorSuffix("Mana Points ({0})".format(value.toString()))
+				..setMaxManaGained(1, value)
+				addTooltipProperty("Mana Points", (int lvl) -> value)
+			case IntStatsBonusType.LIFE_REGENERATION
+				(def castTo AbilityDefinitionRegenLife)
+				..setEditorSuffix("HP/Second ({0})".format(value.toString()))
+				..setHitPointsRegeneratedPerSecond(1, value)
+				addTooltipProperty("HP/Second", (int lvl) -> value)
+			case IntStatsBonusType.DEFENCE
+				(def castTo AbilityDefinitionDefenseBonusPlus1)
+				..setEditorSuffix("Defence ({0})".format(value.toString()))
+				..setDefenseBonus(1, value)
+				addTooltipProperty("Defence", (int lvl) -> value)
+			case IntStatsBonusType.ATTACK_DAMAGE
+				(def castTo AbilityDefinitionAttackBonus)
+				..setEditorSuffix("Attack Damage ({0})".format(value.toString()))
+				..setAttackBonus(1, value)
+				addTooltipProperty("Attack Damage", (int lvl) -> value)
+			case IntStatsBonusType.MOVEMENT_SPEED
+				(def castTo AbilityDefinitionMoveSpeedBonus)
+				..setEditorSuffix("Movement Speed ({0})".format(value.toString()))
+				..setMovementSpeedBonus(1, value)
+				addTooltipProperty("Movement Speed", (int lvl) -> value)
+					
+	function setBonus(RealStatsBonusType bonusType, real value)
+		let def = initBonus(bonusType)
+		switch bonusType
+			case RealStatsBonusType.MANA_REGENERATION_RATE
+				(def castTo AbilityDefinitionItemRegenMana)
+				..setEditorSuffix("Mana Reg. Rate ({0})".format(value.toString()))
+				..setManaRegenerationBonusasfractionofnormal(1, value)
+				addTooltipProperty("Mana Regeneration", (int lvl) -> (value * 100).toInt().toString() + "%")
+			case RealStatsBonusType.ATTACK_SPEED_RATE
+				(def castTo AbilityDefinitionAttackSpeedIncrease)
+				..setEditorSuffix("Attack Speed Rate ({0})".format(value.toString()))
+				..setAttackSpeedIncrease(1, value)
+				addTooltipProperty("Attack Speed", (int lvl) -> (value * 100).toInt().toString() + "%")
+
+	function setStrenghtBonus(int value)
+		setBonus(IntStatsBonusType.STRENGTH, value)
+
+	function setAgilityBonus(int value)
+		setBonus(IntStatsBonusType.AGILITY, value)
+
+	function setIntelligenceBonus(int value)
+		setBonus(IntStatsBonusType.INTELLIGENCE, value)
+
+	function setHitPointsBonus(int value)
+		setBonus(IntStatsBonusType.HIT_POINTS, value)
+
+	function setManaBonus(int value)
+		setBonus(IntStatsBonusType.MANA_POINTS, value)
+
+	function setLifeRegenerationBonus(int value)
+		setBonus(IntStatsBonusType.LIFE_REGENERATION, value)
+
+	function setDefenceBonus(int value)
+		setBonus(IntStatsBonusType.DEFENCE, value)
+
+	function setAttackDamageBonus(int value)
+		setBonus(IntStatsBonusType.ATTACK_DAMAGE, value)
+
+	function setManaRegenerationBonus(real rate)
+		setBonus(RealStatsBonusType.MANA_REGENERATION_RATE, rate)
+
+	function setAttackSpeedBonus(real rate)
+		setBonus(RealStatsBonusType.ATTACK_SPEED_RATE, rate)	

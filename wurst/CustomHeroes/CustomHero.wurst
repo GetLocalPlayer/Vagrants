@@ -68,7 +68,7 @@ constant ATTACK_SWITCHER_START_WITH_MELEE = true
 constant ATTACK_SWITCHER_MARKER = "SwapMeleeRange" /* Marker that used to determine if a form swap ability is cast whatever its id is. */
 
 
-public interface ICustomHeroBuilCallback
+interface ICustomHeroBuilCallback
 	function call(HeroDefinition def, bool isMelee)
 
 
@@ -113,7 +113,7 @@ ICustomHeroBuilCallback initBuilCallback = (def, isMelee) -> begin
 end
 
 
-public function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rangerFormDef, ICustomHeroBuilCallback cb)
+function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rangerFormDef, ICustomHeroBuilCallback cb)
 	let swapFormAbilDef = new AbilityDefinitionIllidanMetamorphosis(ABIL_ID_GEN.next())
 	..setLevels(1)
 	..setLevelSkipRequirement(0)
@@ -139,6 +139,7 @@ public function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rang
 	if cb != null
 		cb.call(meleeFormDef, true)
 		cb.call(rangerFormDef, false)
+	destroy cb
 
 
 public function buildCustomHero(int meleeFormId, int rangerFormId, int originId, ICustomHeroBuilCallback cb)

@@ -1,0 +1,50 @@
+package GlovesOfHaste
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import FleaMarket
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+
+constant int GOLD_COST = 400
+constant CLASSIFICATION = "Permanent"
+constant NAME = "Gloves of Haste"
+constant ICON = Icons.bTNGlove
+constant int SHOP_X = 2
+constant int SHOP_Y = 1
+constant real ATTACK_RATE = 0.15
+
+
+@compiletime function build()
+	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	let abilDef = createAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+		def..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(1)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setName(NAME)
+		..setInterfaceIcon(ICON)
+		..setDescription(tooltipGenerator.getDescription())
+		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
+		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		if isAlias
+			fleaMarket.addItemSold(def.getNewId())
+		else
+			def.setAbilities(abilDef.getNewId().toRawCode())

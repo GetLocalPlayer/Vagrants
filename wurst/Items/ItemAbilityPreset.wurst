@@ -1,0 +1,155 @@
+package ItemAbilityPreset
+import ObjectIdGenerator
+import AbilityObjEditing
+
+
+public function createAttributeBonus(string name, string icon, int strength, int agility, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = new AbilityDefinitionAllPlus1(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Attributes [str({0}), str({1}), str({2})]".format(strength.toString(), agility.toString(), intelligence.toString()))
+	..setIconNormal(icon)
+	..setStrengthBonus(1, strength)
+	..setAgilityBonus(1, agility)
+	..setIntelligenceBonus(1, intelligence)
+	if tg != null
+		tg.addProperty("Strength", (int lvl) -> strength.toString())
+		tg.addProperty("Ability", (int lvl) -> agility.toString())
+		tg.addProperty("Intelligence", (int lvl) -> intelligence.toString())
+	return def
+
+public function createStrengthBonus(string name, string icon, int strength, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = createAttributeBonus(name, icon, strength, 0, 0, null)
+	..setEditorSuffix("Strength ({0})".format(strength.toString()))
+	if tg != null
+		tg.addProperty("Strength", (int lvl) -> strength.toString())
+	return def
+
+public function createAgilityBonus(string name, string icon, int agility, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = createAttributeBonus(name, icon, 0, agility, 0, null)
+	..setEditorSuffix("Agility ({0})".format(agility.toString()))
+	if tg != null
+		tg.addProperty("Ability", (int lvl) -> agility.toString())
+	return def
+
+public function createIntelligenceBonus(string name, string icon, int intelligence, TooltipGenerator tg) returns AbilityDefinitionAllPlus1
+	let def = createAttributeBonus(name, icon, 0, 0, intelligence, null)
+	..setEditorSuffix("Intelligence ({0})".format(intelligence.toString()))
+	if tg != null
+		tg.addProperty("Intelligence", (int lvl) -> intelligence.toString())
+	return def
+
+public function createDefenceBonus(string name, string icon, int defence, TooltipGenerator tg) returns AbilityDefinitionDefenseBonusPlus1
+	let def = new AbilityDefinitionDefenseBonusPlus1(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Defence ({0})".format(defence.toString()))
+	..setIconNormal(icon)
+	..setDefenseBonus(1, defence)
+	if tg != null
+		tg.addProperty("Defence", (int lvl) -> defence.toString())
+	return def
+
+public function createAttackBonus(string name, string icon, int damage, TooltipGenerator tg) returns AbilityDefinitionAttackBonus
+	let def = new AbilityDefinitionAttackBonus(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Attack Damage ({0})".format(damage.toString()))
+	..setIconNormal(icon)
+	..setAttackBonus(1, damage)
+	if tg != null
+		tg.addProperty("Attack Damage", (int lvl) -> damage.toString())
+	return def
+
+public function createMovementSpeedBonus(string name, string icon, int speed, TooltipGenerator tg) returns AbilityDefinitionMoveSpeedBonus
+	let def = new AbilityDefinitionMoveSpeedBonus(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Movement Speed ({0})".format(speed.toString()))
+	..setIconNormal(icon)
+	..setMovementSpeedBonus(1, speed)
+	if tg != null
+		tg.addProperty("Movement Speed", (int lvl) -> speed.toString())
+	return def
+
+public function createHitPointsBonus(string name, string icon, int hitPoints, TooltipGenerator tg) returns AbilityDefinitionMaxLifeBonusGreater
+	let def = new AbilityDefinitionMaxLifeBonusGreater(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Hit Points ({0})".format(hitPoints.toString()))
+	..setIconNormal(icon)
+	..setMaxLifeGained(1, hitPoints)
+	if tg != null
+		tg.addProperty("Hit Points", (int lvl) -> hitPoints.toString())
+	return def
+
+public function createManaBonus(string name, string icon, int mana, TooltipGenerator tg) returns AbilityDefinitionMaxManaBonusLeast
+	let def = new AbilityDefinitionMaxManaBonusLeast(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Mana ({0})".format(mana.toString()))
+	..setIconNormal(icon)
+	..setMaxManaGained(1, mana)
+	if tg != null
+		tg.addProperty("Mana", (int lvl) -> mana.toString())
+	return def
+
+public function createLifeRegenerationBonus(string name, string icon, int hpPerSecond, TooltipGenerator tg) returns AbilityDefinitionRegenLife
+	let def = new AbilityDefinitionRegenLife(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("HP/Second ({0})".format(hpPerSecond.toString()))
+	..setIconNormal(icon)
+	..setHitPointsRegeneratedPerSecond(1, hpPerSecond)
+	if tg != null
+		tg.addProperty("Hit Points per Second", (int lvl) -> hpPerSecond.toString())
+	return def
+
+public function createManaRegenerationBonus(string name, string icon, real rate, TooltipGenerator tg) returns AbilityDefinitionItemRegenMana
+	let def = new AbilityDefinitionItemRegenMana(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Mana Regeneration ({0})".format(rate.toString()))
+	..setIconNormal(icon)
+	..setManaRegenerationBonusasfractionofnormal(1, rate)
+	if tg != null
+		tg.addProperty("Mana Regeneration", (int lvl) -> (rate * 100).toInt().toString() + "%")
+	return def
+
+public function createAttackSpeedBonus(string name, string icon, real attackRate, TooltipGenerator tg) returns AbilityDefinitionAttackSpeedIncrease
+	let def = new AbilityDefinitionAttackSpeedIncrease(ABIL_ID_GEN.next())
+	..setHeroAbility(false)
+	..setItemAbility(true)
+	..setLevels(1)
+	..setCheckDependencies(false)
+	..setName(name)
+	..setEditorSuffix("Attack Speed ({0})".format(attackRate.toString()))
+	..setIconNormal(icon)
+	..setAttackSpeedIncrease(1, attackRate)
+	if tg != null
+		tg.addProperty("Attack Speed", (int lvl) -> (attackRate * 100).toInt().toString() + "%")
+	return def

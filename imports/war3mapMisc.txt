@@ -1,6 +1,8 @@
 [Misc]
-AgiDefenseBonus=0.15
-DamageBonusMagic=
+DamageBonusChaos=1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00
+DamageBonusMagic=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
+DamageBonusHero=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
+DamageBonusSiege=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
 DamageBonusNormal=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
 DamageBonusPierce=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
 DamageBonusSpells=1.00,1.00,1.00,1.00,1.00,1.00,0.00,1.00
@@ -11,4 +13,6 @@ MaxHeroLevel=28
 TradingIncLarge=0
 TradingIncSmall=0
 StrAttackBonus=0.00
+AgiDefenseBonus=0.15
+PawnItemRate=0.85
 

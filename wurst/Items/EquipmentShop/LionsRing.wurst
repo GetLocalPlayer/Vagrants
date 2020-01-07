@@ -1,0 +1,50 @@
+package LionsRing
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import EquipmentShop
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+
+constant int GOLD_COST = 800
+constant CLASSIFICATION = "Permanent"
+constant NAME = "Lion's Ring"
+constant ICON = Icons.bTNRingLionHead
+constant int SHOP_X = 1
+constant int SHOP_Y = 2
+constant int AGILITY = 10
+
+
+@compiletime function build()
+	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	let abilDef = createAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+		def..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(1)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setName(NAME)
+		..setInterfaceIcon(ICON)
+		..setDescription(tooltipGenerator.getDescription())
+		..setTooltipBasic(tooltipGenerator.getTooltipBasic())
+		..setTooltipExtended(tooltipGenerator.getTooltipExtended())
+		if isAlias
+			equipmentShop.addItemSold(def.getNewId())
+		else
+			def.setAbilities(abilDef.getNewId().toRawCode())

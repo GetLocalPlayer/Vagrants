@@ -8,8 +8,8 @@ import UnitObjEditing
 
 constant COMMAND = "-CreateTestGhoul"
 constant SHORT_COMMAND = "-ctg"
-constant COMMAND_REMOVE = "-RemoveCreatedGhouls"
-constant SHORT_COMMAND_REMOVE = "-rcg"
+constant COMMAND_REMOVE = "-RemoveTestGhouls"
+constant SHORT_COMMAND_REMOVE = "-rtg"
 constant COMMAND_HP = "-SetGhoulHitPoints"
 constant SHORT_COMMAND_HP = "-sghp"
 constant SPAWN_RECT = gg_rct_TestGhoul
@@ -22,7 +22,7 @@ var testGhoulsMaxLife = 5000
 	new UnitDefinition(UNIT_ID, UnitIds.ghoul)
 	..setHitPointsMaximumBase(testGhoulsMaxLife)
 	..setManaMaximum(5000)
-	..setSpeedBase(1)
+	..setSpeedBase(0)
 	..setAttack1DamageBase(5)
 	..setDefenseBase(0)
 	..setName("Test Ghoul")

@@ -1,0 +1,32 @@
+package EquipmentShop
+import Assets
+import ObjectIdGenerator
+import UnitObjEditing
+import ItemShopPreset
+
+import ClosureForGroups
+import MapBounds
+
+
+let shopId = compiletime(UNIT_ID_GEN.next())
+let originalShopId = 'n00U'
+
+public ItemShopPreset equipmentShop
+
+
+@compiletime function build()
+	equipmentShop = new ItemShopPreset(shopId, Icons.bTNPeon, "Equipment", Soundsets.peon, Units.peon1)
+	..setGroundTexture("")
+	..setCollisionSize(0)
+	..setMovementType(MovementType.Fly)
+	..setPathingMap("")
+	..setScalingValue(1.5)
+	..setSelectionScale(1.3)
+
+
+init
+	forUnitsInRect(playableMapRect) (unit u) ->
+		if u.getTypeId() == originalShopId
+			u..addAbility('Aloc')
+			..setVertexColor(255, 255, 255, 0)
+			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())

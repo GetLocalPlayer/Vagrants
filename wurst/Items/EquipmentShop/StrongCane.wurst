@@ -1,0 +1,49 @@
+package StrongCane
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import EquipmentShop
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+
+constant int GOLD_COST = 450
+constant CLASSIFICATION = "Permanent"
+constant NAME = "Strong Cane"
+constant ICON = Icons.bTNWitchDoctorAdept
+constant int SHOP_X = 2
+constant int SHOP_Y = 1
+constant int INTELLIGENCE = 6
+constant real MANA_REG_RATE = 0.25
+
+
+@compiletime function build()
+	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	let intDef = createIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+	let manaRegRateDef = createManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+	buildItemWithAlias(ITEM_ID_GEN.next(), ITEM_ID_GEN.next()) (def, isAlias) ->
+		def..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(1)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		tooltipGenerator.applyToItemDef(def)
+		if isAlias
+			equipmentShop.addItemSold(def.getNewId())
+		else
+			def.setAbilities("{0},{1}".format(intDef.getNewId().toRawCode(), manaRegRateDef.getNewId().toRawCode()))

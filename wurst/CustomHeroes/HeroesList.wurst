@@ -21,7 +21,7 @@ public let heroesMap = new IterableMap<string, int>
 	..put("Banshee", compiletime(buildBanshee()))
 	..put("Tentacle Monster", compiletime(buildTentacleMonster()))
 	..put("Death Knight", compiletime(buildDeathKnight()))
-	..put("Centaur", compiletime(buildCentaur()))
+	..put("Keeper of the Grove", compiletime(buildKeeperOfTheGrove()))
 
 
 init /* TEST ======================== */
@@ -305,24 +305,23 @@ function buildDeathKnight() returns int
 	return meleeFormId
 
 
-function buildCentaur() returns int
+function buildKeeperOfTheGrove() returns int
 	let meleeFormId = HERO_ID_GEN.next()
 	buildCustomHero(meleeFormId) (def, isMelee) ->
-		def..setUnitSoundSet(Soundsets.centaurArcher)
+		def..setUnitSoundSet(Soundsets.heroKeeperOfTheGrove)
+		..setModelFile(Units.heroKeeperoftheGrove)
 		..setProperNames("Bambi")
-		..setName("Centaur")
+		..setName("Keeper of the Grove")
 		..setProperNamesUsed(1)
-		..setScalingValue(1.6)
+		..setScalingValue(1.)
 		..setSelectionScale(1.9)
 		..setScaleProjectiles(false)
-		..setIconGameInterface(Icons.bTNCentaurKhan)
+		..setIconGameInterface(Icons.bTNKeeperOfTheGrove)
 		if isMelee
-			def..setAttack1WeaponSound(WeaponSound.MetalMediumChop)
-			..setModelFile(Units.centaurKhan1)
+			def..setAttack1WeaponSound(WeaponSound.MetalLightChop)
 		else
-			def..setAttack1ProjectileArt(Abilities.arrowMissile1)
+			def..setAttack1ProjectileArt(Abilities.keeperGroveMissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
-			..setAttack1ProjectileArc(0.15)
+			..setAttack1ProjectileArc(0.1)
 			..setProjectileLaunchZ(70)
-			..setModelFile(Units.centaurArcher)
 	return meleeFormId

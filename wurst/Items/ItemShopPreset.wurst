@@ -1,0 +1,32 @@
+package ItemShopPreset
+import Assets
+import ObjectIds
+import UnitObjEditing
+
+
+constant MAX_ITEMS_PER_SHOP = 12
+
+
+public class ItemShopPreset extends BuildingDefinition
+	private var itemsSold = ""
+	private var itemsSoldCount = 0
+
+	construct(int newId, string icon, string name, string soundSet, string model)
+		super(newId, UnitIds.goblinmerchant)
+		setName(name)
+		setNormalAbilities("Ane2,Avul,Apit")
+		setUnitSoundSet(soundSet)
+		setItemsSold("")
+		setUnitsSold("")
+		setModelFile(model)
+		setShadowTextureBuilding("")
+		setGroundTexture("")
+		setIconGameInterface(icon)
+
+	function addItemSold(int itemId)
+		itemsSoldCount++
+		if itemsSoldCount > MAX_ITEMS_PER_SHOP
+			compileError("Can't sold more than {0} items.".format(MAX_ITEMS_PER_SHOP.toString()))
+		itemsSold += itemId.toRawCode() + ","
+		setItemsSold(itemsSold)
+		

@@ -1,0 +1,19 @@
+package ItemTooltipGenerator_config
+import LinkedList
+
+
+@config constant PROPERTY_ORDER = asList<string>(
+	"Strength",
+	"Agility",
+	"Intelligence",
+	"Hit Points",
+	"Mana Points",
+	"Mana",
+	"HP/Second",
+	"HP per Second",
+	"Hit Points per Second",
+	"Mana Regeneration",
+	"Attack Damage",
+	"Attack Speed",
+	"Defence",
+	"Movement Speed")
