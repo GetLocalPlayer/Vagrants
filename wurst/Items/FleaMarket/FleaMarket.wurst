@@ -16,6 +16,7 @@ public ItemShopPreset fleaMarket
 
 @compiletime function build()
 	fleaMarket = new ItemShopPreset(shopId, Icons.bTNPeasant, "Flea Market", Soundsets.peasant, Units.peasant1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

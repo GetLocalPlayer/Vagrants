@@ -1,29 +1,29 @@
-package EarthServantShop
+package RareMerchant
+import Assets
+import ObjectIdGenerator
+import UnitObjEditing
+import ItemShopPreset
+
 import ClosureForGroups
 import MapBounds
 
-import Assets
-import ObjEditingCommons
-import ObjectIdGenerator
-import public AbitilyShop
-
 
 let shopId = compiletime(UNIT_ID_GEN.next())
-let originalShopId = 'n009'
+let originalShopId = 'n01C'
 
-
-public AbilityShopPreset earthServantShopDef
+public ItemShopPreset rareMerchant
 
 
 @compiletime function build()
-	earthServantShopDef = new AbilityShopPreset(shopId, Icons.bTNTauren, "Earth Servant", Soundsets.tauren, Units.tauren)
+	rareMerchant = new ItemShopPreset(shopId, Icons.bTNSpellBreaker, "Rare Merchant", "SpellBreaker", Units.bloodElfSpellThief)
 	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)
 	..setPathingMap("")
-	..setSelectionScale(2)
-	..setScalingValue(1.5)
+	..setScalingValue(1.)
+	..setSelectionScale(1.5)
+
 
 
 init

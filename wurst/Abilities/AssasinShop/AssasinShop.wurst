@@ -16,6 +16,7 @@ public AbilityShopPreset assasinShopDef
 
 @compiletime function build()
 	assasinShopDef = new AbilityShopPreset(shopId, Icons.bTNAssassin, "Assasin", Soundsets.heroWarden, Units.assassin1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

@@ -16,6 +16,7 @@ public ItemShopPreset equipmentShop
 
 @compiletime function build()
 	equipmentShop = new ItemShopPreset(shopId, Icons.bTNPeon, "Equipment", Soundsets.peon, Units.peon1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

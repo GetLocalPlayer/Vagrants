@@ -1,0 +1,117 @@
+package HuntingBow
+import ObjectIds
+import ObjectIdGenerator
+import ItemObjEditing
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import WandOfNeutralization
+import CursedBow
+
+import ClosureEvents
+import ItemCombine
+
+
+public class HuntingBow
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Hunting Bow"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNHuntingBow.blp"
+	static constant int GOLD_COST = WandOfNeutralization.GOLD_COST + CursedBow.GOLD_COST
+	static constant int AGILITY = 5
+	static constant real ATTACK_SPEED = 0.15
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+
+	@compiletime protected static function build()
+		let agiDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
+		let attackSpeedDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_SPEED, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1}".format(agiDef.getNewId().toRawCode(), attackSpeedDef.getNewId().toRawCode()))
+		// Recipe
+
+public class HuntingBowRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(HuntingBow.NAME)
+	static constant ICON = HuntingBow.ICON
+	static constant int SHOP_X = 1
+	static constant int SHOP_Y = 0
+	static constant int GOLD_COST = 0
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = HuntingBow.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(CursedBow.NAME, CursedBow.GOLD_COST)
+		..addRecipeRequirement(WandOfNeutralization.NAME, WandOfNeutralization.GOLD_COST)
+
+	@compiletime protected static function build()
+		let def = new ItemDefinition(ALIAS_ID, 'afac')
+		..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(0)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(false)
+		..setCanBeSoldToMerchants(false)
+		..setGoldCost(0)
+		..setAbilities("")
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		tooltipGenerator.applyToDef(def, true)
+		rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	EventListener.onCast(WandOfNeutralization.ABIL_ID) (unit caster) ->
+		let targetItem = EventData.getSpellTargetItem()
+		if targetItem != null
+			let pos = targetItem.getPos()
+			let p = targetItem.getPlayer()
+			let charges = targetItem.getCharges()
+			/* Don't remove an item by id. Get an item by id
+			and then remove the obtained item. removeItemById
+			fires "drop event" which fires aliased item creation. */
+			switch targetItem.getTypeId()
+				case CursedBow.ID
+					targetItem.remove()
+					let u = EventData.getTriggerUnit()
+					u.getItemById(WandOfNeutralization.ID).remove()
+					u.addItemById(HuntingBow.ID)
+					..setPlayer(p, true)
+					..setCharges(charges)
+					flashEffect(ITEM_COMBINE_EFFECT, u, "origin")
+				case CursedBow.ALIAS_ID
+					targetItem.remove()
+					createItem(HuntingBow.ID, pos)
+					..setPlayer(p, true)
+					..setCharges(charges)
+					EventData.getTriggerUnit().getItemById(WandOfNeutralization.ID).remove()
+					flashEffect(ITEM_COMBINE_EFFECT, pos)

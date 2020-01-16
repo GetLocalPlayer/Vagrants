@@ -1,8 +1,4 @@
 package ChargedStrike
-import EventHelper
-import ClosureTimers
-import LigthingEx
-
 import Assets
 import ObjectIds
 import ObjectIdGenerator
@@ -10,6 +6,11 @@ import BuffObjEditing
 import AbilityObjEditing
 import AbilityTooltipGenerator
 import AssasinShop
+import Annotations
+
+import EventHelper
+import ClosureTimers
+import LigthingEx
 
 
 constant SHOP_COST = 1

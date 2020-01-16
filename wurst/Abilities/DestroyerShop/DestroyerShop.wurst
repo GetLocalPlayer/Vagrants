@@ -16,6 +16,7 @@ public AbilityShopPreset destroyerShopDef
 
 @compiletime function build()
 	destroyerShopDef = new AbilityShopPreset(shopId, Icons.bTNPitLord, "Destroyer", Soundsets.heroPitLord, Units.heroPitLord)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

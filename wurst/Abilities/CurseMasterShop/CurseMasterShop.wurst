@@ -16,6 +16,7 @@ public AbilityShopPreset curseMasterShopDef
 
 @compiletime function build()
 	curseMasterShopDef = new AbilityShopPreset(shopId, Icons.bTNOrcWarlock, "Curse Master", Soundsets.drekThar, Units.orcWarlock1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

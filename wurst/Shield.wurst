@@ -24,7 +24,7 @@ public class Shield
 
 	construct(unit target, real amount, real factor, IOnShieldAbsorbCallback cb)
 		this.target = target
-		setDurability(amount)
+		setAmount(amount)
 		setFactor(factor)
 		absorbCallback = cb
 		if not shieldedUnits.has(target)
@@ -40,7 +40,7 @@ public class Shield
 		if absorbCallback != null
 			destroy absorbCallback
 
-	function setDurability(real amount)
+	function setAmount(real amount)
 		if amount <= 0
 			error("Shield cannot absorb 0 or less damage")
 		this.amount = amount

@@ -16,6 +16,7 @@ public AbilityShopPreset darkServantShopDef
 
 @compiletime function build()
 	darkServantShopDef = new AbilityShopPreset(shopId, Icons.bTNNecromancer, "Dark Servant", Soundsets.necromancer, Units.necromancer1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

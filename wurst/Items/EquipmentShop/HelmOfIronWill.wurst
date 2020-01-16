@@ -42,7 +42,7 @@ constant int HP_PER_SECOND = 4
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
 		..setInterfaceIcon(ICON)
-		tooltipGenerator.applyToItemDef(def)
+		tooltipGenerator.applyToDef(def)
 		if isAlias
 			equipmentShop.addItemSold(def.getNewId())
 		else

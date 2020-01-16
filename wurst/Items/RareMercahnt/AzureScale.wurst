@@ -1,0 +1,142 @@
+package AzureScale
+import Assets
+import ItemObjEditing
+import BuffObjEditing
+import ChannelAbilityPreset
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import RingOfProtection
+import ChainMail
+
+import ClosureEvents
+import ClosureTimers
+import LinkedList
+import HashMap
+import ItemCombine
+import Shield
+
+
+public class AzureScale
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Azure Scale"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNAzurescale.blp"
+	static constant int GOLD_COST = ChainMail.GOLD_COST + RingOfProtection.GOLD_COST * 2 + AzureScaleRecipe.GOLD_COST
+	static constant int DEFENSE = 10
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int SHIELD_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant real SHIELD_COOLDOWN = 25
+	static constant real SHIELD_DURATION = 10
+	static constant real SHIELD_AMOUNT = 200
+	static constant SHIELD_MODEL = ""
+	static constant BUFF = compiletime(createDummyBuffObject("|cFF00FF00{0}|r".format(NAME), "Absorbs taken damage.", ICON, Abilities.divineShieldTarget, "origin"))
+	static constant ACTIVE_DESCRIPTION = "Creates shield for {0} seconds that absorbs {1} taken damage ({2} sec. cooldown).".format(SHIELD_DURATION.toInt().toString(), SHIELD_AMOUNT.toInt().toString(), SHIELD_COOLDOWN.toInt().toString())
+	
+	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_DESCRIPTION)
+
+	@compiletime protected static function build()
+		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
+		let shieldDef = new ChannelAbilityPreset(SHIELD_ABIL_ID, 1, true)
+		..setItemAbility(true)
+		..setCooldown(1, SHIELD_COOLDOWN)
+		..setIconNormal(ICON)
+		..setName(NAME)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(shieldDef.getNewId().toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1}".format(shieldDef.getNewId().toRawCode(), defenseDef.getNewId().toRawCode()))
+
+
+public class AzureScaleRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(AzureScale.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = AzureScale.ICON
+	static constant int SHOP_X = 1
+	static constant int SHOP_Y = 1
+	static constant int GOLD_COST = 150
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	static protected let tooltipGenerator = AzureScale.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(RingOfProtection.NAME, RingOfProtection.GOLD_COST)
+		..addRecipeRequirement(RingOfProtection.NAME, RingOfProtection.GOLD_COST)
+		..addRecipeRequirement(ChainMail.NAME, ChainMail.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+
+	@compiletime protected static function build()
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(AzureScale.ID, asList<int>(RingOfProtection.ID, RingOfProtection.ID, ChainMail.ID, AzureScaleRecipe.ID))
+
+
+init
+	let shields = new HashMap<unit, Shield>
+	let timers = new HashMap<unit, CallbackSingle>
+
+	EventListener.onCast(AzureScale.SHIELD_ABIL_ID) (unit caster) ->
+		if not shields.has(caster)
+			let shield = new Shield(caster, AzureScale.SHIELD_AMOUNT, 1) (shield, takenDamage, absorbedDamage) ->
+				if shield.isBroken()
+					destroy shields.getAndRemove(caster)
+					destroy timers.getAndRemove(caster)
+					caster.removeAbility(AzureScale.BUFF.abilId)
+					caster.removeAbility(AzureScale.BUFF.buffId)
+			shields.put(caster, shield)
+			caster.addAbility(AzureScale.BUFF.abilId)
+		else
+			shields.get(caster).setAmount(AzureScale.SHIELD_AMOUNT)
+			destroy timers.getAndRemove(caster)	
+		let timerCb = doAfter(AzureScale.SHIELD_DURATION) () ->
+			destroy shields.getAndRemove(caster)
+			timers.remove(caster)
+			caster.removeAbility(AzureScale.BUFF.abilId)
+			caster.removeAbility(AzureScale.BUFF.buffId)
+		timers.put(caster, timerCb)

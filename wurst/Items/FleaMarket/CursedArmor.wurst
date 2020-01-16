@@ -9,41 +9,43 @@ import ItemTooltipGenerator
 import ItemAbilityPreset
 
 
-constant int GOLD_COST = 225
-constant CLASSIFICATION = "Permanent"
-constant NAME = "Cursed Armor"
-constant ICON = Icons.bTNLeatherUpgradeThree
-constant int SHOP_X = 0
-constant int SHOP_Y = 0
-constant int DEFENCE = 4
-constant real ATTACK_RATE = -0.1
+public class CursedArmor
+	static constant int GOLD_COST = 225
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Cursed Armor"
+	static constant ICON = Icons.bTNLeatherUpgradeThree
+	static constant int SHOP_X = 0
+	static constant int SHOP_Y = 0
+	static constant int DEFENCE = 4
+	static constant real ATTACK_RATE = -0.1
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-
-@compiletime function build()
-	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let armorDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
-	let attackRateDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
-		def..setLevel(1)
-		..setLevelUnclassified(1)
-		..setLumberCost(0)
-		..setHitPoints(999999)
-		..setNumberofCharges(0)
-		..setStockMaximum(1)
-		..setStockReplenishInterval(1)
-		..setStockStartDelay(1)
-		..setCanBeDropped(true)
-		..setPerishable(false)
-		..setActivelyUsed(false)
-		..setCanBeSoldByMerchants(true)
-		..setCanBeSoldToMerchants(true)
-		..setGoldCost(GOLD_COST)
-		..setButtonPositionX(SHOP_X)
-		..setButtonPositionY(SHOP_Y)
-		..setClassification(CLASSIFICATION)
-		..setInterfaceIcon(ICON)
-		tooltipGenerator.applyToItemDef(def)
-		if isAlias
-			fleaMarket.addItemSold(def.getNewId())
-		else
-			def.setAbilities("{0},{1}".format(armorDef.getNewId().toRawCode(), attackRateDef.getNewId().toRawCode()))
+	@compiletime protected static function build()
+		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		let armorDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
+		let attackRateDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if isAlias
+				fleaMarket.addItemSold(def.getNewId())
+			else
+				def.setAbilities("{0},{1}".format(armorDef.getNewId().toRawCode(), attackRateDef.getNewId().toRawCode()))

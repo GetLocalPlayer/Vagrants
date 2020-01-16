@@ -1,0 +1,97 @@
+package RobeOfTheMagi
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import ItemObjEditing
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import MantleOfIntelligence
+import SobiMask
+
+import LinkedList
+import ItemCombine
+
+
+public class RobeOfTheMagi
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Robe of the Magi"
+	static constant ICON = Icons.bTNRobeOfTheMagi
+	static constant int GOLD_COST = SobiMask.GOLD_COST + MantleOfIntelligence.GOLD_COST * 2
+	static constant int INTELLIGENCE = 8
+	static constant real MANA_REG_RATE = 0.75
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+
+	@compiletime protected static function build()
+		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+		let manaRegDef = buildManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup("")
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1}".format(intDef.getNewId().toRawCode(), manaRegDef.getNewId().toRawCode()))
+
+public class RobeOfTheMagiRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(RobeOfTheMagi.NAME)
+	static constant ICON = RobeOfTheMagi.ICON
+	static constant int SHOP_X = 3
+	static constant int SHOP_Y = 1
+	static constant int GOLD_COST = 0
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = RobeOfTheMagi.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(MantleOfIntelligence.NAME, MantleOfIntelligence.GOLD_COST)
+		..addRecipeRequirement(MantleOfIntelligence.NAME, MantleOfIntelligence.GOLD_COST)
+		..addRecipeRequirement(SobiMask.NAME, SobiMask.GOLD_COST)
+
+	@compiletime protected static function build()
+		let def = new ItemDefinition(ID, 'afac')
+		..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(0)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setAbilities("")
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		tooltipGenerator..setName(NAME)
+		..applyToDef(def, true)
+		rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(RobeOfTheMagi.ID, asList<int>(MantleOfIntelligence.ID, MantleOfIntelligence.ID, SobiMask.ID))

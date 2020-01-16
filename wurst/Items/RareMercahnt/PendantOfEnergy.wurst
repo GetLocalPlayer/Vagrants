@@ -1,0 +1,143 @@
+package PendantOfEnergy
+import Assets
+import ItemObjEditing
+import ChannelAbilityPreset
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import WandOfNeutralization
+import CursedTalisman
+
+import ClosureEvents
+import ItemCombine
+
+
+public class PendantOfEnergy
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Pendant of Energy"
+	static constant ICON = Icons.bTNPendantOfEnergy
+	static constant int GOLD_COST = WandOfNeutralization.GOLD_COST + CursedTalisman.GOLD_COST
+	static constant int INTELLIGENCE = 5
+	static constant int RESTORED_MANA = (CursedTalisman.RESTORED_MANA * 1.5).toInt()
+	static constant int ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect("Restores {0} mana ({1} sec. cooldown).".format(RESTORED_MANA.toString(), CursedTalisman.COOLDOWN.toInt().toString()))
+
+	@compiletime protected static function build()
+		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+		let restoreManaDef = new ChannelAbilityPreset(ABIL_ID, 1, true)
+			..setIconNormal(ICON)
+			..setName(NAME)
+			..setEditorSuffix("Active")
+			..setRace(ITEM_ABILITY_RACE)
+			..setHeroAbility(false)
+			..setItemAbility(true)
+			..setRequirements("")
+			..setArtTarget("")
+			..setArtCaster(CursedTalisman.ART_CASTER)
+			..setLevels(1)
+			..presetManaCost((int lvl) -> 0)
+			..presetCooldown((int lvl) -> CursedTalisman.COOLDOWN)
+			..presetFollowThroughTime((int lvl) -> 0.1)
+			..presetArtDuration((int lvl) -> 5) 
+			..presetCastingTime((int lvl) -> 0)
+			..presetOption(Option.VISIBLE, true)
+			..presetTargetType((int lvl) -> Targettype.NONE castTo int)
+			..presetDisableOtherAbilities((int lvl) -> false)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(CursedTalisman.ABIL_ID.toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1}".format(restoreManaDef.getNewId().toRawCode(), intDef.getNewId().toRawCode()))
+		// Recipe
+
+public class PendantOfEnergyRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(PendantOfEnergy.NAME)
+	static constant ICON = PendantOfEnergy.ICON
+	static constant int SHOP_X = 2
+	static constant int SHOP_Y = 0
+	static constant int GOLD_COST = 0
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = PendantOfEnergy.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(CursedTalisman.NAME, CursedTalisman.GOLD_COST)
+		..addRecipeRequirement(WandOfNeutralization.NAME, WandOfNeutralization.GOLD_COST)
+
+	@compiletime protected static function build()
+		let def = new ItemDefinition(ALIAS_ID, 'afac')
+		..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(0)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(false)
+		..setCanBeSoldToMerchants(false)
+		..setGoldCost(0)
+		..setAbilities("")
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		tooltipGenerator.applyToDef(def, true)
+		rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	EventListener.onCast(WandOfNeutralization.ABIL_ID) (unit caster) ->
+		let targetItem = EventData.getSpellTargetItem()
+		if targetItem != null
+			let pos = targetItem.getPos()
+			let p = targetItem.getPlayer()
+			let charges = targetItem.getCharges()
+			/* Don't remove an item by id. Get an item by id
+			and then remove the obtained item. removeItemById
+			fires "drop event" which fires aliased item creation. */
+			switch targetItem.getTypeId()
+				case CursedTalisman.ID
+					targetItem.remove()
+					let u = EventData.getTriggerUnit()
+					u.getItemById(WandOfNeutralization.ID).remove()
+					u.addItemById(PendantOfEnergy.ID)
+					..setPlayer(p, true)
+					..setCharges(charges)
+					flashEffect(ITEM_COMBINE_EFFECT, u, "origin")
+				case CursedTalisman.ALIAS_ID
+					targetItem.remove()
+					createItem(PendantOfEnergy.ID, pos)
+					..setPlayer(p, true)
+					..setCharges(charges)
+					EventData.getTriggerUnit().getItemById(WandOfNeutralization.ID).remove()
+					flashEffect(ITEM_COMBINE_EFFECT, pos)
+
+init
+	EventListener.onCast(PendantOfEnergy.ABIL_ID) (unit caster) ->
+		caster.setMana(caster.getMana() + PendantOfEnergy.RESTORED_MANA)

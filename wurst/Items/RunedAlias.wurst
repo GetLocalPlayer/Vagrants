@@ -1,15 +1,15 @@
 package RunedAlias
 import ItemObjEditing
-import ObjectIds
 import ObjectIdGenerator
 
-import HashMap
+import OrderIds
 import ClosureEvents
 import ClosureTimers
 import LinkedListModule
+import LinkedList
 
 
-/* An item alias is an item that clones all the fields of a specific item,
+/* An item alias is an item that copies all the fields of a specific item,
 except its ability list, and with "Use Automatically When Aquired" field
 set to "true". When a unit pick up an alias the trigger gives the unit
 the actual item. When a unit drops an item, the item is removed and the actual
@@ -20,38 +20,17 @@ needs to pick up a stackable item with no empty slot but with such an item
 in the inventory, or when an item's gonna be combined with other items but
 it can't be done becouse of the annoying mechanic. */
 
-
-constant TRANSFER_ITEM_ID = compiletime(ITEM_ID_GEN.next())
-
-let transferItemDef = not compiletime ? null : new ItemDefinition(TRANSFER_ITEM_ID, 'afac')
-	..setName("")
-	..setDescription("")
-	..setTooltipBasic("")
-	..setTooltipExtended("")
-let maxCouplesPerField = 127
-var currentField = 0
-var abilList = ""
+/** Prevents picking up items that do not belong to the player
+of the picking up unit. Neutral passive items will be moved under
+the control of the picking up unit's owner. */
+@configurable constant PROTECT_PLAYER_OWNERSHIP = true
 
 
-function addTransferData(int actualItemId, int aliasItemId)
-	abilList += actualItemId.toRawCode() + aliasItemId.toRawCode()
-	switch currentField
-		case 0
-			transferItemDef.setName(abilList)
-		case 1
-			transferItemDef.setDescription(abilList)
-		case 2
-			transferItemDef.setTooltipBasic(abilList)
-		case 3
-			transferItemDef.setTooltipExtended(abilList)
-	if (abilList.length() / 8).toInt() == maxCouplesPerField
-		currentField++
-		abilList = ""
-
+let actualItemIds = compiletime(new LinkedList<int>)
+let aliasItemIds = compiletime(new LinkedList<int>)
 
 interface IItemWithAliasCallback
 	function call(ItemDefinition def, bool isAlias)
-
 
 function buildItemWithAlias(ItemDefinition actualItemDef, ItemDefinition aliasItemDef, IItemWithAliasCallback cb)
 	cb.call(actualItemDef, false)
@@ -59,7 +38,8 @@ function buildItemWithAlias(ItemDefinition actualItemDef, ItemDefinition aliasIt
 	actualItemDef.setUseAutomaticallyWhenAcquired(false)
 	aliasItemDef..setUseAutomaticallyWhenAcquired(true)
 	..setAbilities("")
-	addTransferData(actualItemDef.getNewId(), aliasItemDef.getNewId())
+	actualItemIds.add(actualItemDef.getNewId())
+	aliasItemIds.add(aliasItemDef.getNewId())
 	destroy cb
 
 public function buildItemWithAlias(int actualItemId, int aliasItemId, IItemWithAliasCallback cb)
@@ -67,6 +47,15 @@ public function buildItemWithAlias(int actualItemId, int aliasItemId, IItemWithA
 
 public function buildItemWithAlias(int actualItemId, IItemWithAliasCallback cb)
 	buildItemWithAlias(actualItemId, ITEM_ID_GEN.next(), cb)
+
+
+public function registerItemAlias(int actualItemId, int aliasItemId)
+	if not actualItemIds.has(actualItemId)
+		actualItemIds.add(actualItemId)
+		aliasItemIds.add(aliasItemId)
+	else
+		let i = actualItemIds.indexOf(actualItemId)
+		aliasItemIds.set(i, aliasItemId)
 
 
 abstract class AliasedItemGivenCallback
@@ -77,61 +66,53 @@ public function onAliasedItemGiven(AliasedItemGivenCallback _cb)
 
 
 init
-	let actualItemIds = new IterableMap<int, int>
-	let aliasItemIds = new IterableMap<int, int>
-	let transferItem = createItem(TRANSFER_ITEM_ID, ZERO2)
-	for currentField = 3 downto 0
-		switch currentField
-			case 0
-				abilList = transferItem.getName()
-			case 1
-				abilList = transferItem.getDescription()
-			case 2
-				abilList = transferItem.getTooltip()
-			case 3
-				abilList = transferItem.getExtendedTooltip()
-		for i = 0 to abilList.length() - 1 step 8
-			let itemId = abilList.substring(i, i + 4).fromRawCode()
-			let aliasId = abilList.substring(i + 4, i + 8).fromRawCode()
-			actualItemIds.put(itemId, aliasId)
-			aliasItemIds.put(aliasId, itemId)
-	transferItem.remove()
+	for i = 0 to actualItemIds.size() - 1
+		createItem(actualItemIds.get(i), ZERO2).remove()
+		createItem(aliasItemIds.get(i), ZERO2).remove()
 
-	// preload
-	actualItemIds.forEach() (key, value) ->
-		createItem(key, ZERO2).remove()
-		createItem(value, ZERO2).remove()
+	EventListener.add(EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER) ->
+		let orderId = EventData.getIssuedOrderId()
+		let targetItem = EventData.getOrderTargetItem()
+		if targetItem != null and orderId == OrderIds.smart
+			if PROTECT_PLAYER_OWNERSHIP
+				let u = EventData.getTriggerUnit()
+				let itemPlayer = targetItem.getPlayer()
+				if itemPlayer.getId() != PLAYER_NEUTRAL_PASSIVE and itemPlayer != u.getOwner()
+					u.issuePointOrderById(OrderIds.move, targetItem.getPos())
 
 	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) () ->
-		let _item = EventData.getManipulatedItem()
-		let aliasId = _item.getTypeId()
-		if aliasItemIds.has(aliasId)
+		let aliasItem = EventData.getManipulatedItem()
+		let aliasItemId = aliasItem.getTypeId()
+		if aliasItemIds.has(aliasItemId)
 			let u = EventData.getTriggerUnit()
-			let pos = _item.getPos()
-			let p = _item.getPlayer()
-			let charges = _item.getCharges()
-			_item.remove()
+			let pos = aliasItem.getPos()
+			let p = PROTECT_PLAYER_OWNERSHIP ? (aliasItem.getPlayer().getId() == PLAYER_NEUTRAL_PASSIVE ? u.getOwner() : aliasItem.getPlayer()) : aliasItem.getPlayer()
+			let charges = aliasItem.getCharges()
+			aliasItem.remove()
 			let isInventoryFull = u.isInventoryFull()
-			let newItem = not isInventoryFull ? u.addItemById(aliasItemIds.get(aliasId)) : createItem(aliasItemIds.get(aliasId), pos)
+			let index = aliasItemIds.indexOf(aliasItemId)
+			let actualItemId = actualItemIds.get(index)
+			let newItem = not isInventoryFull ? u.addItemById(actualItemId) : createItem(actualItemId, pos)
 			newItem..setPlayer(p, true)
 			..setCharges(charges)
 			for cb in AliasedItemGivenCallback
 				cb.call(u, newItem)
 			if newItem.getTypeId() != 0 and isInventoryFull
 				newItem.remove()
-				createItem(aliasId, pos)
+				createItem(aliasItemId, pos)
 				..setPlayer(p, true)
 				..setCharges(charges)
 
 	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM) ->
-		let _item = EventData.getManipulatedItem()
-		let itemId = _item.getTypeId()
-		if actualItemIds.has(itemId)
+		let droppedItem = EventData.getManipulatedItem()
+		let droppedItemId = droppedItem.getTypeId()
+		if actualItemIds.has(droppedItemId)
 			nullTimer() () ->
-				let p = _item.getPlayer()
-				let pos = _item.getPos()
-				let charges = _item.getCharges()
-				_item.remove()
-				createItem(actualItemIds.get(itemId), pos)
+				let p = droppedItem.getPlayer()
+				let pos = droppedItem.getPos()
+				let charges = droppedItem.getCharges()
+				droppedItem.remove()
+				let index = actualItemIds.indexOf(droppedItemId)
+				createItem(aliasItemIds.get(index), pos)
 				..setPlayer(p, true)
 				..setCharges(charges)

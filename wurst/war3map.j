@@ -1,13 +1,13 @@
 globals
 //globals from AnyUnitDamagedEvent:
 constant boolean LIBRARY_AnyUnitDamagedEvent=true
-trigger AnyUnitDamagedEvent__MainTrigger= CreateTrigger()
-trigger array AnyUnitDamagedEvent__UserTriggers
-integer AnyUnitDamagedEvent__Counter= 0
+trigger AnyUnitDamagedEvent___MainTrigger= CreateTrigger()
+trigger array AnyUnitDamagedEvent___UserTriggers
+integer AnyUnitDamagedEvent___Counter= 0
 //endglobals from AnyUnitDamagedEvent
 //globals from Group:
 constant boolean LIBRARY_Group=true
-unit Group__ReturnUnit
+unit Group___ReturnUnit
 //endglobals from Group
 //globals from Math:
 constant boolean LIBRARY_Math=true
@@ -25,16 +25,16 @@ constant boolean LIBRARY_Table=true
 //endglobals from Table
 //globals from Unit:
 constant boolean LIBRARY_Unit=true
-location Unit__Loc= Location(0, 0)
+location Unit___Loc= Location(0, 0)
 //endglobals from Unit
 //globals from ItemAzureScale:
 constant boolean LIBRARY_ItemAzureScale=true
-constant integer ItemAzureScale__ABILITY_ID= 'A060'
-constant integer ItemAzureScale__BUFF_ID= 'B00A'
-constant real ItemAzureScale__DAMAGE_BLOCKED= 200
-constant real ItemAzureScale__DURATION= 10
-constant integer ItemAzureScale__BONUS_HEALTH_ID= 'A010'
-integer ItemAzureScale__table
+constant integer ItemAzureScale___ABILITY_ID= 'A060'
+constant integer ItemAzureScale___BUFF_ID= 'B00A'
+constant real ItemAzureScale___DAMAGE_BLOCKED= 200
+constant real ItemAzureScale___DURATION= 10
+constant integer ItemAzureScale___BONUS_HEALTH_ID= 'A010'
+integer ItemAzureScale___table
 //endglobals from ItemAzureScale
     // User-defined
 integer udg_CountPlayers= 0
@@ -367,18 +367,18 @@ integer si__Table_F=0
 integer si__Table_I=0
 integer array si__Table_V
 hashtable array s__Table_hash
-constant integer si__ItemAzureScale__AzureScaleShield=2
-integer si__ItemAzureScale__AzureScaleShield_F=0
-integer si__ItemAzureScale__AzureScaleShield_I=0
-integer array si__ItemAzureScale__AzureScaleShield_V
-unit array s__ItemAzureScale__AzureScaleShield_caster
-real array s__ItemAzureScale__AzureScaleShield_amount
-timer array s__ItemAzureScale__AzureScaleShield_tim
-group s__ItemAzureScale__AzureScaleShield_shieldedUnits= CreateGroup()
+constant integer si__ItemAzureScale___AzureScaleShield=2
+integer si__ItemAzureScale___AzureScaleShield_F=0
+integer si__ItemAzureScale___AzureScaleShield_I=0
+integer array si__ItemAzureScale___AzureScaleShield_V
+unit array s__ItemAzureScale___AzureScaleShield_caster
+real array s__ItemAzureScale___AzureScaleShield_amount
+timer array s__ItemAzureScale___AzureScaleShield_tim
+group s__ItemAzureScale___AzureScaleShield_shieldedUnits= CreateGroup()
 trigger st__Table_onDestroy
-trigger st__ItemAzureScale__AzureScaleShield_onDestroy
-trigger st__ItemAzureScale__AzureScaleShield_onShieldExpired
-trigger st__ItemAzureScale__AzureScaleShield_destroy
+trigger st__ItemAzureScale___AzureScaleShield_onDestroy
+trigger st__ItemAzureScale___AzureScaleShield_onShieldExpired
+trigger st__ItemAzureScale___AzureScaleShield_destroy
 integer f__arg_this
 
 endglobals
@@ -421,83 +421,83 @@ function sc__Table_deallocate takes integer this returns nothing
     set si__Table_F=this
 endfunction
 
-//Generated method caller for ItemAzureScale__AzureScaleShield.onDestroy
-function sc__ItemAzureScale__AzureScaleShield_onDestroy takes integer this returns nothing
+//Generated method caller for ItemAzureScale___AzureScaleShield.onDestroy
+function sc__ItemAzureScale___AzureScaleShield_onDestroy takes integer this returns nothing
     set f__arg_this=this
-    call TriggerEvaluate(st__ItemAzureScale__AzureScaleShield_onDestroy)
+    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onDestroy)
 endfunction
 
-//Generated method caller for ItemAzureScale__AzureScaleShield.onShieldExpired
-function sc__ItemAzureScale__AzureScaleShield_onShieldExpired takes nothing returns nothing
-    call TriggerEvaluate(st__ItemAzureScale__AzureScaleShield_onShieldExpired)
+//Generated method caller for ItemAzureScale___AzureScaleShield.onShieldExpired
+function sc__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns nothing
+    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onShieldExpired)
 endfunction
 
-//Generated allocator of ItemAzureScale__AzureScaleShield
-function s__ItemAzureScale__AzureScaleShield__allocate takes nothing returns integer
- local integer this=si__ItemAzureScale__AzureScaleShield_F
+//Generated allocator of ItemAzureScale___AzureScaleShield
+function s__ItemAzureScale___AzureScaleShield__allocate takes nothing returns integer
+ local integer this=si__ItemAzureScale___AzureScaleShield_F
     if (this!=0) then
-        set si__ItemAzureScale__AzureScaleShield_F=si__ItemAzureScale__AzureScaleShield_V[this]
+        set si__ItemAzureScale___AzureScaleShield_F=si__ItemAzureScale___AzureScaleShield_V[this]
     else
-        set si__ItemAzureScale__AzureScaleShield_I=si__ItemAzureScale__AzureScaleShield_I+1
-        set this=si__ItemAzureScale__AzureScaleShield_I
+        set si__ItemAzureScale___AzureScaleShield_I=si__ItemAzureScale___AzureScaleShield_I+1
+        set this=si__ItemAzureScale___AzureScaleShield_I
     endif
     if (this>8190) then
         return 0
     endif
 
-    set si__ItemAzureScale__AzureScaleShield_V[this]=-1
+    set si__ItemAzureScale___AzureScaleShield_V[this]=-1
  return this
 endfunction
 
-//Generated destructor of ItemAzureScale__AzureScaleShield
-function sc__ItemAzureScale__AzureScaleShield_deallocate takes integer this returns nothing
+//Generated destructor of ItemAzureScale___AzureScaleShield
+function sc__ItemAzureScale___AzureScaleShield_deallocate takes integer this returns nothing
     if this==null then
         return
-    elseif (si__ItemAzureScale__AzureScaleShield_V[this]!=-1) then
+    elseif (si__ItemAzureScale___AzureScaleShield_V[this]!=-1) then
         return
     endif
     set f__arg_this=this
-    call TriggerEvaluate(st__ItemAzureScale__AzureScaleShield_onDestroy)
-    set si__ItemAzureScale__AzureScaleShield_V[this]=si__ItemAzureScale__AzureScaleShield_F
-    set si__ItemAzureScale__AzureScaleShield_F=this
+    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onDestroy)
+    set si__ItemAzureScale___AzureScaleShield_V[this]=si__ItemAzureScale___AzureScaleShield_F
+    set si__ItemAzureScale___AzureScaleShield_F=this
 endfunction
 
 //library AnyUnitDamagedEvent:
 
 
 function TriggerRegisterAnyUnitDamagedEvent takes trigger trg returns nothing
-    set AnyUnitDamagedEvent__UserTriggers[AnyUnitDamagedEvent__Counter]=trg
-    set AnyUnitDamagedEvent__Counter=AnyUnitDamagedEvent__Counter + 1
+    set AnyUnitDamagedEvent___UserTriggers[AnyUnitDamagedEvent___Counter]=trg
+    set AnyUnitDamagedEvent___Counter=AnyUnitDamagedEvent___Counter + 1
 endfunction
 
-function AnyUnitDamagedEvent__EvaluateMainTrigger takes nothing returns nothing
+function AnyUnitDamagedEvent___EvaluateMainTrigger takes nothing returns nothing
     local integer i= 0
     loop
-    exitwhen i == AnyUnitDamagedEvent__Counter
-        if TriggerEvaluate(AnyUnitDamagedEvent__UserTriggers[i]) then
-            call TriggerExecute(AnyUnitDamagedEvent__UserTriggers[i])
+    exitwhen i == AnyUnitDamagedEvent___Counter
+        if TriggerEvaluate(AnyUnitDamagedEvent___UserTriggers[i]) then
+            call TriggerExecute(AnyUnitDamagedEvent___UserTriggers[i])
         endif
         set i=i + 1
     endloop
 endfunction
 
-function AnyUnitDamagedEvent__RegisterNewUnit takes nothing returns nothing
-    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent__MainTrigger, GetEnteringUnit(), EVENT_UNIT_DAMAGED)
+function AnyUnitDamagedEvent___RegisterNewUnit takes nothing returns nothing
+    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent___MainTrigger, GetEnteringUnit(), EVENT_UNIT_DAMAGED)
 endfunction
 
-function AnyUnitDamagedEvent__RegisterEntireMapUnits takes nothing returns nothing
-    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent__MainTrigger, GetEnumUnit(), EVENT_UNIT_DAMAGED)
+function AnyUnitDamagedEvent___RegisterEntireMapUnits takes nothing returns nothing
+    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent___MainTrigger, GetEnumUnit(), EVENT_UNIT_DAMAGED)
 endfunction
 
-function AnyUnitDamagedEvent__Init takes nothing returns nothing
+function AnyUnitDamagedEvent___Init takes nothing returns nothing
     local trigger trg= CreateTrigger()
     local group gr= CreateGroup()
     call TriggerRegisterEnterRectSimple(trg, GetWorldBounds())
-    call TriggerAddAction(trg, function AnyUnitDamagedEvent__RegisterNewUnit)
+    call TriggerAddAction(trg, function AnyUnitDamagedEvent___RegisterNewUnit)
     call GroupEnumUnitsInRect(gr, GetWorldBounds(), null)
-    call ForGroup(gr, function AnyUnitDamagedEvent__RegisterEntireMapUnits)
+    call ForGroup(gr, function AnyUnitDamagedEvent___RegisterEntireMapUnits)
     call DestroyGroup(gr)
-    call TriggerAddAction(AnyUnitDamagedEvent__MainTrigger, function AnyUnitDamagedEvent__EvaluateMainTrigger)
+    call TriggerAddAction(AnyUnitDamagedEvent___MainTrigger, function AnyUnitDamagedEvent___EvaluateMainTrigger)
     set gr=null
 endfunction
 
@@ -517,14 +517,14 @@ function RandomOfGroup takes group gr returns unit
         set allUnits[i]=u
         set i=i + 1
     endloop
-    set Group__ReturnUnit=allUnits[GetRandomInt(0, i - 1)]
+    set Group___ReturnUnit=allUnits[GetRandomInt(0, i - 1)]
     loop
         set i=i - 1
     exitwhen i < 0
         call GroupAddUnit(gr, allUnits[i])
         set allUnits[i]=null
     endloop
-    return Group__ReturnUnit
+    return Group___ReturnUnit
 endfunction
 
 
@@ -581,7 +581,7 @@ function GetPlayerNameColored takes player p returns string
     return PlayerColor[GetPlayerId(p)] + GetPlayerName(p) + "|r"
 endfunction
 
-function PlayerColor__Init takes nothing returns nothing
+function PlayerColor___Init takes nothing returns nothing
     set PlayerColor[0]="|c00ff0303"
     set PlayerColor[1]="|c000042ff"
     set PlayerColor[2]="|c001ce6b9"
@@ -613,11 +613,11 @@ function IsOwningPlayerPlaying takes unit u returns boolean
     return (IsPlayerInForce((GetOwningPlayer(u)), PlayingPlayers)) // INLINED!!
 endfunction
 
-function PlayingPlayers__RemovePlayerFromForce takes nothing returns nothing
+function PlayingPlayers___RemovePlayerFromForce takes nothing returns nothing
     call ForceRemovePlayer(PlayingPlayers, GetTriggerPlayer())
 endfunction
 
-function PlayingPlayers__Init takes nothing returns nothing
+function PlayingPlayers___Init takes nothing returns nothing
     local integer i= 0
     local trigger trg= CreateTrigger()
     loop
@@ -628,7 +628,7 @@ function PlayingPlayers__Init takes nothing returns nothing
         endif
         set i=i + 1
     endloop
-    call TriggerAddAction(trg, function PlayingPlayers__RemovePlayerFromForce)
+    call TriggerAddAction(trg, function PlayingPlayers___RemovePlayerFromForce)
 endfunction
 
 
@@ -1054,13 +1054,13 @@ endfunction
 
 // функция точнго вычесления координаты Z юнита
 function GetUnitZ takes unit u returns real
-    call MoveLocation(Unit__Loc, GetUnitX(u), GetUnitY(u))
-    return GetLocationZ(Unit__Loc) + GetUnitFlyHeight(u)
+    call MoveLocation(Unit___Loc, GetUnitX(u), GetUnitY(u))
+    return GetLocationZ(Unit___Loc) + GetUnitFlyHeight(u)
 endfunction
 
 function SetUnitZ takes unit u,real z returns nothing
-    call MoveLocation(Unit__Loc, GetUnitX(u), GetUnitY(u))
-    call SetUnitFlyHeight(u, z - GetLocationZ(Unit__Loc), 0)
+    call MoveLocation(Unit___Loc, GetUnitX(u), GetUnitY(u))
+    call SetUnitFlyHeight(u, z - GetLocationZ(Unit___Loc), 0)
 endfunction
 
 
@@ -1088,107 +1088,107 @@ endfunction
 
     
     
-    function s__ItemAzureScale__AzureScaleShield_create takes unit caster,real amount,real duration returns integer
-        local integer this= s__ItemAzureScale__AzureScaleShield__allocate()
-        set s__ItemAzureScale__AzureScaleShield_caster[this]=caster
-        set s__ItemAzureScale__AzureScaleShield_amount[this]=amount
-        set s__ItemAzureScale__AzureScaleShield_tim[this]=CreateTimer()
-        call TimerStart(s__ItemAzureScale__AzureScaleShield_tim[this], ItemAzureScale__DURATION, false, function sc__ItemAzureScale__AzureScaleShield_onShieldExpired)
-        call GroupAddUnit(s__ItemAzureScale__AzureScaleShield_shieldedUnits, s__ItemAzureScale__AzureScaleShield_caster[this])
-        call SaveInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_tim[this]) ), ( this)) // INLINED!!
-        call SaveInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_caster[this]) ), ( this)) // INLINED!!
+    function s__ItemAzureScale___AzureScaleShield_create takes unit caster,real amount,real duration returns integer
+        local integer this= s__ItemAzureScale___AzureScaleShield__allocate()
+        set s__ItemAzureScale___AzureScaleShield_caster[this]=caster
+        set s__ItemAzureScale___AzureScaleShield_amount[this]=amount
+        set s__ItemAzureScale___AzureScaleShield_tim[this]=CreateTimer()
+        call TimerStart(s__ItemAzureScale___AzureScaleShield_tim[this], ItemAzureScale___DURATION, false, function sc__ItemAzureScale___AzureScaleShield_onShieldExpired)
+        call GroupAddUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
+        call SaveInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]) ), ( this)) // INLINED!!
+        call SaveInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]) ), ( this)) // INLINED!!
         return this
     endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_removeBonusHp takes nothing returns nothing
+    function s__ItemAzureScale___AzureScaleShield_removeBonusHp takes nothing returns nothing
         local timer t= GetExpiredTimer()
-        local unit u= (LoadUnitHandle(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(t) ), ( 0))) // INLINED!!
+        local unit u= (LoadUnitHandle(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(t) ), ( 0))) // INLINED!!
         local real health= GetWidgetLife(u)
-        call UnitRemoveAbility(u, ItemAzureScale__BONUS_HEALTH_ID)
+        call UnitRemoveAbility(u, ItemAzureScale___BONUS_HEALTH_ID)
         call SetWidgetLife(u, health)
         call DestroyTimer(t)
         set t=null
         set u=null
     endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_actions takes nothing returns nothing
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetTriggerUnit())))) // INLINED!!
+    function s__ItemAzureScale___AzureScaleShield_actions takes nothing returns nothing
+        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetTriggerUnit())))) // INLINED!!
         local real damage= GetEventDamage()
-        local real health= GetWidgetLife(s__ItemAzureScale__AzureScaleShield_caster[shield])
+        local real health= GetWidgetLife(s__ItemAzureScale___AzureScaleShield_caster[shield])
         local real healing
         local timer t
-        if s__ItemAzureScale__AzureScaleShield_amount[shield] <= damage then
-            set healing=s__ItemAzureScale__AzureScaleShield_amount[shield]
-            set s__ItemAzureScale__AzureScaleShield_amount[shield]=- 1.
+        if s__ItemAzureScale___AzureScaleShield_amount[shield] <= damage then
+            set healing=s__ItemAzureScale___AzureScaleShield_amount[shield]
+            set s__ItemAzureScale___AzureScaleShield_amount[shield]=- 1.
         else
             set healing=damage
-            set s__ItemAzureScale__AzureScaleShield_amount[shield]=s__ItemAzureScale__AzureScaleShield_amount[shield] - healing
+            set s__ItemAzureScale___AzureScaleShield_amount[shield]=s__ItemAzureScale___AzureScaleShield_amount[shield] - healing
         endif
-        if GetUnitState(s__ItemAzureScale__AzureScaleShield_caster[shield], UNIT_STATE_MAX_LIFE) < health + healing then
-            call UnitAddAbility(s__ItemAzureScale__AzureScaleShield_caster[shield], ItemAzureScale__BONUS_HEALTH_ID)
+        if GetUnitState(s__ItemAzureScale___AzureScaleShield_caster[shield], UNIT_STATE_MAX_LIFE) < health + healing then
+            call UnitAddAbility(s__ItemAzureScale___AzureScaleShield_caster[shield], ItemAzureScale___BONUS_HEALTH_ID)
             set t=CreateTimer()
-call SaveUnitHandle(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(t) ), ( 0 ), ( s__ItemAzureScale__AzureScaleShield_caster[shield])) // INLINED!!
-            call TimerStart(t, 0, false, function s__ItemAzureScale__AzureScaleShield_removeBonusHp)
+call SaveUnitHandle(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(t) ), ( 0 ), ( s__ItemAzureScale___AzureScaleShield_caster[shield])) // INLINED!!
+            call TimerStart(t, 0, false, function s__ItemAzureScale___AzureScaleShield_removeBonusHp)
         endif
-        call SetWidgetLife(s__ItemAzureScale__AzureScaleShield_caster[shield], health + healing)
-        if s__ItemAzureScale__AzureScaleShield_amount[shield] < 0 then
-            call sc__ItemAzureScale__AzureScaleShield_deallocate(shield)
+        call SetWidgetLife(s__ItemAzureScale___AzureScaleShield_caster[shield], health + healing)
+        if s__ItemAzureScale___AzureScaleShield_amount[shield] < 0 then
+            call sc__ItemAzureScale___AzureScaleShield_deallocate(shield)
         endif
         set t=null
     endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_conditions takes nothing returns boolean
-        return IsUnitInGroup(GetTriggerUnit(), s__ItemAzureScale__AzureScaleShield_shieldedUnits)
+    function s__ItemAzureScale___AzureScaleShield_conditions takes nothing returns boolean
+        return IsUnitInGroup(GetTriggerUnit(), s__ItemAzureScale___AzureScaleShield_shieldedUnits)
     endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_onInit takes nothing returns nothing
+    function s__ItemAzureScale___AzureScaleShield_onInit takes nothing returns nothing
         local trigger trg= CreateTrigger()
         call TriggerRegisterAnyUnitDamagedEvent(trg)
-        call TriggerAddCondition(trg, Condition(function s__ItemAzureScale__AzureScaleShield_conditions))
-        call TriggerAddAction(trg, function s__ItemAzureScale__AzureScaleShield_actions)
+        call TriggerAddCondition(trg, Condition(function s__ItemAzureScale___AzureScaleShield_conditions))
+        call TriggerAddAction(trg, function s__ItemAzureScale___AzureScaleShield_actions)
     endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_onDestroy takes integer this returns nothing
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_tim[this]))) // INLINED!!
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_caster[this]))) // INLINED!!
-        call GroupRemoveUnit(s__ItemAzureScale__AzureScaleShield_shieldedUnits, s__ItemAzureScale__AzureScaleShield_caster[this])
-        call DestroyTimer(s__ItemAzureScale__AzureScaleShield_tim[this])
-        call UnitRemoveAbility(s__ItemAzureScale__AzureScaleShield_caster[this], ItemAzureScale__BUFF_ID)
-        set s__ItemAzureScale__AzureScaleShield_caster[this]=null
-        set s__ItemAzureScale__AzureScaleShield_tim[this]=null
+    function s__ItemAzureScale___AzureScaleShield_onDestroy takes integer this returns nothing
+        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]))) // INLINED!!
+        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]))) // INLINED!!
+        call GroupRemoveUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
+        call DestroyTimer(s__ItemAzureScale___AzureScaleShield_tim[this])
+        call UnitRemoveAbility(s__ItemAzureScale___AzureScaleShield_caster[this], ItemAzureScale___BUFF_ID)
+        set s__ItemAzureScale___AzureScaleShield_caster[this]=null
+        set s__ItemAzureScale___AzureScaleShield_tim[this]=null
     endfunction
 
-//Generated destructor of ItemAzureScale__AzureScaleShield
-function s__ItemAzureScale__AzureScaleShield_deallocate takes integer this returns nothing
+//Generated destructor of ItemAzureScale___AzureScaleShield
+function s__ItemAzureScale___AzureScaleShield_deallocate takes integer this returns nothing
     if this==null then
         return
-    elseif (si__ItemAzureScale__AzureScaleShield_V[this]!=-1) then
+    elseif (si__ItemAzureScale___AzureScaleShield_V[this]!=-1) then
         return
     endif
-    call s__ItemAzureScale__AzureScaleShield_onDestroy(this)
-    set si__ItemAzureScale__AzureScaleShield_V[this]=si__ItemAzureScale__AzureScaleShield_F
-    set si__ItemAzureScale__AzureScaleShield_F=this
+    call s__ItemAzureScale___AzureScaleShield_onDestroy(this)
+    set si__ItemAzureScale___AzureScaleShield_V[this]=si__ItemAzureScale___AzureScaleShield_F
+    set si__ItemAzureScale___AzureScaleShield_F=this
 endfunction
     
-    function s__ItemAzureScale__AzureScaleShield_onShieldExpired takes nothing returns nothing
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
-        call s__ItemAzureScale__AzureScaleShield_deallocate(shield)
+    function s__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns nothing
+        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
+        call s__ItemAzureScale___AzureScaleShield_deallocate(shield)
     endfunction
 
-function ItemAzureScale__CastActions takes nothing returns nothing
-    call s__ItemAzureScale__AzureScaleShield_create(GetTriggerUnit() , ItemAzureScale__DAMAGE_BLOCKED , ItemAzureScale__DURATION)
+function ItemAzureScale___CastActions takes nothing returns nothing
+    call s__ItemAzureScale___AzureScaleShield_create(GetTriggerUnit() , ItemAzureScale___DAMAGE_BLOCKED , ItemAzureScale___DURATION)
 endfunction
 
-function ItemAzureScale__CastConditions takes nothing returns boolean
-    return GetSpellAbilityId() == ItemAzureScale__ABILITY_ID
+function ItemAzureScale___CastConditions takes nothing returns boolean
+    return GetSpellAbilityId() == ItemAzureScale___ABILITY_ID
 endfunction
 
-function ItemAzureScale__Init takes nothing returns nothing
+function ItemAzureScale___Init takes nothing returns nothing
     local trigger trg= CreateTrigger()
     call TriggerRegisterAnyUnitEventBJ(trg, EVENT_PLAYER_UNIT_SPELL_EFFECT)
-    call TriggerAddCondition(trg, Condition(function ItemAzureScale__CastConditions))
-    call TriggerAddAction(trg, function ItemAzureScale__CastActions)
-    set ItemAzureScale__table=(s__Table__allocate()) // INLINED!!
+    call TriggerAddCondition(trg, Condition(function ItemAzureScale___CastConditions))
+    call TriggerAddAction(trg, function ItemAzureScale___CastActions)
+    set ItemAzureScale___table=(s__Table__allocate()) // INLINED!!
 endfunction
 
 
@@ -1199,7 +1199,7 @@ endfunction
 // 
 //   Warcraft III map script
 //   Generated by the Warcraft III World Editor
-//   Date: Tue Jan  7 17:45:34 2020
+//   Date: Wed Jan 15 23:50:33 2020
 //   Map Author: Impereon, GetLocalPlayer
 // 
 //===========================================================================
@@ -1486,7 +1486,6 @@ function CreateNeutralPassiveBuildings takes nothing returns nothing
     local real life
 
     set u=CreateUnit(p, 'n00X', 64.0, 8384.0, 270.000)
-    set u=CreateUnit(p, 'n01C', - 64.0, 8384.0, 270.000)
 endfunction
 
 //===========================================================================
@@ -1509,6 +1508,7 @@ function CreateNeutralPassive takes nothing returns nothing
     set u=CreateUnit(p, 'n00B', - 2240.0, 7808.0, 17.631)
     set u=CreateUnit(p, 'n00C', - 1600.0, 7040.0, 56.725)
     set u=CreateUnit(p, 'n013', - 192.0, 8384.0, 270.000)
+    set u=CreateUnit(p, 'n01C', - 64.0, 8384.0, 270.000)
 endfunction
 
 //===========================================================================
@@ -10127,11 +10127,11 @@ function main takes nothing returns nothing
     call CreateAllUnits()
     call InitBlizzard()
 
-call ExecuteFunc("jasshelper__initstructs29185062")
-call ExecuteFunc("AnyUnitDamagedEvent__Init")
-call ExecuteFunc("PlayerColor__Init")
-call ExecuteFunc("PlayingPlayers__Init")
-call ExecuteFunc("ItemAzureScale__Init")
+call ExecuteFunc("jasshelper__initstructs45501250")
+call ExecuteFunc("AnyUnitDamagedEvent___Init")
+call ExecuteFunc("PlayerColor___Init")
+call ExecuteFunc("PlayingPlayers___Init")
+call ExecuteFunc("ItemAzureScale___Init")
 
     call InitGlobals()
     call InitCustomTriggers()
@@ -10178,34 +10178,34 @@ local integer this=f__arg_this
         set s__Table_hash[this]=null
    return true
 endfunction
-function sa__ItemAzureScale__AzureScaleShield_onDestroy takes nothing returns boolean
+function sa__ItemAzureScale___AzureScaleShield_onDestroy takes nothing returns boolean
 local integer this=f__arg_this
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_tim[this]))) // INLINED!!
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale__AzureScaleShield_caster[this]))) // INLINED!!
-        call GroupRemoveUnit(s__ItemAzureScale__AzureScaleShield_shieldedUnits, s__ItemAzureScale__AzureScaleShield_caster[this])
-        call DestroyTimer(s__ItemAzureScale__AzureScaleShield_tim[this])
-        call UnitRemoveAbility(s__ItemAzureScale__AzureScaleShield_caster[this], ItemAzureScale__BUFF_ID)
-        set s__ItemAzureScale__AzureScaleShield_caster[this]=null
-        set s__ItemAzureScale__AzureScaleShield_tim[this]=null
+        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]))) // INLINED!!
+        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]))) // INLINED!!
+        call GroupRemoveUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
+        call DestroyTimer(s__ItemAzureScale___AzureScaleShield_tim[this])
+        call UnitRemoveAbility(s__ItemAzureScale___AzureScaleShield_caster[this], ItemAzureScale___BUFF_ID)
+        set s__ItemAzureScale___AzureScaleShield_caster[this]=null
+        set s__ItemAzureScale___AzureScaleShield_tim[this]=null
    return true
 endfunction
-function sa__ItemAzureScale__AzureScaleShield_onShieldExpired takes nothing returns boolean
+function sa__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns boolean
 
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale__table)], (GetHandleId(s__ItemAzureScale__AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
-        call s__ItemAzureScale__AzureScaleShield_deallocate(shield)
+        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
+        call s__ItemAzureScale___AzureScaleShield_deallocate(shield)
    return true
 endfunction
 
-function jasshelper__initstructs29185062 takes nothing returns nothing
+function jasshelper__initstructs45501250 takes nothing returns nothing
     set st__Table_onDestroy=CreateTrigger()
     call TriggerAddCondition(st__Table_onDestroy,Condition( function sa__Table_onDestroy))
-    set st__ItemAzureScale__AzureScaleShield_onDestroy=CreateTrigger()
-    call TriggerAddCondition(st__ItemAzureScale__AzureScaleShield_onDestroy,Condition( function sa__ItemAzureScale__AzureScaleShield_onDestroy))
-    set st__ItemAzureScale__AzureScaleShield_onShieldExpired=CreateTrigger()
-    call TriggerAddCondition(st__ItemAzureScale__AzureScaleShield_onShieldExpired,Condition( function sa__ItemAzureScale__AzureScaleShield_onShieldExpired))
+    set st__ItemAzureScale___AzureScaleShield_onDestroy=CreateTrigger()
+    call TriggerAddCondition(st__ItemAzureScale___AzureScaleShield_onDestroy,Condition( function sa__ItemAzureScale___AzureScaleShield_onDestroy))
+    set st__ItemAzureScale___AzureScaleShield_onShieldExpired=CreateTrigger()
+    call TriggerAddCondition(st__ItemAzureScale___AzureScaleShield_onShieldExpired,Condition( function sa__ItemAzureScale___AzureScaleShield_onShieldExpired))
 
 
 
-    call ExecuteFunc("s__ItemAzureScale__AzureScaleShield_onInit")
+    call ExecuteFunc("s__ItemAzureScale___AzureScaleShield_onInit")
 endfunction
 

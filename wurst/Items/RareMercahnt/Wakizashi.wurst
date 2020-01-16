@@ -1,0 +1,98 @@
+package Wakizashi
+import ObjectIds
+import ObjectIdGenerator
+import ItemObjEditing
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import SlippersOfAgility
+import CursedBow
+import Knife
+
+import LinkedList
+import ItemCombine
+
+
+public class Wakizashi
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Wakizashi"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNWakizashi.blp"
+	static constant int GOLD_COST = SlippersOfAgility.GOLD_COST + CursedBow.GOLD_COST + Knife.GOLD_COST
+	static constant int AGILITY = 10
+	static constant real ATTACK_RATE = 0.2
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+
+	@compiletime protected static function build()
+		let intDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
+		let manaRegDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup("")
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1}".format(intDef.getNewId().toRawCode(), manaRegDef.getNewId().toRawCode()))
+
+
+public class WakizashiRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(Wakizashi.NAME)
+	static constant ICON = Wakizashi.ICON
+	static constant int SHOP_X = 2
+	static constant int SHOP_Y = 2
+	static constant int GOLD_COST = 0
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = Wakizashi.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(SlippersOfAgility.NAME, SlippersOfAgility.GOLD_COST)
+		..addRecipeRequirement(CursedBow.NAME, CursedBow.GOLD_COST)
+		..addRecipeRequirement(Knife.NAME, Knife.GOLD_COST)
+
+	@compiletime protected static function build()
+		let def = new ItemDefinition(ID, 'afac')
+		..setLevel(1)
+		..setLevelUnclassified(1)
+		..setLumberCost(0)
+		..setHitPoints(999999)
+		..setNumberofCharges(0)
+		..setStockMaximum(0)
+		..setStockReplenishInterval(1)
+		..setStockStartDelay(1)
+		..setCanBeDropped(true)
+		..setPerishable(false)
+		..setActivelyUsed(false)
+		..setCanBeSoldByMerchants(true)
+		..setCanBeSoldToMerchants(true)
+		..setAbilities("")
+		..setGoldCost(GOLD_COST)
+		..setButtonPositionX(SHOP_X)
+		..setButtonPositionY(SHOP_Y)
+		..setClassification(CLASSIFICATION)
+		..setInterfaceIcon(ICON)
+		tooltipGenerator..setName(NAME)
+		..applyToDef(def, true)
+		rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(Wakizashi.ID, asList<int>(SlippersOfAgility.ID, CursedBow.ID, Knife.ID))

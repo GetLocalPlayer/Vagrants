@@ -17,6 +17,7 @@ public AbilityShopPreset lightServantShopDef
 
 @compiletime function build()
 	lightServantShopDef = new AbilityShopPreset(shopId, Icons.bTNPriest, "Light Servant", Soundsets.priest, Units.humanMage1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

@@ -9,76 +9,75 @@ import ItemAbilityPreset
 import ClosureEvents
 
 
-constant int GOLD_COST = 350
-constant CLASSIFICATION = "Permanent"
-constant NAME = "Wand of Neutralization"
-constant ICON = Icons.bTNWandOfNeutralization
-constant int SHOP_X = 3
-constant int SHOP_Y = 0
-constant int ALL_STATS = 4
-constant real COOLDOWN = 12
-constant real CAST_RANGE = 500
-constant ART_TARGET = Abilities.purgeBuffTarget
-constant ACTIVE_EFFECT_DESCRIPTION = " Dispels all negative effects from an ally target ({0} sec. cooldown).".format(COOLDOWN.toInt().toString())
-constant TARGETS_ALLOWED = "air,ground,friend,ally,self,neutral,item,organic,invulnerable,vulnerable"
+public class WandOfNeutralization
+	static constant int GOLD_COST = 350
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Wand of Neutralization"
+	static constant ICON = Icons.bTNWandOfNeutralization
+	static constant int SHOP_X = 3
+	static constant int SHOP_Y = 0
+	static constant int ALL_STATS = 4
+	static constant real COOLDOWN = 12
+	static constant real CAST_RANGE = 500
+	static constant ART_TARGET = Abilities.purgeBuffTarget
+	static constant ACTIVE_DESCRIPTION = "Dispels all negative effects from an ally target ({0} sec. cooldown).".format(COOLDOWN.toInt().toString())
+	static constant TARGETS_ALLOWED = "air,ground,friend,ally,self,neutral,item,organic,invulnerable,vulnerable"
+	static constant ID = compiletime(ITEM_ID_GEN.next())
+	static constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
-constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
-
-
-@compiletime function build()
-	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	..setActiveProperty(ACTIVE_EFFECT_DESCRIPTION)
-	let allStatsDef = buildAttributeBonus(NAME, ICON, ALL_STATS, ALL_STATS, ALL_STATS, tooltipGenerator)
-	let dispelDef = new ChannelAbilityPreset(ABIL_ID, 1, true)
-	..setIconNormal(ICON)
-	..setName(NAME)
-	..setEditorSuffix("Active")
-	..setRace(ITEM_ABILITY_RACE)
-	..setHeroAbility(false)
-	..setItemAbility(true)
-	..setRequirements("")
-	..setArtTarget(ART_TARGET)
-	..setTargetAttachmentPoint("chest")
-	..setArtCaster("")
-	..setLevels(1)
-	..presetManaCost((int lvl) -> 0)
-	..presetCooldown((int lvl) -> COOLDOWN)
-	..presetFollowThroughTime((int lvl) -> 0.1)
-	..presetArtDuration((int lvl) -> 5) 
-	..presetCastingTime((int lvl) -> 0)
-	..presetOption(Option.VISIBLE, true)
-	..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
-	..presetDisableOtherAbilities((int lvl) -> false)
-	..presetCastRange(lvl -> CAST_RANGE)
-	..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
-	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
-		def..setLevel(1)
-		..setLevelUnclassified(1)
-		..setLumberCost(0)
-		..setHitPoints(999999)
-		..setNumberofCharges(0)
-		..setStockMaximum(1)
-		..setStockReplenishInterval(1)
-		..setStockStartDelay(1)
-		..setCanBeDropped(true)
-		..setPerishable(false)
-		..setActivelyUsed(true)
-		..setCanBeSoldByMerchants(true)
-		..setCanBeSoldToMerchants(true)
-		..setCooldownGroup(ABIL_ID.toRawCode())
-		..setGoldCost(GOLD_COST)
-		..setButtonPositionX(SHOP_X)
-		..setButtonPositionY(SHOP_Y)
-		..setClassification(CLASSIFICATION)
-		..setInterfaceIcon(ICON)
-		tooltipGenerator.applyToItemDef(def)
-		if isAlias
-			fleaMarket.addItemSold(def.getNewId())
-		else
-			def.setAbilities("{0},{1}".format(dispelDef.getNewId().toRawCode(), allStatsDef.getNewId().toRawCode()))
+	@compiletime protected static function build()
+		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_DESCRIPTION)
+		let allStatsDef = buildAttributeBonus(NAME, ICON, ALL_STATS, ALL_STATS, ALL_STATS, tooltipGenerator)
+		let dispelDef = new ChannelAbilityPreset(ABIL_ID, 1, true)
+		..setIconNormal(ICON)
+		..setName(NAME)
+		..setEditorSuffix("Active")
+		..setRace(ITEM_ABILITY_RACE)
+		..setHeroAbility(false)
+		..setItemAbility(true)
+		..setRequirements("")
+		..setArtTarget(ART_TARGET)
+		..setTargetAttachmentPoint("chest")
+		..setArtCaster("")
+		..setLevels(1)
+		..presetManaCost((int lvl) -> 0)
+		..presetCooldown((int lvl) -> COOLDOWN)
+		..presetFollowThroughTime((int lvl) -> 0.1)
+		..presetArtDuration((int lvl) -> 5) 
+		..presetCastingTime((int lvl) -> 0)
+		..presetOption(Option.VISIBLE, true)
+		..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
+		..presetDisableOtherAbilities((int lvl) -> false)
+		..presetCastRange(lvl -> CAST_RANGE)
+		..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
+		buildItemWithAlias(ID) (def, isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(ABIL_ID.toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if isAlias
+				fleaMarket.addItemSold(def.getNewId())
+			else
+				def.setAbilities("{0},{1}".format(dispelDef.getNewId().toRawCode(), allStatsDef.getNewId().toRawCode()))
 
 
 init
-	EventListener.onTargetCast(ABIL_ID) (unit caster, unit target) ->
+	EventListener.onTargetCast(WandOfNeutralization.ABIL_ID) (unit caster, unit target) ->
 		UnitRemoveBuffs(target, false, true)
-		

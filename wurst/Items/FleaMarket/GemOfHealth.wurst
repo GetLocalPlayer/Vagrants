@@ -40,7 +40,7 @@ constant int HIT_POINTS = 100
 		..setButtonPositionY(SHOP_Y)
 		..setClassification(CLASSIFICATION)
 		..setInterfaceIcon(ICON)
-		tooltipGenerator.applyToItemDef(def)
+		tooltipGenerator.applyToDef(def)
 		if isAlias
 			fleaMarket.addItemSold(def.getNewId())
 		else

@@ -27,7 +27,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	..setActiveProperty(ACTIVE_DESCRIPTION)
+	..setActiveEffect(ACTIVE_DESCRIPTION)
 	let lifeRegDef = buildLifeRegenerationBonus(NAME, ICON, HP_PER_SEC, tooltipGenerator)
 	let healingDef = new AbilityDefinitionItemHealGreater(ABIL_ID_GEN.next())
 	..setRace(ITEM_ABILITY_RACE)
@@ -58,7 +58,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 		..setClassification(CLASSIFICATION)
 		..setInterfaceIcon(ICON)
 		..setCooldownGroup(healingDef.getNewId().toRawCode())
-		tooltipGenerator.applyToItemDef(def)
+		tooltipGenerator.applyToDef(def)
 		if isAlias
 			consumablesShop.addItemSold(def.getNewId())
 		else

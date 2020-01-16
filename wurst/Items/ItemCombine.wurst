@@ -1,0 +1,56 @@
+package ItemCombine
+import LinkedListModule
+import LinkedList
+import ClosureEvents
+import RunedAlias
+
+
+public constant ITEM_COMBINE_EFFECT = "Abilities\\Spells\\Items\\AIsm\\AIsmTarget.mdl"
+
+
+public class ItemCombine
+	use LinkedListModule
+	protected int combinedItemId
+	protected LinkedList<int> requiredItemIds
+
+	construct(int combinedItemId, LinkedList<int> requiredItemIds)
+		this.combinedItemId = combinedItemId
+		this.requiredItemIds = requiredItemIds
+
+	protected static function combine(unit u, LinkedList<item> items)
+		for instance in ItemCombine
+			let combinedItemId = instance.combinedItemId
+			let requiredItems = instance.requiredItemIds.copy()
+			for i in items
+				requiredItems.remove(i.getTypeId())
+			if requiredItems.isEmpty()
+				requiredItems.addAll(instance.requiredItemIds)
+				for i in items
+					if requiredItems.remove(i.getTypeId())
+						i.remove()
+				u.addItemById(combinedItemId)
+				..setPlayer(u.getOwner(), true)
+				flashEffect(ITEM_COMBINE_EFFECT, u, "origin")
+				destroy requiredItems
+				break
+			destroy requiredItems
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) ->
+		let itemList = new LinkedList<item>
+		let u = EventData.getTriggerUnit()
+		for i in EventData.getTriggerUnit().inventory()
+			itemList.add(i)
+		if not itemList.isEmpty()
+			ItemCombine.combine(u, itemList)
+		destroy itemList
+		
+	onAliasedItemGiven() (unit u, item givenItem) ->
+		let itemList = new LinkedList<item>
+		for i in u.inventory()
+			itemList.add(i)
+		if not itemList.has(givenItem)
+			itemList.add(givenItem)
+		if not itemList.isEmpty()
+			ItemCombine.combine(u, itemList)
+		destroy itemList

@@ -16,6 +16,7 @@ public ItemShopPreset consumablesShop
 
 @compiletime function build()
 	consumablesShop = new ItemShopPreset(shopId, Icons.bTNWitchDoctor, "Consumables", Soundsets.witchDoctor, Units.witchDoctor1)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

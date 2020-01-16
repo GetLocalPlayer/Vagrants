@@ -17,6 +17,7 @@ public AbilityShopPreset gnomeShopDef
 
 @compiletime function build()
 	gnomeShopDef = new AbilityShopPreset(shopId, Icons.bTNHeroMountainKing, "Gnome", Soundsets.heroMountainKing, Units.heroMountainKing)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

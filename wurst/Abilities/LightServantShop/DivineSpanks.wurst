@@ -16,7 +16,7 @@ import LightServantShop
 constant int SHOP_COST = 1
 constant int LEVELS = 5
 constant HOTKEY = getHotkey()
-constant ICON = "ReplaceableTextures\\CommandButtons\\BTNDivineSlaps.blp"
+constant ICON = "ReplaceableTextures\\CommandButtons\\BTNDivineSpanks.blp"
 constant NAME = "Divine Spanks"
 constant DESCRIPTION = "|cff7bfdb6Passive|r|nThe hero now can attack allied heroes but instead of damaging his attacks heal the target.|n|n|cff7bfdb6Active|r:|nMarks an ally hero. Marked heroes share healing from Divine Spanks."
 constant BUFF_NAME = "|cff00ff00Other Hand|r"

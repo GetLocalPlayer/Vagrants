@@ -13,7 +13,7 @@ import LinkedList
 	"HP per Second",
 	"Hit Points per Second",
 	"Mana Regeneration",
+	"Defense",
 	"Attack Damage",
 	"Attack Speed",
-	"Defense",
 	"Movement Speed")

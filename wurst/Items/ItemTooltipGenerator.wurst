@@ -9,21 +9,27 @@ import LinkedList
 @configurable constant SHOP_GOLD_COST_COLOR = "|cFF969696"
 @configurable constant BONUS_COLOR = "|cFF00FF00"
 @configurable constant NEGATE_BONUS_COLOR = "|cFFFF0000"
-@configurable constant ACTIVE_COLOR = "|cffc3dbff"
+@configurable constant ACTIVE_EFFECT_COLOR = "|cffc3dbff"
+@configurable constant PASSIVE_EFFECT_COLOR = "|cfffffec3"
+@configurable constant REQUIREMENTS_COLOR = "|cFFFFCC00"
+@configurable constant REQUIREMENTS_COST_COLOR = "|cFF969696"
 @configurable constant COMMENT_COLOR = "|cFF969696"
 @configurable constant PROPERTY_ORDER = asList<string>()
 
 
-/** Use this tooltip generator in abilities that will be a part of*/
 public class ItemTooltipGenerator implements TooltipGenerator
 	protected let properties = new IterableMap<string, StringLevelClosure>
 	protected let propertyOrder = PROPERTY_ORDER.copy()
+	protected let recipeRequirements = new IterableMap<string, int>
+	protected let requiredCount = new IterableMap<string, int>
 	protected var name = ""
 	protected var shopHotkey = ""
 	protected var shopCost = 0
-	protected var activeEffectDescription = ""
+	protected var activeEffect = ""
+	protected let passiveEffects = new LinkedList<string>
 	protected var comment = ""
 
+	/** 'shopCost' is used in 'Tooltip Basic' field that appeares only in shops. */
 	construct(string name, string shopHotkey, int shopCost, string comment)
 		this.name = name
 		this.shopHotkey = shopHotkey
@@ -33,20 +39,36 @@ public class ItemTooltipGenerator implements TooltipGenerator
 	override function addProperty(string name, StringLevelClosure cl)
 		properties.put(name, cl)
 
-	function setActiveProperty(string description)
-		activeEffectDescription = description
+	function setActiveEffect(string description)
+		activeEffect = description
+
+	function addPassiveEffect(string description)
+		passiveEffects.add(description)
+
+	function setName(string name)
+		this.name = name
+
+	function addRecipeRequirement(string name, int goldCost)
+		if not recipeRequirements.has(name)
+			recipeRequirements.put(name, goldCost)
+			requiredCount.put(name, 1)
+		else
+			requiredCount.put(name, requiredCount.get(name) + 1)
 
 	function setComment(string comment)
 		this.comment = comment
 	
-	override function applyToDef(AbilityDefinition def)
-		compileError("Does not implement ''apllyToDef'' method for AbilityDefinition.")
+	override protected function applyToDef(AbilityDefinition def)
+		skip
 
-	function applyToItemDef(ItemDefinition def)
+	function applyToDef(ItemDefinition def, bool includeRecipeRequirementsList)
 		def..setName(name)
 		..setDescription(getDescription())
 		..setTooltipBasic(getTooltipBasic())
-		..setTooltipExtended(getTooltipExtended())
+		..setTooltipExtended(getTooltipExtended(includeRecipeRequirementsList))
+
+	function applyToDef(ItemDefinition def)
+		applyToDef(def, false)
 
 	function getDescription() returns string
 		let comment = this.comment
@@ -57,7 +79,7 @@ public class ItemTooltipGenerator implements TooltipGenerator
 
 	function getTooltipBasic() returns string
 		let shopHotkey = this.shopHotkey.isNotBlank() ? ", [{1}{2}|r]".format(SHOP_HOTKEY_COLOR, this.shopHotkey) : ""
-		let shopCost = this.shopCost > 0 ?  " {0}- {1}|r".format(SHOP_GOLD_COST_COLOR, this.shopCost.toString()) : ""
+		let shopCost = this.shopCost > 0 ?  " {0} ({1})|r".format(SHOP_GOLD_COST_COLOR, this.shopCost.toString()) : ""
 		return name + shopHotkey + shopCost
 
 	private function getPropertyString(string prop, string value) returns string
@@ -69,8 +91,9 @@ public class ItemTooltipGenerator implements TooltipGenerator
 			resultValue = "{0}{1}|r".format(NEGATE_BONUS_COLOR, resultValue)
 		return "{0} {1}".format(resultValue, prop)
 		
-	function getTooltipExtended() returns string
+	function getTooltipExtended(bool includeRecipeRequirementsList) returns string
 		var result = ""
+		// Properties
 		let propertiesCopy = properties.copy()
 		for prop in propertyOrder
 			if propertiesCopy.has(prop)
@@ -78,10 +101,40 @@ public class ItemTooltipGenerator implements TooltipGenerator
 		for prop in propertiesCopy
 			result += getPropertyString(prop, propertiesCopy.getAndRemove(prop).run(1)) + "|n"
 		destroy propertiesCopy
-		if activeEffectDescription.isNotBlank()
-			result = "{0}{1}{2}|r|n".format(result, ACTIVE_COLOR, activeEffectDescription)
+		// Passive effects
+		if not passiveEffects.isEmpty()
+			for description in passiveEffects
+				result = "{0} {1}(Passive) {2}|r|n".format(result, PASSIVE_EFFECT_COLOR, description)
+		// Active effect
+		if activeEffect.isNotBlank()
+			result = "{0} {1}(Acrive) {2}|r|n".format(result, ACTIVE_EFFECT_COLOR, activeEffect)
+		// Recipe
+		if includeRecipeRequirementsList and recipeRequirements.size() > 0
+			var requirementsList = "{0}Required:|r".format(REQUIREMENTS_COLOR)
+			for req in recipeRequirements
+				requirementsList += "|n - {0}".format(req)
+				let cost = recipeRequirements.get(req)
+				let count = requiredCount.get(req)
+				if cost > 0
+					requirementsList += "{0} - {1}|r".format(REQUIREMENTS_COST_COLOR, cost.toString())
+				if count > 1
+					requirementsList += " ({0})".format(count.toString())
+			result = "{0}|n{1}|n".format(result, requirementsList)
+		// Comment
 		if comment.isNotBlank()
 			result = "{0}|n{1}{2}|r".format(result, COMMENT_COLOR, comment)
 		else
 			result = result.substring(0, result.length() - 2)
 		return result
+		
+	function getTooltipExtended() returns string
+		return getTooltipExtended(false)
+
+	function copy() returns ItemTooltipGenerator
+		let copy = new ItemTooltipGenerator(name, shopHotkey, shopCost, comment)
+		copy.properties.addAll(properties)
+		copy.recipeRequirements.addAll(recipeRequirements)
+		copy.requiredCount.addAll(requiredCount)
+		copy.passiveEffects.addAll(passiveEffects)
+		copy.activeEffect = activeEffect
+		return copy

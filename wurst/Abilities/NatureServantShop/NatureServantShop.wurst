@@ -17,6 +17,7 @@ public AbilityShopPreset natureServantShopDef
 
 @compiletime function build()
 	natureServantShopDef = new AbilityShopPreset(shopId, Icons.bTNDruidOfTheTalon, "Nature Servant", Soundsets.malFurion, Units.druidoftheTalon)
+	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)

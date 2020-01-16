@@ -1,0 +1,117 @@
+package BrassKnuckles
+import Assets
+import ItemObjEditing
+import ChannelAbilityPreset
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import GauntletsOfOgre
+import LumberjacksAxe
+
+import ClosureEvents
+import LinkedList
+import ItemCombine
+
+
+public class BrassKnuckles
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Azure Scale"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNBrassKnuckles.blp"
+	static constant int GOLD_COST = GauntletsOfOgre.GOLD_COST + LumberjacksAxe.GOLD_COST + BrassKnucklesRecipe.GOLD_COST
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int STRENGTH = 10
+	static constant int CHANCE = 30
+	static constant real STRENGTH_DAMAGE_FACTOR = 0.75
+	
+	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..addPassiveEffect("Gives a {0}% chance to melee attacks to deal additional physical damage on hit equal to {1}% of the wearer strength.".format(CHANCE.toString(), (STRENGTH_DAMAGE_FACTOR * 100).toInt().toString()))
+		..setComment("Do you know da wae?")
+			
+	@compiletime protected static function build()
+		let strDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(strDef.getNewId().toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities(strDef.getNewId().toRawCode())
+
+
+public class BrassKnucklesRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(BrassKnuckles.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = BrassKnuckles.ICON
+	static constant int SHOP_X = 0
+	static constant int SHOP_Y = 2
+	static constant int GOLD_COST = 100
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	static protected let tooltipGenerator = BrassKnuckles.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(GauntletsOfOgre.NAME, GauntletsOfOgre.GOLD_COST)
+		..addRecipeRequirement(LumberjacksAxe.NAME, LumberjacksAxe.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+		..setComment("")
+
+	@compiletime protected static function build()
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(BrassKnuckles.ID, asList<int>(GauntletsOfOgre.ID, LumberjacksAxe.ID, BrassKnucklesRecipe.ID))
+
+
+init
+	let ignoredUnits = CreateGroup()
+
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) () ->
+		let attacker = EventData.getEventDamageSource()
+		if EventData.getDamageAttackType() == ATTACK_TYPE_MELEE and EventData.getDamageType() == DAMAGE_TYPE_NORMAL
+			if attacker.hasItemById(BrassKnuckles.ID) and not ignoredUnits.contains(attacker)
+				if GetRandomInt(1, 100) <= BrassKnuckles.CHANCE
+					ignoredUnits.addUnit(attacker)
+					attacker.damageTarget(EventData.getTriggerUnit(), BrassKnuckles.STRENGTH_DAMAGE_FACTOR * attacker.getStr(true), false, false, ATTACK_TYPE_MELEE, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+					ignoredUnits.removeUnit(attacker)
