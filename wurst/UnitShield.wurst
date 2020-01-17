@@ -6,7 +6,7 @@ import ErrorHandling
 
 
 /** Allows to create a shield that prevents damage taken by
-a unit. The system uses EventListener manually, placing its
+a unit. The system uses EventListener, manually placing its
 listener at the end of EventListener's callback sequence so
 the user can be sure, any other "DAMAGED" event listener will
 be called before damage absorbing. */
