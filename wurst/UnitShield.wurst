@@ -1,0 +1,114 @@
+package UnitShield
+import HashMap
+import LinkedList
+import ClosureEvents
+import ErrorHandling
+
+
+/** Allows to create a shield that prevents damage taken by
+a unit. The system uses EventListener manually, placing its
+listener at the end of EventListener's callback sequence so
+the user can be sure, any other "DAMAGED" event listener will
+be called before damage absorbing. */
+
+
+let unitToShieldList = new HashMap<unit, LinkedList<UnitShieldCallback>>
+
+
+public function unit.addShield(real amount, real blockFactor, UnitShieldCallback cb) returns UnitShieldCallback
+	cb.set(this, amount, blockFactor)
+	if not unitToShieldList.has(this)
+		unitToShieldList.put(this, asList<UnitShieldCallback>(cb))
+	else
+		unitToShieldList.get(this).addtoStart(cb)
+	return cb
+
+
+public abstract class UnitShieldCallback
+	protected unit target
+	protected real amount
+	protected real factor
+	protected bool isBroken = false
+
+	abstract function onAbsorb(UnitShieldCallback cb, real takenDamage, real absorbedDamage)
+
+	ondestroy
+		let shieldStack = unitToShieldList.get(target)
+		shieldStack.remove(this)
+		if shieldStack.isEmpty()
+			destroy shieldStack
+			unitToShieldList.remove(target)
+
+	function setAmount(real amount)
+		if amount < 0
+			error("Shield cannot absorb less than 0 damage")
+		this.amount = amount
+		isBroken = not amount > 0
+
+	/** A part of the taken damage that will be absorbed. 1.0 - the shield absorbs all the damage. */
+	function setFactor(real factor)
+		if factor <= 0
+			error("Shield cannot absorb 0% of damage or less")
+		this.factor = factor
+
+	function getRemaining() returns real
+		return amount
+
+	function getFactor() returns real
+		return factor
+
+	function isBroken() returns bool
+		return isBroken
+
+	protected function set(unit target, real amount, real factor)
+		this.target = target
+		setAmount(amount)
+		setFactor(factor)
+
+	/** Returns amount of absorbed damage. */
+	protected function absorb(real damage) returns real
+		if not isBroken()
+			let maxAbsorb = damage * factor
+			real absorbedDamage
+			if amount > maxAbsorb
+				amount -= maxAbsorb
+				absorbedDamage = maxAbsorb
+			else
+				absorbedDamage = amount
+				amount = 0
+				isBroken = true
+			onAbsorb(this, damage, absorbedDamage)
+			return absorbedDamage
+		return 0
+
+
+init
+	let listener = EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) ->
+		let target = EventData.getTriggerUnit()
+		let shields = unitToShieldList.get(target)
+		var damage = EventData.getEventDamage()
+		if unitToShieldList.has(target)
+			for shield in shields
+				if not shield.isBroken()
+					let absorbedDamage = shield.absorb(damage)
+					if absorbedDamage >= damage
+						EventData.setDamage(0)
+						break
+					else
+						EventData.setDamage(damage - absorbedDamage)
+
+	if listener.next != null
+		var lastListener = listener.next
+		while lastListener.next != null
+			lastListener = lastListener.next
+		let eventId = EVENT_PLAYER_UNIT_DAMAGED.toIntId()
+		EventListener.generalListenersFirsts[eventId] = listener.next
+		EventListener.generalListenersFirsts[eventId].prev = null
+		lastListener.next = listener
+		listener.prev = lastListener
+		listener.next = null 
+
+	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
+		let u = EventData.getDyingUnit()
+		if not u.isType(UNIT_TYPE_HERO) and unitToShieldList.has(u)
+			destroy unitToShieldList.getAndRemove(u)

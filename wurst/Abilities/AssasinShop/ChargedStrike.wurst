@@ -6,7 +6,6 @@ import BuffObjEditing
 import AbilityObjEditing
 import AbilityTooltipGenerator
 import AssasinShop
-import Annotations
 
 import EventHelper
 import ClosureTimers

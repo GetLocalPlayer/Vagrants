@@ -38,18 +38,11 @@ public class CursedTalisman
 		..setRace(ITEM_ABILITY_RACE)
 		..setHeroAbility(false)
 		..setItemAbility(true)
-		..setRequirements("")
-		..setArtTarget("")
 		..setArtCaster(ART_CASTER)
-		..setLevels(1)
-		..presetManaCost((int lvl) -> 0)
 		..presetCooldown((int lvl) -> COOLDOWN)
 		..presetFollowThroughTime((int lvl) -> 0.1)
 		..presetArtDuration((int lvl) -> 5) 
-		..presetCastingTime((int lvl) -> 0)
-		..presetOption(Option.VISIBLE, true)
 		..presetTargetType((int lvl) -> Targettype.NONE castTo int)
-		..presetDisableOtherAbilities((int lvl) -> false)
 		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
@@ -78,6 +71,9 @@ public class CursedTalisman
 
 
 init
-	EventListener.onCast(CursedTalisman.ABIL_ID) (unit caster) ->
-		caster.setMana(caster.getMana() + CursedTalisman.RESTORED_MANA)
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM) ->
+		let usedItem = EventData.getManipulatedItem()
+		if usedItem.getTypeId() == CursedTalisman.ID
+			let caster = EventData.getTriggerUnit()
+			caster.setMana(caster.getMana() + CursedTalisman.RESTORED_MANA)
 		

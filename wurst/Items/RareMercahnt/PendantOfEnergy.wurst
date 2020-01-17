@@ -21,7 +21,7 @@ public class PendantOfEnergy
 	static constant int GOLD_COST = WandOfNeutralization.GOLD_COST + CursedTalisman.GOLD_COST
 	static constant int INTELLIGENCE = 5
 	static constant int RESTORED_MANA = (CursedTalisman.RESTORED_MANA * 1.5).toInt()
-	static constant int ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant int ABIL_ID = compiletime(CursedTalisman.ABIL_ID)
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
@@ -30,25 +30,6 @@ public class PendantOfEnergy
 
 	@compiletime protected static function build()
 		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
-		let restoreManaDef = new ChannelAbilityPreset(ABIL_ID, 1, true)
-			..setIconNormal(ICON)
-			..setName(NAME)
-			..setEditorSuffix("Active")
-			..setRace(ITEM_ABILITY_RACE)
-			..setHeroAbility(false)
-			..setItemAbility(true)
-			..setRequirements("")
-			..setArtTarget("")
-			..setArtCaster(CursedTalisman.ART_CASTER)
-			..setLevels(1)
-			..presetManaCost((int lvl) -> 0)
-			..presetCooldown((int lvl) -> CursedTalisman.COOLDOWN)
-			..presetFollowThroughTime((int lvl) -> 0.1)
-			..presetArtDuration((int lvl) -> 5) 
-			..presetCastingTime((int lvl) -> 0)
-			..presetOption(Option.VISIBLE, true)
-			..presetTargetType((int lvl) -> Targettype.NONE castTo int)
-			..presetDisableOtherAbilities((int lvl) -> false)
 		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
@@ -63,13 +44,13 @@ public class PendantOfEnergy
 			..setActivelyUsed(true)
 			..setCanBeSoldByMerchants(true)
 			..setCanBeSoldToMerchants(true)
-			..setCooldownGroup(CursedTalisman.ABIL_ID.toRawCode())
+			..setCooldownGroup(ABIL_ID.toRawCode())
 			..setGoldCost(GOLD_COST)
 			..setClassification(CLASSIFICATION)
 			..setInterfaceIcon(ICON)
 			tooltipGenerator.applyToDef(def)
 			if not isAlias
-				def.setAbilities("{0},{1}".format(restoreManaDef.getNewId().toRawCode(), intDef.getNewId().toRawCode()))
+				def.setAbilities("{0},{1}".format(ABIL_ID.toRawCode(), intDef.getNewId().toRawCode()))
 		// Recipe
 
 public class PendantOfEnergyRecipe
@@ -139,5 +120,8 @@ init
 					flashEffect(ITEM_COMBINE_EFFECT, pos)
 
 init
-	EventListener.onCast(PendantOfEnergy.ABIL_ID) (unit caster) ->
-		caster.setMana(caster.getMana() + PendantOfEnergy.RESTORED_MANA)
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM) ->
+		let usedItem = EventData.getManipulatedItem()
+		if usedItem.getTypeId() == PendantOfEnergy.ID
+			let caster = EventData.getTriggerUnit()
+			caster.setMana(caster.getMana() + PendantOfEnergy.RESTORED_MANA)

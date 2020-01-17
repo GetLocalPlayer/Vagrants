@@ -9,7 +9,7 @@ import ItemTooltipGenerator
 import ItemAbilityPreset
 
 
-class ClawsOfAttack
+public class ClawsOfAttack
 	static constant int GOLD_COST = 200
 	static constant CLASSIFICATION = "Permanent"
 	static constant NAME = "Claws of Attack"
@@ -22,7 +22,7 @@ class ClawsOfAttack
 
 	@compiletime static protected function build()
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-		let abilDef = buildAttackBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
+		let abilDef = buildAttackDamageBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
 		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)

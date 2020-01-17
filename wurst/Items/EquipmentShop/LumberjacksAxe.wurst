@@ -24,7 +24,7 @@ public class LumberjacksAxe
 	@compiletime protected static function build()
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let strengthDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
-		let attackDamageDef = buildAttackBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
+		let attackDamageDef = buildAttackDamageBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
 		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)

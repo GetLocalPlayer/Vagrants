@@ -44,7 +44,6 @@ public class Wakizashi
 			..setActivelyUsed(true)
 			..setCanBeSoldByMerchants(true)
 			..setCanBeSoldToMerchants(true)
-			..setCooldownGroup("")
 			..setGoldCost(GOLD_COST)
 			..setClassification(CLASSIFICATION)
 			..setInterfaceIcon(ICON)

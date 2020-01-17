@@ -1,4 +1,4 @@
-package BrassKnuckles
+package ArcaniteShield
 import Assets
 import ItemObjEditing
 import ChannelAbilityPreset
@@ -7,32 +7,29 @@ import ItemTooltipGenerator
 import ItemAbilityPreset
 import RunedAlias
 import RareMerchant
-import GauntletsOfOgre
-import LumberjacksAxe
+import RingOfProtection
+import GemOfHealth
 
-import ClosureEvents
 import LinkedList
 import ItemCombine
 
 
-public class BrassKnuckles
+public class ArcaniteShield
 	static constant CLASSIFICATION = "Permanent"
-	static constant NAME = "Brass Knuckles"
-	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNBrassKnuckles.blp"
-	static constant int GOLD_COST = GauntletsOfOgre.GOLD_COST + LumberjacksAxe.GOLD_COST + BrassKnucklesRecipe.GOLD_COST
+	static constant NAME = "Arcanite Shield"
+	static constant ICON = Icons.bTNThoriumArmor
+	static constant int GOLD_COST = RingOfProtection.GOLD_COST + GemOfHealth.GOLD_COST + ArcaniteShieldRecipe.GOLD_COST
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
-	static constant int STRENGTH = 10
-	static constant int CHANCE = 30
-	static constant real STRENGTH_DAMAGE_FACTOR = 0.75
+	static constant int DEFENSE = 4
+	static constant int HIT_POINTS = 150
 	
 	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-		..addPassiveEffect("Gives a {0}% chance to melee attacks to deal additional physical damage on hit equal to {1}% of the wearer strength.".format(CHANCE.toString(), (STRENGTH_DAMAGE_FACTOR * 100).toInt().toString()))
-		..setComment("Do you know da wae?")
 			
 	@compiletime protected static function build()
-		let strDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
+		let hitPointsDef = buildHitPointsBonus(NAME, ICON, HIT_POINTS, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -51,24 +48,24 @@ public class BrassKnuckles
 			..setInterfaceIcon(ICON)
 			tooltipGenerator.applyToDef(def)
 			if not isAlias
-				def.setAbilities(strDef.getNewId().toRawCode())
+				def.setAbilities("{0},{1}".format(defenseDef.getNewId().toRawCode(), hitPointsDef.getNewId().toRawCode()))
 
 
-public class BrassKnucklesRecipe
+public class ArcaniteShieldRecipe
 	static constant CLASSIFICATION = "Permanent"
-	static constant NAME = "{0} Recipe".format(BrassKnuckles.NAME)
+	static constant NAME = "{0} Recipe".format(ArcaniteShield.NAME)
 	static constant ICON = Icons.bTNSnazzyScrollGreen
-	static constant ALIAS_ICON = BrassKnuckles.ICON
+	static constant ALIAS_ICON = ArcaniteShield.ICON
 	static constant int SHOP_X = 0
-	static constant int SHOP_Y = 2
-	static constant int GOLD_COST = 250
+	static constant int SHOP_Y = 1
+	static constant int GOLD_COST = 200
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-	static protected let tooltipGenerator = BrassKnuckles.tooltipGenerator.copy()
+	static protected let tooltipGenerator = ArcaniteShield.tooltipGenerator.copy()
 		..setName(NAME)
-		..addRecipeRequirement(GauntletsOfOgre.NAME, GauntletsOfOgre.GOLD_COST)
-		..addRecipeRequirement(LumberjacksAxe.NAME, LumberjacksAxe.GOLD_COST)
+		..addRecipeRequirement(RingOfProtection.NAME, RingOfProtection.GOLD_COST)
+		..addRecipeRequirement(GemOfHealth.NAME, GemOfHealth.GOLD_COST)
 		..addRecipeRequirement("Recipe", GOLD_COST)
 		..setComment("")
 
@@ -100,17 +97,4 @@ public class BrassKnucklesRecipe
 
 
 init
-	new ItemCombine(BrassKnuckles.ID, asList<int>(GauntletsOfOgre.ID, LumberjacksAxe.ID, BrassKnucklesRecipe.ID))
-
-
-init
-	let ignoredUnits = CreateGroup()
-
-	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) () ->
-		let attacker = EventData.getEventDamageSource()
-		if EventData.getDamageAttackType() == ATTACK_TYPE_MELEE and EventData.getDamageType() == DAMAGE_TYPE_NORMAL
-			if attacker.hasItemById(BrassKnuckles.ID) and not ignoredUnits.contains(attacker)
-				if GetRandomInt(1, 100) <= BrassKnuckles.CHANCE
-					ignoredUnits.addUnit(attacker)
-					attacker.damageTarget(EventData.getTriggerUnit(), BrassKnuckles.STRENGTH_DAMAGE_FACTOR * attacker.getStr(true), false, false, ATTACK_TYPE_MELEE, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-					ignoredUnits.removeUnit(attacker)
+	new ItemCombine(ArcaniteShield.ID, asList<int>(RingOfProtection.ID, GemOfHealth.ID, ArcaniteShieldRecipe.ID))

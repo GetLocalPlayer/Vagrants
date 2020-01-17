@@ -20,7 +20,7 @@ constant int ATTACK_DAMAGE = 18
 
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-	let abilDef = buildAttackBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
+	let abilDef = buildAttackDamageBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
 	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)

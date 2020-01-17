@@ -118,6 +118,7 @@ init // Main buff
 				..setAbilityLevel(MAIN_BUFF.abilId, lvl)
 			else
 				target..addAbility(MAIN_BUFF.abilId)
+				..makeAbilityPermanent(MAIN_BUFF.abilId, true)
 				target..removeAbility(MAIN_BUFF.buffId)
 				..setAbilityLevel(MAIN_BUFF.abilId, lvl)
 			CallbackSingle mainBuffTimer = () ->
@@ -144,6 +145,7 @@ init // Main buff
 						..setAbilityLevel(EXPLOSION_BUFF.abilId, lvl)
 					else
 						u..addAbility(EXPLOSION_BUFF.abilId)
+						..makeAbilityPermanent(EXPLOSION_BUFF.abilId, true)
 						..removeAbility(EXPLOSION_BUFF.buffId)
 						..setAbilityLevel(EXPLOSION_BUFF.abilId, lvl)
 					CallbackSingle explosionBuffTimer = () ->

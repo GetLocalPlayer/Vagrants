@@ -16,7 +16,7 @@ import ClosureTimers
 import LinkedList
 import HashMap
 import ItemCombine
-import Shield
+import UnitShield
 
 
 public class AzureScale
@@ -31,9 +31,10 @@ public class AzureScale
 	static constant real SHIELD_COOLDOWN = 25
 	static constant real SHIELD_DURATION = 10
 	static constant real SHIELD_AMOUNT = 200
+	static constant real SHIELD_BLOCKED_DAMAGE_FACTOR = 0.5
 	static constant SHIELD_MODEL = ""
 	static constant BUFF = compiletime(createDummyBuffObject("|cFF00FF00{0}|r".format(NAME), "Absorbs taken damage.", ICON, Abilities.divineShieldTarget, "origin"))
-	static constant ACTIVE_DESCRIPTION = "Creates shield for {0} seconds that absorbs {1} taken damage ({2} sec. cooldown).".format(SHIELD_DURATION.toInt().toString(), SHIELD_AMOUNT.toInt().toString(), SHIELD_COOLDOWN.toInt().toString())
+	static constant ACTIVE_DESCRIPTION = "Creates a shield for {0} seconds that absorbs {1}% of damage taken, up to {2} total damage prevented ({3} sec. cooldown).".format(SHIELD_DURATION.toInt().toString(), (SHIELD_BLOCKED_DAMAGE_FACTOR * 100).toInt().toString(), SHIELD_AMOUNT.toInt().toString(), SHIELD_COOLDOWN.toInt().toString())
 	
 	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		..setActiveEffect(ACTIVE_DESCRIPTION)
@@ -118,25 +119,29 @@ init
 
 
 init
-	let shields = new HashMap<unit, Shield>
+	let shields = new HashMap<unit, UnitShieldCallback>
 	let timers = new HashMap<unit, CallbackSingle>
 
-	EventListener.onCast(AzureScale.SHIELD_ABIL_ID) (unit caster) ->
-		if not shields.has(caster)
-			let shield = new Shield(caster, AzureScale.SHIELD_AMOUNT, 1) (shield, takenDamage, absorbedDamage) ->
-				if shield.isBroken()
-					destroy shields.getAndRemove(caster)
-					destroy timers.getAndRemove(caster)
-					caster.removeAbility(AzureScale.BUFF.abilId)
-					caster.removeAbility(AzureScale.BUFF.buffId)
-			shields.put(caster, shield)
-			caster.addAbility(AzureScale.BUFF.abilId)
-		else
-			shields.get(caster).setAmount(AzureScale.SHIELD_AMOUNT)
-			destroy timers.getAndRemove(caster)	
-		let timerCb = doAfter(AzureScale.SHIELD_DURATION) () ->
-			destroy shields.getAndRemove(caster)
-			timers.remove(caster)
-			caster.removeAbility(AzureScale.BUFF.abilId)
-			caster.removeAbility(AzureScale.BUFF.buffId)
-		timers.put(caster, timerCb)
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM) ->
+		let usedItem = EventData.getManipulatedItem()
+		if usedItem.getTypeId() == AzureScale.ID
+			let caster = EventData.getTriggerUnit()
+			if not shields.has(caster)
+				let shieldCb = caster.addShield(AzureScale.SHIELD_AMOUNT, AzureScale.SHIELD_BLOCKED_DAMAGE_FACTOR) (cb, takenDamage, absorbedDamage) ->
+					if cb.isBroken()
+						destroy shields.getAndRemove(caster)
+						destroy timers.getAndRemove(caster)
+						caster.removeAbility(AzureScale.BUFF.abilId)
+						caster.removeAbility(AzureScale.BUFF.buffId)
+				shields.put(caster, shieldCb)
+				caster..addAbility(AzureScale.BUFF.abilId)
+				..makeAbilityPermanent(AzureScale.BUFF.abilId, true)
+			else
+				shields.get(caster).setAmount(AzureScale.SHIELD_AMOUNT)
+				destroy timers.getAndRemove(caster)	
+			let timerCb = doAfter(AzureScale.SHIELD_DURATION) () ->
+				destroy shields.getAndRemove(caster)
+				timers.remove(caster)
+				caster.removeAbility(AzureScale.BUFF.abilId)
+				caster.removeAbility(AzureScale.BUFF.buffId)
+			timers.put(caster, timerCb)

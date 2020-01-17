@@ -100,7 +100,8 @@ init
 
 	EventListener.onTargetCast(ABIL_ID) (unit caster, unit target) ->
 		if not affectedUnits.has(target)
-			target.addAbility(BUFF.abilId)
+			target..addAbility(BUFF.abilId)
+			..makeAbilityPermanent(BUFF.abilId, true)
 		else
 			destroy buffCallbacks.getAndRemove(target)
 			let oldCaster = affectedUnits.get(target)

@@ -64,7 +64,7 @@ public function buildDefenseBonus(string name, string icon, int defense, Tooltip
 		tg.addProperty("Defense", (int lvl) -> defense.toString())
 	return def
 
-public function buildAttackBonus(string name, string icon, int damage, TooltipGenerator tg) returns AbilityDefinitionAttackBonus
+public function buildAttackDamageBonus(string name, string icon, int damage, TooltipGenerator tg) returns AbilityDefinitionAttackBonus
 	let def = new AbilityDefinitionAttackBonus(ABIL_ID_GEN.next())
 	..setRace(ITEM_ABILITY_RACE)
 	..setHeroAbility(false)

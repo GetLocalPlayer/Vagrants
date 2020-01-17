@@ -1,0 +1,176 @@
+package EvilTotem
+import Assets
+import ItemObjEditing
+import ChannelAbilityPreset
+import BuffObjEditing
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import RareMerchant
+import SobiMask
+import StrongCane
+import AncientFigurine
+
+import LinkedList
+import ItemCombine
+
+import HashMap
+import HashList
+import ClosureEvents
+import ClosureTimers
+import ClosureForGroups
+
+
+public class EvilTotem
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Evil Totem"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNEvilTotem.blp"
+	static constant int GOLD_COST = SobiMask.GOLD_COST + StrongCane.GOLD_COST + AncientFigurine.GOLD_COST + EvilTotemRecipe.GOLD_COST
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int INTELLIGENCE = 20
+	static constant real MANA_REG_RATE = 1.
+	static constant int ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant real DAMAGE_FACTOR = 0.08
+	static constant real DURATION = 15
+	static constant real AOE = 200
+	static constant real COOLDOWN = 30
+	static constant real CAST_RANGE = 500
+	static constant MODEL = Units.stasisTotem
+	static constant BUFF = compiletime(createDummyBuffObject(NAME, "Taken damage is increased", ICON, Abilities.barkSkinTarget, "chest"))
+	
+	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect("Places an evil totem in the center of a target area that increases damage taken by all units in that area by {0}% ({1} sec. cooldown). The totem exists {2} seconds. The effect can stack.".format((DAMAGE_FACTOR * 100).toInt().toString(), COOLDOWN.toInt().toString(), DURATION.toInt().toString()))
+			
+	@compiletime protected static function build()
+		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+		let manaRegDef = buildManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+		let totemDef = new ChannelAbilityPreset(ABIL_ID, 1, true)
+		..setIconNormal(ICON)
+		..setName(NAME)
+		..setEditorSuffix("Active")
+		..setRace(ITEM_ABILITY_RACE)
+		..setHeroAbility(false)
+		..setItemAbility(true)
+		..presetCooldown((int lvl) -> COOLDOWN)
+		..presetOption(Option.TARGETIMAGE, true)
+		..presetTargetType((int lvl) -> Targettype.POINT castTo int)
+		..presetCastRange(lvl -> CAST_RANGE)
+		..presetAreaofEffect((int lvl) -> AOE)
+		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(totemDef.getNewId().toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1},{2}".format(totemDef.getNewId().toRawCode(), intDef.getNewId().toRawCode(), manaRegDef.getNewId().toRawCode()))
+
+
+public class EvilTotemRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(EvilTotem.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = EvilTotem.ICON
+	static constant int SHOP_X = 3
+	static constant int SHOP_Y = 2
+	static constant int GOLD_COST = 300
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	static protected let tooltipGenerator = EvilTotem.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(SobiMask.NAME, SobiMask.GOLD_COST)
+		..addRecipeRequirement(StrongCane.NAME, StrongCane.GOLD_COST)
+		..addRecipeRequirement(AncientFigurine.NAME, AncientFigurine.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+		..setComment("")
+
+	@compiletime protected static function build()
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				rareMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(EvilTotem.ID, asList<int>(SobiMask.ID, StrongCane.ID, AncientFigurine.ID, EvilTotemRecipe.ID))
+
+init
+	// <affected unit, counter>
+	let affectedUnits = new HashMap<unit, int>
+
+	EventListener.onPointCast(EvilTotem.ABIL_ID) (unit caster, vec2 target) ->
+		let totem = addEffect(EvilTotem.MODEL, target)
+		..setYaw(caster.getPos().angleTo(target))
+		let targets = new HashList<unit>
+		doPeriodicallyTimed(0.1, EvilTotem.DURATION) (CallbackCounted cb) ->
+			if cb.isLast()
+				for u in targets
+					affectedUnits.put(u, affectedUnits.get(u) - 1)
+					if affectedUnits.get(u) == 0
+						u..removeAbility(EvilTotem.BUFF.abilId)
+						..removeAbility(EvilTotem.BUFF.buffId)
+						affectedUnits.remove(u)
+				destroy targets
+				totem.destr()
+			else
+				for u in targets
+					if not u.isAlive() or not u.isInRange(target, EvilTotem.AOE) or u.isInvulnerable() or u.isType(UNIT_TYPE_MAGIC_IMMUNE)
+						targets.remove(u)
+						affectedUnits.put(u, affectedUnits.get(u) - 1)
+						if affectedUnits.get(u) == 0
+							u..removeAbility(EvilTotem.BUFF.abilId)
+							..removeAbility(EvilTotem.BUFF.buffId)
+							affectedUnits.remove(u)
+				forUnitsInRange(target, EvilTotem.AOE, true) (unit u) ->
+					if u.isAlive() and not u.isInvulnerable() and not u.isType(UNIT_TYPE_MAGIC_IMMUNE)
+						if not targets.has(u)
+							targets.add(u)
+							if not affectedUnits.has(u)
+								affectedUnits.put(u, 1)
+								u..addAbility(EvilTotem.BUFF.abilId)
+								..makeAbilityPermanent(EvilTotem.BUFF.abilId, true)
+							else
+								affectedUnits.put(u, affectedUnits.get(u) + 1)
+			
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) () ->
+		let u = EventData.getTriggerUnit()
+		if affectedUnits.has(u)
+			let factor = EvilTotem.DAMAGE_FACTOR * affectedUnits.get(u)
+			let bonusDamage = EventData.getEventDamage() * factor
+			EventData.setDamage(EventData.getEventDamage() + bonusDamage)

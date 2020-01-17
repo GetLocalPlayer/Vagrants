@@ -107,10 +107,10 @@ public class ItemTooltipGenerator implements TooltipGenerator
 				result = "{0} {1}(Passive) {2}|r|n".format(result, PASSIVE_EFFECT_COLOR, description)
 		// Active effect
 		if activeEffect.isNotBlank()
-			result = "{0} {1}(Acrive) {2}|r|n".format(result, ACTIVE_EFFECT_COLOR, activeEffect)
+			result = "{0} {1}(Active) {2}|r|n".format(result, ACTIVE_EFFECT_COLOR, activeEffect)
 		// Recipe
 		if includeRecipeRequirementsList and recipeRequirements.size() > 0
-			var requirementsList = "{0}Required:|r".format(REQUIREMENTS_COLOR)
+			var requirementsList = "{0}Requires:|r".format(REQUIREMENTS_COLOR)
 			for req in recipeRequirements
 				requirementsList += "|n - {0}".format(req)
 				let cost = recipeRequirements.get(req)
