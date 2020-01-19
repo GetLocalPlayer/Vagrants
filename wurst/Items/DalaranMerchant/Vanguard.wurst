@@ -1,0 +1,124 @@
+package Vanguard
+import Assets
+import ItemObjEditing
+import ChannelAbilityPreset
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import DalaranMerchant
+import AzureScale
+import ArcaniteShield
+
+import LinkedList
+import ItemCombine
+import DevotionAura
+import ClosureEvents
+import ClosureForGroups
+
+
+public class Vanguard
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Vanguard"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNVanguard.blp"
+	static constant int GOLD_COST = AzureScale.GOLD_COST + ArcaniteShield.GOLD_COST + VanguardRecipe.GOLD_COST
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int DEFENSE = 15
+	static constant int HIT_POINTS = 200
+	static constant real AOE = DevotionAura.AOE
+	static constant CONE_ANGLE = 100 .asAngleDegrees()
+	static constant ACTIVE_EFFECT = "Shields the wearer and allied heroes behind it, affected by \"Devotion Aura\", in {0} range for {1} seconds, absorbing {2}% taken damage, up to {3} total damage prevented ({4} sec. cooldown).".format(AOE.toInt().toString(), AzureScale.SHIELD_DURATION.toInt().toString(), (AzureScale.SHIELD_BLOCKED_DAMAGE_FACTOR * 100).toInt().toString(), AzureScale.SHIELD_AMOUNT.toInt().toString(), AzureScale.SHIELD_COOLDOWN.toInt().toString())
+	
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_EFFECT)
+			
+	@compiletime protected static function build()
+		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
+		let hitPointsDef = buildHitPointsBonus(NAME, ICON, HIT_POINTS, tooltipGenerator)
+		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCooldownGroup(AzureScale.SHIELD_ABIL_ID.toRawCode())
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1},{2}".format(AzureScale.SHIELD_ABIL_ID.toRawCode(), defenseDef.getNewId().toRawCode(), hitPointsDef.getNewId().toRawCode()))
+
+
+public class VanguardRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(Vanguard.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = Vanguard.ICON
+	static constant int SHOP_X = 0
+	static constant int SHOP_Y = 0
+	static constant int GOLD_COST = 500
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = Vanguard.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(ArcaniteShield.NAME, ArcaniteShield.GOLD_COST)
+		..addRecipeRequirement(AzureScale.NAME, AzureScale.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+		..setComment("")
+
+	@compiletime protected static function build()
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				dalaranMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(Vanguard.ID, asList<int>(AzureScale.ID, ArcaniteShield.ID, VanguardRecipe.ID))
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM) ->
+		let usedItem = EventData.getManipulatedItem()
+		if usedItem.getTypeId() == Vanguard.ID
+			let caster = EventData.getTriggerUnit()
+			let facing = caster.getFacingAngle().toVec(1)
+			let casterPos = caster.getPos()
+			let dotRange = Vanguard.CONE_ANGLE.cos() / 2
+			forUnitsInRange(casterPos, Vanguard.AOE, true) (unit u) ->
+				if u.isAllyOf(caster) and u.isType(UNIT_TYPE_HERO) and u.hasAbility(DevotionAura.BUFF_ID)
+					let direction = casterPos.normalizedPointerTo(u.getPos())
+					let dot = facing.dot(direction)
+					if dot.isBetween(-1, -dotRange)
+						AzureScale.shieldUnit(u)
+			AzureScale.shieldUnit(caster)

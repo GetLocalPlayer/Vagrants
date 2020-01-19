@@ -10,7 +10,7 @@ import LinkedList
 @configurable constant BONUS_COLOR = "|cFF00FF00"
 @configurable constant NEGATE_BONUS_COLOR = "|cFFFF0000"
 @configurable constant ACTIVE_EFFECT_COLOR = "|cffc3dbff"
-@configurable constant PASSIVE_EFFECT_COLOR = "|cfffffec3"
+@configurable constant PASSIVE_EFFECT_COLOR = "|cffd9f869"
 @configurable constant REQUIREMENTS_COLOR = "|cFFFFCC00"
 @configurable constant REQUIREMENTS_COST_COLOR = "|cFF969696"
 @configurable constant COMMENT_COLOR = "|cFF969696"

@@ -1,0 +1,71 @@
+package BootsOfSalvation
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import BuffObjEditing
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+
+public class BootsOfSalvation
+	static constant int GOLD_COST = 0
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Boots of Salvation"
+	static constant ICON = Icons.bTNBoots
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant int BUFF_ID = compiletime(BUFF_ID_GEN.next())
+	static constant real DURATION = 6
+	static constant real COOLDOWN = 8
+	static constant ACTIVE_EFFECT = "Allows to pass through other units for {0} seconds ({1} sec. cooldown).".format(DURATION.toInt().toString(), COOLDOWN.toInt().toString())
+	static constant BUFF_DESCRIPTION = "This unit can pass through other units."
+
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_EFFECT)
+
+	@compiletime static protected function build()
+		let abilDef = new AbilityDefinitionWindWalk(ABIL_ID)
+			..setName(NAME)
+			..setEditorSuffix("(Active)")
+			..setRace(ITEM_ABILITY_RACE)
+			..setLevels(1)
+			..setCheckDependencies(false)
+			..setManaCost(1, 0)
+			..setDurationNormal(1, DURATION)
+			..setDurationHero(1, DURATION)
+			..setCooldown(1, COOLDOWN)
+			..setBackstabDamage(1, 0)
+			..setBackstabDamage(1, false)
+			..setMovementSpeedIncrease(1, 0)
+			..setTransitionTime(1, -1)
+			..setBuffs(1, BUFF_ID.toRawCode())
+		new BuffDefinition(BUFF_ID, 'Basl')
+			..setArtTarget(1, "")
+			..setName(1, NAME)
+			..setTooltipNormal(1, NAME)
+			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+			..setIcon(ICON)
+		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(false)
+			..setCanBeSoldToMerchants(false)
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def..setAbilities(abilDef.getNewId().toRawCode())
+				..setCooldownGroup(abilDef.getNewId().toRawCode())

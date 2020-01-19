@@ -1,4 +1,4 @@
-package ArcaniteShield
+package PlateHelm
 import Assets
 import ItemObjEditing
 import ChannelAbilityPreset
@@ -7,28 +7,31 @@ import ItemTooltipGenerator
 import ItemAbilityPreset
 import RunedAlias
 import RareMerchant
-import RingOfProtection
+import HelmOfIronWill
+import RingOfRegeneration
 import GemOfHealth
 
 import LinkedList
 import ItemCombine
 
 
-public class ArcaniteShield
+public class PlateHelm
 	static constant CLASSIFICATION = "Permanent"
-	static constant NAME = "Arcanite Shield"
-	static constant ICON = Icons.bTNThoriumArmor
-	static constant int GOLD_COST = RingOfProtection.GOLD_COST + GemOfHealth.GOLD_COST + ArcaniteShieldRecipe.GOLD_COST
+	static constant NAME = "Plate Helm"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNPlateHelm.blp"
+	static constant int GOLD_COST = GemOfHealth.GOLD_COST + RingOfRegeneration.GOLD_COST + HelmOfIronWill.GOLD_COST + PlateHelmRecipe.GOLD_COST
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
-	static constant int DEFENSE = 4
-	static constant int HIT_POINTS = 150
+	static constant int DEFENSE = 5
+	static constant int HIT_POINTS = 125
+	static constant int HP_PER_SECOND = 8
 	
 	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 			
 	@compiletime protected static function build()
 		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
 		let hitPointsDef = buildHitPointsBonus(NAME, ICON, HIT_POINTS, tooltipGenerator)
+		let hpRegDef = buildLifeRegenerationBonus(NAME, ICON, HP_PER_SECOND, tooltipGenerator)
 		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
@@ -48,24 +51,25 @@ public class ArcaniteShield
 			..setInterfaceIcon(ICON)
 			tooltipGenerator.applyToDef(def)
 			if not isAlias
-				def.setAbilities("{0},{1}".format(defenseDef.getNewId().toRawCode(), hitPointsDef.getNewId().toRawCode()))
+				def.setAbilities("{0},{1},{2}".format(defenseDef.getNewId().toRawCode(), hitPointsDef.getNewId().toRawCode(), hpRegDef.getNewId().toRawCode()))
 
 
-public class ArcaniteShieldRecipe
+public class PlateHelmRecipe
 	static constant CLASSIFICATION = "Permanent"
-	static constant NAME = "{0} Recipe".format(ArcaniteShield.NAME)
+	static constant NAME = "{0} Recipe".format(PlateHelm.NAME)
 	static constant ICON = Icons.bTNSnazzyScrollGreen
-	static constant ALIAS_ICON = ArcaniteShield.ICON
-	static constant int SHOP_X = 0
+	static constant ALIAS_ICON = PlateHelm.ICON
+	static constant int SHOP_X = 2
 	static constant int SHOP_Y = 1
-	static constant int GOLD_COST = 200
+	static constant int GOLD_COST = 250
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-	protected static let tooltipGenerator = ArcaniteShield.tooltipGenerator.copy()
+	protected static let tooltipGenerator = PlateHelm.tooltipGenerator.copy()
 		..setName(NAME)
-		..addRecipeRequirement(RingOfProtection.NAME, RingOfProtection.GOLD_COST)
 		..addRecipeRequirement(GemOfHealth.NAME, GemOfHealth.GOLD_COST)
+		..addRecipeRequirement(RingOfRegeneration.NAME, RingOfRegeneration.GOLD_COST)
+		..addRecipeRequirement(HelmOfIronWill.NAME, HelmOfIronWill.GOLD_COST)
 		..addRecipeRequirement("Recipe", GOLD_COST)
 		..setComment("")
 
@@ -97,4 +101,4 @@ public class ArcaniteShieldRecipe
 
 
 init
-	new ItemCombine(ArcaniteShield.ID, asList<int>(RingOfProtection.ID, GemOfHealth.ID, ArcaniteShieldRecipe.ID))
+	new ItemCombine(PlateHelm.ID, asList<int>(RingOfRegeneration.ID, GemOfHealth.ID, HelmOfIronWill.ID, PlateHelmRecipe.ID))

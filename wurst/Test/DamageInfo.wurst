@@ -18,6 +18,8 @@ string array weaponTypeNames
 
 bool array showToPlayer
 
+var count = 0
+
 
 function onDamageEvent()
 	let attType = EventData.getDamageAttackType()
@@ -38,6 +40,8 @@ function onDamageEvent()
 	s += " Weapon: |cffd35e27" + weaponTypeNames[i]  + "|r"
 	if EventData.getEventId() == EVENT_PLAYER_UNIT_DAMAGING
 		print(" ")
+		print("Counter = {0}".format(count.toString()))
+		count++
 		print("Dealing damage = {0}".format(EventData.getEventDamage().toString()))
 		print(s)
 	else 

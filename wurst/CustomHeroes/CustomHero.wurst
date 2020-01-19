@@ -25,7 +25,7 @@ import public ObjEditingCommons
 @configurable constant int ATTACK_RANGE = 600
 @configurable constant ATTACK_TARGETS_ALLOWED = "ground,structure,debris,air,item,ward,enemy"
 @configurable constant int MINIMUM_ATTACK_RANGE = 250 // For ranged attacks
-@configurable constant MIMIMUM_RANGE_CIRCLE_COLOR = colorA(150, 150, 150, 150)
+@configurable constant MIMIMUM_RANGE_CIRCLE_COLOR = colorA(150, 150, 150, 100)
 
 @configurable constant int MAX_HP = 350
 @configurable constant int MAX_MANA = 50

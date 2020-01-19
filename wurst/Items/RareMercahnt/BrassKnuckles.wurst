@@ -26,7 +26,7 @@ public class BrassKnuckles
 	static constant int CHANCE = 30
 	static constant real STRENGTH_DAMAGE_FACTOR = 0.75
 	
-	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		..addPassiveEffect("Gives a {0}% chance to melee attacks to deal additional physical damage on hit equal to {1}% of the wearer strength.".format(CHANCE.toString(), (STRENGTH_DAMAGE_FACTOR * 100).toInt().toString()))
 		..setComment("Do you know da wae?")
 			
@@ -65,7 +65,7 @@ public class BrassKnucklesRecipe
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-	static protected let tooltipGenerator = BrassKnuckles.tooltipGenerator.copy()
+	protected static let tooltipGenerator = BrassKnuckles.tooltipGenerator.copy()
 		..setName(NAME)
 		..addRecipeRequirement(GauntletsOfOgre.NAME, GauntletsOfOgre.GOLD_COST)
 		..addRecipeRequirement(LumberjacksAxe.NAME, LumberjacksAxe.GOLD_COST)

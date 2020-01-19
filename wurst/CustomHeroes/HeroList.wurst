@@ -1,4 +1,4 @@
-package HeroesList
+package HeroList
 import HashMap
 import EventHelper
 import ClosureTimers
@@ -8,7 +8,7 @@ import ObjectIdGenerator
 import CustomHero
 
 
-public let heroesMap = new IterableMap<string, int>
+public let heroes = new IterableMap<string, int>
 	..put("Firelord", compiletime(buildFirelord()))
 	..put("Northerner", compiletime(buildNortherner()))
 	..put("Mad Poet", compiletime(buildMadPoet()))
@@ -25,8 +25,8 @@ public let heroesMap = new IterableMap<string, int>
 
 
 init /* TEST ======================== */
-/* 	for h in heroesMap
-		createUnit(localPlayer, heroesMap.get(h), gg_rct_Base.getCenter(), angle(0)) */
+/* 	for h in heroes
+		createUnit(localPlayer, heroes.get(h), gg_rct_Base.getCenter(), angle(0)) */
 
 
 function buildFirelord() returns int
@@ -257,7 +257,7 @@ init
 	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_SPELL_ENDCAST)
 	..addAction()-> 
 		let u = EventData.getTriggerUnit()
-		if  u.getTypeId() == compiletime(heroesMap.get("Ancient of Lore"))
+		if  u.getTypeId() == compiletime(heroes.get("Ancient of Lore"))
 			AddUnitAnimationProperties(u, "alternate", false) 
 
 

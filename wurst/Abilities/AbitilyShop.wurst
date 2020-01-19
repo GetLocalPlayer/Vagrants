@@ -1,9 +1,9 @@
 package AbitilyShop
 import LinkedList
 import HashMap
-import EventHelper
-
 import ChannelAbilityPreset
+
+import ClosureEvents
 
 
 @configurable constant MAX_ABILITIES_SOLD = 7
@@ -109,49 +109,47 @@ function executeUserTriggers(int abilId)
 		if trg.isEnabled() and trg.evaluate()
 			trg.execute()
 
-// HashMap<buyer, abilityCounter>
-let buyersCache = new HashMap<unit, int>
-
 init
-	CreateTrigger()
-	..registerAnyUnitEvent(EVENT_PLAYER_UNIT_SELL)
-	..addCondition(Condition( () -> EventData.getSoldUnit().getProperName().startsWith(PROPER_NAME_MARKER) ))
-	..addAction() ->
+	// <buyer, ability counter>
+	let abilitiesSold = new HashMap<unit, int>
+
+	EventListener.add(EVENT_PLAYER_UNIT_SELL) ->
 		let soldUnit = EventData.getSoldUnit()
-		let buyer = EventData.getBuyingUnit()
 		let properName = soldUnit.getProperName()
-		let abilIdString = properName.substring(PROPER_NAME_MARKER.length(), PROPER_NAME_MARKER.length() + 4)
-		let costString = properName.substring(PROPER_NAME_MARKER.length() + 4, properName.length())
-		let abilId = abilIdString.fromRawCode()
-		let cost = costString.toInt()
-		if not buyersCache.has(buyer)
-			buyersCache.put(buyer, 0)
-		if not buyer.hasAbility(abilId)
-			if buyersCache.get(buyer) == MAX_ABILITIES_SOLD
-				buyer.getOwner()..print(MSG_MAX_ABILITIES_SOLD)
-				..addLumber(cost)
+		if properName.startsWith(PROPER_NAME_MARKER)
+			let buyer = EventData.getBuyingUnit()
+			let abilIdString = properName.substring(PROPER_NAME_MARKER.length(), PROPER_NAME_MARKER.length() + 4)
+			let costString = properName.substring(PROPER_NAME_MARKER.length() + 4, properName.length())
+			let abilId = abilIdString.fromRawCode()
+			let cost = costString.toInt()
+			if not abilitiesSold.has(buyer)
+				abilitiesSold.put(buyer, 0)
+			if not buyer.hasAbility(abilId)
+				if abilitiesSold.get(buyer) == MAX_ABILITIES_SOLD
+					buyer.getOwner()..print(MSG_MAX_ABILITIES_SOLD)
+					..addLumber(cost)
+				else
+					buyer..addAbility(abilId)
+					..makeAbilityPermanent(abilId, true)
+					for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+						if players[i] != buyer.getOwner()
+							players[i].print(MSG_ABILITY_LEARNT.format(buyer.getOwner().getNameColored(), GetObjectName(abilId)))
+					flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
+					if localPlayer == buyer.getOwner()
+						let x = abilitiesSold.get(buyer) mod 4
+						let y = (11 - abilitiesSold.get(buyer)) div 4
+						setAbilityPosX(abilId, x)
+						setAbilityPosY(abilId, y)
+						setAbilityActivatedPosX(abilId, x)
+						setAbilityActivatedPosY(abilId, y)
+					abilitiesSold.put(buyer, abilitiesSold.get(buyer) + 1)
+					executeUserTriggers(abilId)
 			else
-				buyer..addAbility(abilId)
-				..makeAbilityPermanent(abilId, true)
-				for i = 0 to bj_MAX_PLAYER_SLOTS - 1
-					if players[i] != buyer.getOwner()
-						players[i].print(MSG_ABILITY_LEARNT.format(buyer.getOwner().getNameColored(), GetObjectName(abilId)))
-				flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
-				if localPlayer == buyer.getOwner()
-					let x = buyersCache.get(buyer) mod 4
-					let y = (11 - buyersCache.get(buyer)) div 4
-					BlzSetAbilityPosX(abilId, x)
-					BlzSetAbilityPosY(abilId, y)
-					BlzSetAbilityActivatedPosX(abilId, x)
-					BlzSetAbilityActivatedPosY(abilId, y)
-				buyersCache.put(buyer, buyersCache.get(buyer) + 1)
-				executeUserTriggers(abilId)
-		else
-			if buyer.getAbilityLevel(abilId) < buyer.getAbility(abilId).getField(ABILITY_IF_LEVELS)
-				buyer.incAbilityLevel(abilId)
-				flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
-				executeUserTriggers(abilId)
-			else
-				buyer.getOwner()..print(MSG_MAX_LEVEL.format(GetObjectName(abilId)))
-				..addLumber(cost)
-		soldUnit.remove()
+				if buyer.getAbilityLevel(abilId) < buyer.getAbility(abilId).getField(ABILITY_IF_LEVELS)
+					buyer.incAbilityLevel(abilId)
+					flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
+					executeUserTriggers(abilId)
+				else
+					buyer.getOwner()..print(MSG_MAX_LEVEL.format(GetObjectName(abilId)))
+					..addLumber(cost)
+			soldUnit.remove()

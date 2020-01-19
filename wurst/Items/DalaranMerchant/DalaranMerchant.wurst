@@ -1,4 +1,4 @@
-package FleaMarket
+package DalaranMerchant
 import Assets
 import ObjectIdGenerator
 import UnitObjEditing
@@ -9,20 +9,20 @@ import MapBounds
 
 
 let shopId = compiletime(UNIT_ID_GEN.next())
-let originalShopId = 'n013'
+let originalShopId = 'n00X'
 
-public ItemShopPreset fleaMarket
+public ItemShopPreset dalaranMerchant
 
 
 @compiletime function build()
-	fleaMarket = new ItemShopPreset(shopId, Icons.bTNPeasant, "Flea Market", Soundsets.peasant, Units.peasant1)
+	dalaranMerchant = new ItemShopPreset(shopId, Icons.bTNHeroArchMage, "Dalaran Merchant", Soundsets.heroArchMage, Units.heroArchMage)
 	..setArmorType(ArmorType.Normal)
 	..setGroundTexture("")
 	..setCollisionSize(0)
 	..setMovementType(MovementType.Fly)
 	..setPathingMap("")
-	..setScalingValue(1.5)
-	..setSelectionScale(1.3)
+	..setScalingValue(1.1)
+	..setSelectionScale(2.0)
 
 
 init

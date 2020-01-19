@@ -1,13 +1,13 @@
 globals
 //globals from AnyUnitDamagedEvent:
 constant boolean LIBRARY_AnyUnitDamagedEvent=true
-trigger AnyUnitDamagedEvent___MainTrigger= CreateTrigger()
-trigger array AnyUnitDamagedEvent___UserTriggers
-integer AnyUnitDamagedEvent___Counter= 0
+trigger AnyUnitDamagedEvent__MainTrigger= CreateTrigger()
+trigger array AnyUnitDamagedEvent__UserTriggers
+integer AnyUnitDamagedEvent__Counter= 0
 //endglobals from AnyUnitDamagedEvent
 //globals from Group:
 constant boolean LIBRARY_Group=true
-unit Group___ReturnUnit
+unit Group__ReturnUnit
 //endglobals from Group
 //globals from Math:
 constant boolean LIBRARY_Math=true
@@ -25,17 +25,8 @@ constant boolean LIBRARY_Table=true
 //endglobals from Table
 //globals from Unit:
 constant boolean LIBRARY_Unit=true
-location Unit___Loc= Location(0, 0)
+location Unit__Loc= Location(0, 0)
 //endglobals from Unit
-//globals from ItemAzureScale:
-constant boolean LIBRARY_ItemAzureScale=true
-constant integer ItemAzureScale___ABILITY_ID= 'A060'
-constant integer ItemAzureScale___BUFF_ID= 'B00A'
-constant real ItemAzureScale___DAMAGE_BLOCKED= 200
-constant real ItemAzureScale___DURATION= 10
-constant integer ItemAzureScale___BONUS_HEALTH_ID= 'A010'
-integer ItemAzureScale___table
-//endglobals from ItemAzureScale
     // User-defined
 integer udg_CountPlayers= 0
 integer udg_CountLevels= 0
@@ -217,18 +208,6 @@ trigger gg_trg_PlayingPlayers= null
 trigger gg_trg_Group= null
 trigger gg_trg_Math= null
 trigger gg_trg_Unit= null
-trigger gg_trg_Item_DB= null
-trigger gg_trg_Pick_up_item= null
-trigger gg_trg_Sale_charged_item= null
-trigger gg_trg_Pick_up_charged_item= null
-trigger gg_trg_Pick_normal_to_rune= null
-trigger gg_trg_Drop_item= null
-trigger gg_trg_Azure_Scale= null
-trigger gg_trg_Brass_Knuckles= null
-trigger gg_trg_Charge_of_thunder= null
-trigger gg_trg_Thunderclap= null
-trigger gg_trg_Halberd_use= null
-trigger gg_trg_Halberd_attack= null
 trigger gg_trg_Portal_Out_Base= null
 trigger gg_trg_Start_Wave_1= null
 trigger gg_trg_Start_Wave_2= null
@@ -367,18 +346,7 @@ integer si__Table_F=0
 integer si__Table_I=0
 integer array si__Table_V
 hashtable array s__Table_hash
-constant integer si__ItemAzureScale___AzureScaleShield=2
-integer si__ItemAzureScale___AzureScaleShield_F=0
-integer si__ItemAzureScale___AzureScaleShield_I=0
-integer array si__ItemAzureScale___AzureScaleShield_V
-unit array s__ItemAzureScale___AzureScaleShield_caster
-real array s__ItemAzureScale___AzureScaleShield_amount
-timer array s__ItemAzureScale___AzureScaleShield_tim
-group s__ItemAzureScale___AzureScaleShield_shieldedUnits= CreateGroup()
 trigger st__Table_onDestroy
-trigger st__ItemAzureScale___AzureScaleShield_onDestroy
-trigger st__ItemAzureScale___AzureScaleShield_onShieldExpired
-trigger st__ItemAzureScale___AzureScaleShield_destroy
 integer f__arg_this
 
 endglobals
@@ -421,83 +389,42 @@ function sc__Table_deallocate takes integer this returns nothing
     set si__Table_F=this
 endfunction
 
-//Generated method caller for ItemAzureScale___AzureScaleShield.onDestroy
-function sc__ItemAzureScale___AzureScaleShield_onDestroy takes integer this returns nothing
-    set f__arg_this=this
-    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onDestroy)
-endfunction
-
-//Generated method caller for ItemAzureScale___AzureScaleShield.onShieldExpired
-function sc__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns nothing
-    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onShieldExpired)
-endfunction
-
-//Generated allocator of ItemAzureScale___AzureScaleShield
-function s__ItemAzureScale___AzureScaleShield__allocate takes nothing returns integer
- local integer this=si__ItemAzureScale___AzureScaleShield_F
-    if (this!=0) then
-        set si__ItemAzureScale___AzureScaleShield_F=si__ItemAzureScale___AzureScaleShield_V[this]
-    else
-        set si__ItemAzureScale___AzureScaleShield_I=si__ItemAzureScale___AzureScaleShield_I+1
-        set this=si__ItemAzureScale___AzureScaleShield_I
-    endif
-    if (this>8190) then
-        return 0
-    endif
-
-    set si__ItemAzureScale___AzureScaleShield_V[this]=-1
- return this
-endfunction
-
-//Generated destructor of ItemAzureScale___AzureScaleShield
-function sc__ItemAzureScale___AzureScaleShield_deallocate takes integer this returns nothing
-    if this==null then
-        return
-    elseif (si__ItemAzureScale___AzureScaleShield_V[this]!=-1) then
-        return
-    endif
-    set f__arg_this=this
-    call TriggerEvaluate(st__ItemAzureScale___AzureScaleShield_onDestroy)
-    set si__ItemAzureScale___AzureScaleShield_V[this]=si__ItemAzureScale___AzureScaleShield_F
-    set si__ItemAzureScale___AzureScaleShield_F=this
-endfunction
-
 //library AnyUnitDamagedEvent:
 
 
 function TriggerRegisterAnyUnitDamagedEvent takes trigger trg returns nothing
-    set AnyUnitDamagedEvent___UserTriggers[AnyUnitDamagedEvent___Counter]=trg
-    set AnyUnitDamagedEvent___Counter=AnyUnitDamagedEvent___Counter + 1
+    set AnyUnitDamagedEvent__UserTriggers[AnyUnitDamagedEvent__Counter]=trg
+    set AnyUnitDamagedEvent__Counter=AnyUnitDamagedEvent__Counter + 1
 endfunction
 
-function AnyUnitDamagedEvent___EvaluateMainTrigger takes nothing returns nothing
+function AnyUnitDamagedEvent__EvaluateMainTrigger takes nothing returns nothing
     local integer i= 0
     loop
-    exitwhen i == AnyUnitDamagedEvent___Counter
-        if TriggerEvaluate(AnyUnitDamagedEvent___UserTriggers[i]) then
-            call TriggerExecute(AnyUnitDamagedEvent___UserTriggers[i])
+    exitwhen i == AnyUnitDamagedEvent__Counter
+        if TriggerEvaluate(AnyUnitDamagedEvent__UserTriggers[i]) then
+            call TriggerExecute(AnyUnitDamagedEvent__UserTriggers[i])
         endif
         set i=i + 1
     endloop
 endfunction
 
-function AnyUnitDamagedEvent___RegisterNewUnit takes nothing returns nothing
-    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent___MainTrigger, GetEnteringUnit(), EVENT_UNIT_DAMAGED)
+function AnyUnitDamagedEvent__RegisterNewUnit takes nothing returns nothing
+    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent__MainTrigger, GetEnteringUnit(), EVENT_UNIT_DAMAGED)
 endfunction
 
-function AnyUnitDamagedEvent___RegisterEntireMapUnits takes nothing returns nothing
-    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent___MainTrigger, GetEnumUnit(), EVENT_UNIT_DAMAGED)
+function AnyUnitDamagedEvent__RegisterEntireMapUnits takes nothing returns nothing
+    call TriggerRegisterUnitEvent(AnyUnitDamagedEvent__MainTrigger, GetEnumUnit(), EVENT_UNIT_DAMAGED)
 endfunction
 
-function AnyUnitDamagedEvent___Init takes nothing returns nothing
+function AnyUnitDamagedEvent__Init takes nothing returns nothing
     local trigger trg= CreateTrigger()
     local group gr= CreateGroup()
     call TriggerRegisterEnterRectSimple(trg, GetWorldBounds())
-    call TriggerAddAction(trg, function AnyUnitDamagedEvent___RegisterNewUnit)
+    call TriggerAddAction(trg, function AnyUnitDamagedEvent__RegisterNewUnit)
     call GroupEnumUnitsInRect(gr, GetWorldBounds(), null)
-    call ForGroup(gr, function AnyUnitDamagedEvent___RegisterEntireMapUnits)
+    call ForGroup(gr, function AnyUnitDamagedEvent__RegisterEntireMapUnits)
     call DestroyGroup(gr)
-    call TriggerAddAction(AnyUnitDamagedEvent___MainTrigger, function AnyUnitDamagedEvent___EvaluateMainTrigger)
+    call TriggerAddAction(AnyUnitDamagedEvent__MainTrigger, function AnyUnitDamagedEvent__EvaluateMainTrigger)
     set gr=null
 endfunction
 
@@ -517,14 +444,14 @@ function RandomOfGroup takes group gr returns unit
         set allUnits[i]=u
         set i=i + 1
     endloop
-    set Group___ReturnUnit=allUnits[GetRandomInt(0, i - 1)]
+    set Group__ReturnUnit=allUnits[GetRandomInt(0, i - 1)]
     loop
         set i=i - 1
     exitwhen i < 0
         call GroupAddUnit(gr, allUnits[i])
         set allUnits[i]=null
     endloop
-    return Group___ReturnUnit
+    return Group__ReturnUnit
 endfunction
 
 
@@ -581,7 +508,7 @@ function GetPlayerNameColored takes player p returns string
     return PlayerColor[GetPlayerId(p)] + GetPlayerName(p) + "|r"
 endfunction
 
-function PlayerColor___Init takes nothing returns nothing
+function PlayerColor__Init takes nothing returns nothing
     set PlayerColor[0]="|c00ff0303"
     set PlayerColor[1]="|c000042ff"
     set PlayerColor[2]="|c001ce6b9"
@@ -613,11 +540,11 @@ function IsOwningPlayerPlaying takes unit u returns boolean
     return (IsPlayerInForce((GetOwningPlayer(u)), PlayingPlayers)) // INLINED!!
 endfunction
 
-function PlayingPlayers___RemovePlayerFromForce takes nothing returns nothing
+function PlayingPlayers__RemovePlayerFromForce takes nothing returns nothing
     call ForceRemovePlayer(PlayingPlayers, GetTriggerPlayer())
 endfunction
 
-function PlayingPlayers___Init takes nothing returns nothing
+function PlayingPlayers__Init takes nothing returns nothing
     local integer i= 0
     local trigger trg= CreateTrigger()
     loop
@@ -628,7 +555,7 @@ function PlayingPlayers___Init takes nothing returns nothing
         endif
         set i=i + 1
     endloop
-    call TriggerAddAction(trg, function PlayingPlayers___RemovePlayerFromForce)
+    call TriggerAddAction(trg, function PlayingPlayers__RemovePlayerFromForce)
 endfunction
 
 
@@ -1054,13 +981,13 @@ endfunction
 
 // функция точнго вычесления координаты Z юнита
 function GetUnitZ takes unit u returns real
-    call MoveLocation(Unit___Loc, GetUnitX(u), GetUnitY(u))
-    return GetLocationZ(Unit___Loc) + GetUnitFlyHeight(u)
+    call MoveLocation(Unit__Loc, GetUnitX(u), GetUnitY(u))
+    return GetLocationZ(Unit__Loc) + GetUnitFlyHeight(u)
 endfunction
 
 function SetUnitZ takes unit u,real z returns nothing
-    call MoveLocation(Unit___Loc, GetUnitX(u), GetUnitY(u))
-    call SetUnitFlyHeight(u, z - GetLocationZ(Unit___Loc), 0)
+    call MoveLocation(Unit__Loc, GetUnitX(u), GetUnitY(u))
+    call SetUnitFlyHeight(u, z - GetLocationZ(Unit__Loc), 0)
 endfunction
 
 
@@ -1082,124 +1009,13 @@ function CountItemsById takes unit u,integer itemId returns integer
 endfunction
 
 //library Unit ends
-//library ItemAzureScale:
-
-
-
-    
-    
-    function s__ItemAzureScale___AzureScaleShield_create takes unit caster,real amount,real duration returns integer
-        local integer this= s__ItemAzureScale___AzureScaleShield__allocate()
-        set s__ItemAzureScale___AzureScaleShield_caster[this]=caster
-        set s__ItemAzureScale___AzureScaleShield_amount[this]=amount
-        set s__ItemAzureScale___AzureScaleShield_tim[this]=CreateTimer()
-        call TimerStart(s__ItemAzureScale___AzureScaleShield_tim[this], ItemAzureScale___DURATION, false, function sc__ItemAzureScale___AzureScaleShield_onShieldExpired)
-        call GroupAddUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
-        call SaveInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]) ), ( this)) // INLINED!!
-        call SaveInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]) ), ( this)) // INLINED!!
-        return this
-    endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_removeBonusHp takes nothing returns nothing
-        local timer t= GetExpiredTimer()
-        local unit u= (LoadUnitHandle(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(t) ), ( 0))) // INLINED!!
-        local real health= GetWidgetLife(u)
-        call UnitRemoveAbility(u, ItemAzureScale___BONUS_HEALTH_ID)
-        call SetWidgetLife(u, health)
-        call DestroyTimer(t)
-        set t=null
-        set u=null
-    endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_actions takes nothing returns nothing
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetTriggerUnit())))) // INLINED!!
-        local real damage= GetEventDamage()
-        local real health= GetWidgetLife(s__ItemAzureScale___AzureScaleShield_caster[shield])
-        local real healing
-        local timer t
-        if s__ItemAzureScale___AzureScaleShield_amount[shield] <= damage then
-            set healing=s__ItemAzureScale___AzureScaleShield_amount[shield]
-            set s__ItemAzureScale___AzureScaleShield_amount[shield]=- 1.
-        else
-            set healing=damage
-            set s__ItemAzureScale___AzureScaleShield_amount[shield]=s__ItemAzureScale___AzureScaleShield_amount[shield] - healing
-        endif
-        if GetUnitState(s__ItemAzureScale___AzureScaleShield_caster[shield], UNIT_STATE_MAX_LIFE) < health + healing then
-            call UnitAddAbility(s__ItemAzureScale___AzureScaleShield_caster[shield], ItemAzureScale___BONUS_HEALTH_ID)
-            set t=CreateTimer()
-call SaveUnitHandle(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(t) ), ( 0 ), ( s__ItemAzureScale___AzureScaleShield_caster[shield])) // INLINED!!
-            call TimerStart(t, 0, false, function s__ItemAzureScale___AzureScaleShield_removeBonusHp)
-        endif
-        call SetWidgetLife(s__ItemAzureScale___AzureScaleShield_caster[shield], health + healing)
-        if s__ItemAzureScale___AzureScaleShield_amount[shield] < 0 then
-            call sc__ItemAzureScale___AzureScaleShield_deallocate(shield)
-        endif
-        set t=null
-    endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_conditions takes nothing returns boolean
-        return IsUnitInGroup(GetTriggerUnit(), s__ItemAzureScale___AzureScaleShield_shieldedUnits)
-    endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_onInit takes nothing returns nothing
-        local trigger trg= CreateTrigger()
-        call TriggerRegisterAnyUnitDamagedEvent(trg)
-        call TriggerAddCondition(trg, Condition(function s__ItemAzureScale___AzureScaleShield_conditions))
-        call TriggerAddAction(trg, function s__ItemAzureScale___AzureScaleShield_actions)
-    endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_onDestroy takes integer this returns nothing
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]))) // INLINED!!
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]))) // INLINED!!
-        call GroupRemoveUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
-        call DestroyTimer(s__ItemAzureScale___AzureScaleShield_tim[this])
-        call UnitRemoveAbility(s__ItemAzureScale___AzureScaleShield_caster[this], ItemAzureScale___BUFF_ID)
-        set s__ItemAzureScale___AzureScaleShield_caster[this]=null
-        set s__ItemAzureScale___AzureScaleShield_tim[this]=null
-    endfunction
-
-//Generated destructor of ItemAzureScale___AzureScaleShield
-function s__ItemAzureScale___AzureScaleShield_deallocate takes integer this returns nothing
-    if this==null then
-        return
-    elseif (si__ItemAzureScale___AzureScaleShield_V[this]!=-1) then
-        return
-    endif
-    call s__ItemAzureScale___AzureScaleShield_onDestroy(this)
-    set si__ItemAzureScale___AzureScaleShield_V[this]=si__ItemAzureScale___AzureScaleShield_F
-    set si__ItemAzureScale___AzureScaleShield_F=this
-endfunction
-    
-    function s__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns nothing
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
-        call s__ItemAzureScale___AzureScaleShield_deallocate(shield)
-    endfunction
-
-function ItemAzureScale___CastActions takes nothing returns nothing
-    call s__ItemAzureScale___AzureScaleShield_create(GetTriggerUnit() , ItemAzureScale___DAMAGE_BLOCKED , ItemAzureScale___DURATION)
-endfunction
-
-function ItemAzureScale___CastConditions takes nothing returns boolean
-    return GetSpellAbilityId() == ItemAzureScale___ABILITY_ID
-endfunction
-
-function ItemAzureScale___Init takes nothing returns nothing
-    local trigger trg= CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(trg, EVENT_PLAYER_UNIT_SPELL_EFFECT)
-    call TriggerAddCondition(trg, Condition(function ItemAzureScale___CastConditions))
-    call TriggerAddAction(trg, function ItemAzureScale___CastActions)
-    set ItemAzureScale___table=(s__Table__allocate()) // INLINED!!
-endfunction
-
-
-//library ItemAzureScale ends
 //===========================================================================
 // 
 // CH (test)
 // 
 //   Warcraft III map script
 //   Generated by the Warcraft III World Editor
-//   Date: Wed Jan 15 23:50:33 2020
+//   Date: Mon Jan 20 00:21:58 2020
 //   Map Author: Impereon, GetLocalPlayer
 // 
 //===========================================================================
@@ -1478,17 +1294,6 @@ endfunction
 //***************************************************************************
 
 //===========================================================================
-function CreateNeutralPassiveBuildings takes nothing returns nothing
-    local player p= Player(PLAYER_NEUTRAL_PASSIVE)
-    local unit u
-    local integer unitID
-    local trigger t
-    local real life
-
-    set u=CreateUnit(p, 'n00X', 64.0, 8384.0, 270.000)
-endfunction
-
-//===========================================================================
 function CreateNeutralPassive takes nothing returns nothing
     local player p= Player(PLAYER_NEUTRAL_PASSIVE)
     local unit u
@@ -1502,13 +1307,14 @@ function CreateNeutralPassive takes nothing returns nothing
     set u=CreateUnit(p, 'n007', - 1984.0, 7040.0, 127.842)
     set u=CreateUnit(p, 'n009', - 960.0, 7296.0, 106.659)
     set u=CreateUnit(p, 'n00A', - 1152.0, 8000.0, 270.000)
-    set u=CreateUnit(p, 'n00U', - 320.0, 8384.0, 270.000)
-    set u=CreateUnit(p, 'n00S', - 448.0, 8384.0, 270.000)
+    set u=CreateUnit(p, 'n00U', - 504.4, 8314.3, 339.854)
+    set u=CreateUnit(p, 'n00S', - 638.9, 8190.7, 319.002)
     set u=CreateUnit(p, 'n008', - 1280.0, 7104.0, 138.027)
-    set u=CreateUnit(p, 'n00B', - 2240.0, 7808.0, 17.631)
+    set u=CreateUnit(p, 'n00X', 132.5, 8321.1, 230.919)
+    set u=CreateUnit(p, 'n00B', - 2240.0, 7808.0, 17.630)
     set u=CreateUnit(p, 'n00C', - 1600.0, 7040.0, 56.725)
-    set u=CreateUnit(p, 'n013', - 192.0, 8384.0, 270.000)
-    set u=CreateUnit(p, 'n01C', - 64.0, 8384.0, 270.000)
+    set u=CreateUnit(p, 'n013', - 379.5, 8413.3, 258.899)
+    set u=CreateUnit(p, 'n01C', - 19.7, 8452.1, 271.114)
 endfunction
 
 //===========================================================================
@@ -1521,7 +1327,6 @@ endfunction
 
 //===========================================================================
 function CreateAllUnits takes nothing returns nothing
-    call CreateNeutralPassiveBuildings()
     call CreatePlayerBuildings()
     call CreateNeutralPassive()
     call CreatePlayerUnits()
@@ -1938,8 +1743,6 @@ function Trig_Init_Hero_Wurst_Compatability_Func001A takes nothing returns nothi
         set udg_Heroes[udg_Integer]=GetEnumUnit()
         call ModifyHeroSkillPoints(GetEnumUnit(), bj_MODIFYMETHOD_ADD, 12)
         call SetPlayerHandicapXPBJ(GetOwningPlayer(GetEnumUnit()), 0.00)
-        call UnitAddItemByIdSwapped('I01S', GetEnumUnit())
-        call SetItemPlayerBJ(GetLastCreatedItem(), GetOwningPlayer(GetEnumUnit()), true)
         call SelectUnitForPlayerSingle(GetEnumUnit(), GetOwningPlayer(GetEnumUnit()))
         call AdjustPlayerStateBJ(3, GetOwningPlayer(GetEnumUnit()), PLAYER_STATE_RESOURCE_LUMBER)
         call AdjustPlayerStateBJ(300, GetOwningPlayer(GetEnumUnit()), PLAYER_STATE_RESOURCE_GOLD)
@@ -2709,800 +2512,6 @@ endfunction
 //TESH.scrollpos=4
 //TESH.alwaysfold=0
 function InitTrig_Unit takes nothing returns nothing
-endfunction
-
-
-//===========================================================================
-// Trigger: Item DB
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-
-
-function RegisterRuneItem takes integer pickedUpItemId,integer givenItemId returns nothing
-    set udg_Item_pick_up[udg_Items_count]=pickedUpItemId
-    set udg_Item_to_give[udg_Items_count]=givenItemId
-    set udg_Items_count=udg_Items_count + 1
-endfunction
-
-function Trig_Item_DB_Actions takes nothing returns nothing
-    call RegisterRuneItem('I00G' , 'I00B') // Defender Spaulders (recipe)
-    call RegisterRuneItem('I00H' , 'I008') // Claws of Attack
-    call RegisterRuneItem('I00I' , 'I002') // Pendant of Energy
-    call RegisterRuneItem('I00J' , 'I00D') // Wand of Neutralization
-    call RegisterRuneItem('I00K' , 'I004') // Gem of Helath
-    call RegisterRuneItem('I00L' , 'I009') // Ring of Protection
-    call RegisterRuneItem('I00M' , 'I00C') // Ring of Regeneration
-    call RegisterRuneItem('I00N' , 'I000') // Defender Spaulders
-    call RegisterRuneItem('I00O' , 'I005') // Mantle of Intelligence
-    call RegisterRuneItem('I00P' , 'I02H') // Hunting Bow
-    call RegisterRuneItem('I00Q' , 'I003') // Hunting Bow (recipe)
-    call RegisterRuneItem('I00S' , 'I02D') // Cursed Armor
-    call RegisterRuneItem('I00T' , 'I001') // Cursed Bow
-    call RegisterRuneItem('I00U' , 'I02E') // Cursed Talisman
-    call RegisterRuneItem('I00V' , 'I006') // Gauntlets of Ogre
-    call RegisterRuneItem('I00W' , 'I007') // Slippers of Agility
-    call RegisterRuneItem('I00Y' , 'I00E') // Shaman Claws
-    call RegisterRuneItem('I00X' , 'I00R') // Shaman Claws (recipe)
-    call RegisterRuneItem('I011' , 'stwa') // Lumberjack's Axe
-    call RegisterRuneItem('I012' , 'gcel') // Gloves of Haste
-    call RegisterRuneItem('I016' , 'hlst') // Health Stone
-    call RegisterRuneItem('I015' , 'mnst') // Mana Stone
-    call RegisterRuneItem('I017' , 'mnsf') // Mindstaff
-    call RegisterRuneItem('I01C' , 'arsh') // Arcanite Shield
-    call RegisterRuneItem('I01F' , 'I01E') // Chain Mail
-    call RegisterRuneItem('I01G' , 'I01S') // Boots of Salvation
-    call RegisterRuneItem('I01I' , 'I01H') // Azure Scale
-    call RegisterRuneItem('I01K' , 'I01J') // Azure Scale (recipe)
-    call RegisterRuneItem('I01M' , 'I01L') // Helm of Iron Will
-    call RegisterRuneItem('I01O' , 'I01N') // Plate Helmet (recipe)
-    call RegisterRuneItem('I01Q' , 'I01P') // Plate Helmet
-    call RegisterRuneItem('I01V' , 'rwiz') // Sobi Mask
-    call RegisterRuneItem('I025' , 'ciri') // Robe of the Magi
-    call RegisterRuneItem('I01D' , 'I026') // Arcanite Shield (recipe)
-    call RegisterRuneItem('I027' , 'I028') // Vanguard (recipe)
-    call RegisterRuneItem('I02A' , 'I029') // Vanguard
-    call RegisterRuneItem('I02B' , 'mlst') // Blacksmith Hammer
-    call RegisterRuneItem('I02Z' , 'ratc') // Knife
-    call RegisterRuneItem('I031' , 'I030') // Stron Cane
-    call RegisterRuneItem('I032' , 'lnrn') // Lion's Ring
-    call RegisterRuneItem('I033' , 'anfg') // Ancient Figurine
-    call RegisterRuneItem('I034' , 'rat6') // Brass Knuckles
-    call RegisterRuneItem('I035' , 'I038') // Brass Knuckles (recipe)
-    call RegisterRuneItem('I036' , 'rat9') // Wakizashi
-    call RegisterRuneItem('I039' , 'rhth') // Thunderstaff
-    call RegisterRuneItem('I03A' , 'I03B') // Thunderstaff (recipe)
-    call RegisterRuneItem('I03C' , 'I03D') // Dark Heart (recipe)
-    call RegisterRuneItem('I03E' , 'I03F') // Dark Heart
-    call RegisterRuneItem('I03H' , 'penr') // Spear
-    call RegisterRuneItem('I03G' , 'pmna') // Halberd (recipe)
-    call RegisterRuneItem('I03I' , 'spsh') // Halberd
-    call RegisterRuneItem('I03J' , 'ward') // Frost Wyrm Shield (recipe)
-    call RegisterRuneItem('I03K' , 'dsum') // Frost Wyrm Shield
-    call RegisterRuneItem('I03P' , 'rde3') // Demonic Figurine (recipe)
-    call RegisterRuneItem('I03Q' , 'rde2') // Demonic Figurine
-    call RegisterRuneItem('I03R' , 'I03S') // Draenei and Elves magazine (for tests)
-endfunction
-
-//===========================================================================
-function InitTrig_Item_DB takes nothing returns nothing
-    set gg_trg_Item_DB=CreateTrigger()
-    call TriggerAddAction(gg_trg_Item_DB, function Trig_Item_DB_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Pick up item
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-
-function ItemSex takes unit u,integer item_gv,integer item1,integer item2,integer item3,integer item4,integer item5,integer item6,integer item7,integer result returns integer
-    local item array it
-    local integer array it_id
-    local integer it_gv= item_gv
-    local integer n= 0
-    local integer m= 0
-    local integer a= 0
-    local integer score= 0
-    local integer sex_score= 0
-    local effect eff
-    if item_gv == 0 or ( item_gv != item1 and item_gv != item2 and item_gv != item3 and item_gv != item4 and item_gv != item5 and item_gv != item6 ) then
-        set u=null
-        return item_gv
-    endif
-    set it[0]=UnitItemInSlot(u, 0)
-    set it[1]=UnitItemInSlot(u, 1)
-    set it[2]=UnitItemInSlot(u, 2)
-    set it[3]=UnitItemInSlot(u, 3)
-    set it[4]=UnitItemInSlot(u, 4)
-    set it[5]=UnitItemInSlot(u, 5)
-    set it[6]=CreateItem(item_gv, GetUnitX(u), GetUnitY(u))
-    set it_id[0]=item1
-    set it_id[1]=item2
-    set it_id[2]=item3
-    set it_id[3]=item4
-    set it_id[4]=item5
-    set it_id[5]=item6
-    set it_id[6]=item7
-    loop
-    exitwhen m == 7
-        if it_id[m] != 0 then
-            set sex_score=sex_score + 1
-        endif
-        set m=m + 1
-    endloop
-    set m=0
-    loop
-    exitwhen n == 7 or score == sex_score
-        if it[n] != null then
-            loop
-            exitwhen m == 7
-                if GetItemTypeId(it[n]) == it_id[m] then
-                    set score=score + 1
-                    set it_id[m]=0
-                    set m=6
-                else
-                    set m=m + 1
-                endif
-            endloop
-        endif
-        set n=n + 1
-        set m=0
-    endloop
-    set n=0
-    set m=0
-    call RemoveItem(it[6])
-    if score == sex_score then
-        set it_id[0]=item1
-        set it_id[1]=item2
-        set it_id[2]=item3
-        set it_id[3]=item4
-        set it_id[4]=item5
-        set it_id[5]=item6
-        set it_id[6]=item7
-        loop
-        exitwhen n == 6
-            if it[n] != null then
-                loop
-                exitwhen m == 6
-                    if GetItemTypeId(it[n]) == it_id[m] then
-                        call SetItemInvulnerable(it[n], true)
-                        call RemoveItem(it[n])
-                        set it_id[m]=0
-                        set m=6
-                    else
-                        set m=m + 1
-                    endif
-                endloop
-            endif
-            set n=n + 1
-            set m=0
-        endloop
-        set eff=AddSpecialEffectTarget("Abilities\\Spells\\Items\\AIsm\\AIsmTarget.mdl", u, "origin")
-        call DestroyEffect(eff)
-        set it[8]=UnitAddItemById(u, result)
-        call SetItemPlayer(it[8], GetOwningPlayer(u), true)
-        set u=null
-        set eff=null
-        return 0
-    else
-        set u=null
-        return item_gv
-    endif
-endfunction
-
-function Trig_Pick_up_item_Conditions takes nothing returns boolean
-    return GetItemType(GetManipulatedItem()) == ITEM_TYPE_PURCHASABLE
-endfunction
-
-function Trig_Pick_up_item_Actions takes nothing returns nothing
-    local unit u= GetTriggerUnit()
-    local item it= GetManipulatedItem()
-    local real it_x= GetItemX(it)
-    local real it_y= GetItemY(it)
-    local player p= GetItemPlayer(it)
-    local integer it_up= GetItemTypeId(it)
-    local integer it_gv
-    local integer n= 0
-    if GetItemPlayer(it) == Player(PLAYER_NEUTRAL_PASSIVE) then
-        call SetItemPlayer(it, GetOwningPlayer(u), true)
-    elseif GetItemPlayer(it) != GetOwningPlayer(u) then
-        call RemoveItem(it)
-        set it=CreateItem(it_up, it_x, it_y)
-        call SetItemPlayer(it, p, true)
-        set u=null
-        set it=null
-        return
-    endif
-    loop
-    exitwhen it_up == udg_Item_pick_up[n] or n == 100
-        set n=n + 1
-    endloop
-    if n == 100 then
-        call RemoveItem(it)
-        set it=null
-        set u=null
-        set p=null
-        return
-    else
-        set it_gv=udg_Item_to_give[n]
-    endif
-    set it_gv=ItemSex(u , it_gv , 'I00A' , 'I00D' , 'I02E' , 0 , 0 , 0 , 0 , 'I00I')
-    set it_gv=ItemSex(u , it_gv , 'I00B' , 'I00D' , 'I02D' , 0 , 0 , 0 , 0 , 'I000')
-    set it_gv=ItemSex(u , it_gv , 'I003' , 'I00D' , 'I001' , 0 , 0 , 0 , 0 , 'I02H')
-    set it_gv=ItemSex(u , it_gv , 'I008' , 'I00R' , 'I006' , 'I007' , 0 , 0 , 0 , 'I00E')
-    set it_gv=ItemSex(u , it_gv , 'I008' , 'I006' , 'stwa' , 'gcel' , 'I010' , 0 , 0 , 'I00Z')
-    set it_gv=ItemSex(u , it_gv , 'mnsf' , 'I005' , 0 , 'I00D' , 'I019' , 0 , 0 , 'I01A')
-    set it_gv=ItemSex(u , it_gv , 'I009' , 'I004' , 'I026' , 0 , 0 , 0 , 0 , 'I01C')
-    set it_gv=ItemSex(u , it_gv , 'I009' , 'I009' , 'I01J' , 'I01E' , 0 , 0 , 0 , 'I01I')
-    set it_gv=ItemSex(u , it_gv , 'I01N' , 'I00C' , 'I004' , 'I01L' , 0 , 0 , 0 , 'I01Q')
-    set it_gv=ItemSex(u , it_gv , 'rwiz' , 'I005' , 'I005' , 0 , 0 , 0 , 0 , 'I025')
-    set it_gv=ItemSex(u , it_gv , 'arsh' , 'I01H' , 'I028' , 0 , 0 , 0 , 0 , 'I029')
-    set it_gv=ItemSex(u , it_gv , 'I006' , 'stwa' , 'I038' , 0 , 0 , 0 , 0 , 'I034')
-    set it_gv=ItemSex(u , it_gv , 'ratc' , 'I007' , 'I001' , 0 , 0 , 0 , 0 , 'I036')
-    set it_gv=ItemSex(u , it_gv , 'I00D' , 'rat6' , 'I00E' , 'I03B' , 0 , 0 , 0 , 'I039')
-    set it_gv=ItemSex(u , it_gv , 'I002' , 'mlst' , 'ciri' , 'I03D' , 0 , 0 , 0 , 'I03E')
-    set it_gv=ItemSex(u , it_gv , 'pmna' , 'penr' , 'stwa' , 'rat6' , 0 , 0 , 0 , 'I03I')
-    set it_gv=ItemSex(u , it_gv , 'I02D' , 'ward' , 'arsh' , 0 , 0 , 0 , 0 , 'I03K')
-    set it_gv=ItemSex(u , it_gv , 'I00C' , 'I01E' , 'I01H' , 'I01P' , 0 , 0 , 0 , 'I03L')
-    set it_gv=ItemSex(u , it_gv , 'cnob' , 'dsum' , 'rde1' , 'I01L' , 0 , 0 , 0 , 'I03N')
-    set it_gv=ItemSex(u , it_gv , 'rde3' , 'rwiz' , 'anfg' , 'I030' , 0 , 0 , 0 , 'I03Q')
-    if it_gv == 0 then
-        call RemoveItem(it)
-        set u=null
-        set it=null
-        return
-    endif
-    set n=0
-    loop
-    exitwhen n >= 6
-        if UnitItemInSlot(u, n) == null then
-            call RemoveItem(it)
-            set it=UnitAddItemById(u, it_gv)
-            call SetItemPlayer(it, GetOwningPlayer(u), true)
-            set n=6
-        endif
-        set n=n + 1
-    endloop
-    if n == 6 then
-        call RemoveItem(it)
-        set it=CreateItem(it_up, it_x, it_y)
-        call SetItemPlayer(it, GetOwningPlayer(u), true)
-    endif
-    set u=null
-    set it=null
-    set p=null
-endfunction
-
-//===========================================================================
-function InitTrig_Pick_up_item takes nothing returns nothing
-    set gg_trg_Pick_up_item=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Pick_up_item, EVENT_PLAYER_UNIT_PICKUP_ITEM)
-    call TriggerAddCondition(gg_trg_Pick_up_item, Condition(function Trig_Pick_up_item_Conditions))
-    call TriggerAddAction(gg_trg_Pick_up_item, function Trig_Pick_up_item_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Sale charged item
-//===========================================================================
-function Trig_Sale_charged_item_Conditions takes nothing returns boolean
-    if ( not ( GetItemType(GetSoldItem()) == ITEM_TYPE_CHARGED ) ) then
-        return false
-    endif
-    return true
-endfunction
-
-function Trig_Sale_charged_item_Actions takes nothing returns nothing
-    call SetItemUserData(GetSoldItem(), 1)
-endfunction
-
-//===========================================================================
-function InitTrig_Sale_charged_item takes nothing returns nothing
-    set gg_trg_Sale_charged_item=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Sale_charged_item, EVENT_PLAYER_UNIT_SELL_ITEM)
-    call TriggerAddCondition(gg_trg_Sale_charged_item, Condition(function Trig_Sale_charged_item_Conditions))
-    call TriggerAddAction(gg_trg_Sale_charged_item, function Trig_Sale_charged_item_Actions)
-endfunction
-
-//===========================================================================
-// Trigger: Pick up charged item
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function Trig_Pick_up_charged_item_Conditions takes nothing returns boolean
-    return GetItemType(GetManipulatedItem()) == ITEM_TYPE_CHARGED
-endfunction
-
-function Trig_Pick_up_charged_item_Actions takes nothing returns nothing
-    local unit u= GetTriggerUnit()
-    local item it= GetManipulatedItem()
-    local integer it_id= GetItemTypeId(it)
-    local item new_it
-    local integer n= 0
-    local integer slot= 0
-    loop
-    exitwhen n == 100 or it_id == udg_Item_pick_up[n]
-        set n=n + 1
-    endloop
-    if n == 100 then
-        set u=null
-        set it=null
-        return
-    endif
-    loop
-    exitwhen slot == 6 or GetItemTypeId(UnitItemInSlot(u, slot)) == udg_Item_to_give[n]
-        set slot=slot + 1
-    endloop
-    if slot == 6 then
-        set slot=0
-        loop
-        exitwhen slot >= 6
-            if UnitItemInSlot(u, slot) == null then
-                set new_it=UnitAddItemById(u, udg_Item_to_give[n])
-                call SetItemCharges(new_it, GetItemUserData(it))
-                set slot=6
-            endif
-            set slot=slot + 1
-        endloop
-        if slot == 6 then
-            set new_it=CreateItem(udg_Item_pick_up[n], GetItemX(it), GetItemY(it))
-            call SetItemUserData(new_it, GetItemUserData(it))
-        endif
-    else
-        call SetItemCharges(UnitItemInSlot(u, slot), GetItemCharges(UnitItemInSlot(u, slot)) + GetItemUserData(it))
-    endif
-    call RemoveItem(it)
-    set u=null
-    set it=null
-    set new_it=null
-endfunction
-
-//===========================================================================
-function InitTrig_Pick_up_charged_item takes nothing returns nothing
-    set gg_trg_Pick_up_charged_item=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Pick_up_charged_item, EVENT_PLAYER_UNIT_PICKUP_ITEM)
-    call TriggerAddCondition(gg_trg_Pick_up_charged_item, Condition(function Trig_Pick_up_charged_item_Conditions))
-    call TriggerAddAction(gg_trg_Pick_up_charged_item, function Trig_Pick_up_charged_item_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Pick normal to rune
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function Trig_Pick_normal_to_rune_Conditions takes nothing returns boolean
-    return GetItemType(GetManipulatedItem()) == ITEM_TYPE_PERMANENT
-endfunction
-
-function Trig_Pick_normal_to_rune_Actions takes nothing returns nothing
-    local unit u= GetTriggerUnit()
-    local item it= GetManipulatedItem()
-    local timer tim
-    local integer hid
-    if GetOwningPlayer(u) != GetItemPlayer(it) and GetItemPlayer(it) != Player(PLAYER_NEUTRAL_PASSIVE) then
-        call SetItemPosition(it, GetUnitX(u), GetUnitY(u))
-    endif
-    set it=null
-    set u=null
-endfunction
-
-//===========================================================================
-function InitTrig_Pick_normal_to_rune takes nothing returns nothing
-    set gg_trg_Pick_normal_to_rune=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Pick_normal_to_rune, EVENT_PLAYER_UNIT_PICKUP_ITEM)
-    call TriggerAddCondition(gg_trg_Pick_normal_to_rune, Condition(function Trig_Pick_normal_to_rune_Conditions))
-    call TriggerAddAction(gg_trg_Pick_normal_to_rune, function Trig_Pick_normal_to_rune_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Drop item
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function TimerCreateItemRune takes nothing returns nothing
-    local timer tim= GetExpiredTimer()
-    local integer hid= GetHandleId(tim)
-    local item it= LoadItemHandle(udg_hash, hid, 0)
-    local integer it_up= LoadInteger(udg_hash, hid, 0)
-    local player p= GetItemPlayer(it)
-    local real x= GetItemX(it)
-    local real y= GetItemY(it)
-    local integer charged
-    if GetWidgetLife(it) > 0.405 then
-        if GetItemType(it) == ITEM_TYPE_CHARGED then
-            set charged=GetItemCharges(it)
-        endif
-        call RemoveItem(it)
-        set it=CreateItem(it_up, x, y)
-        if GetItemType(it) == ITEM_TYPE_CHARGED then
-            call SetItemUserData(it, charged)
-        else
-        endif
-        call SetItemPlayer(it, p, true)
-    endif
-    call DestroyTimer(tim)
-    call FlushChildHashtable(udg_hash, hid)
-    call RemoveSavedInteger(udg_hash, hid, 0)
-    set tim=null
-    set it=null
-    set p=null
-endfunction
-
-function Trig_Drop_item_Conditions takes nothing returns boolean
-    return IsItemInvulnerable(GetManipulatedItem()) == false
-endfunction
-
-function Trig_Drop_item_Actions takes nothing returns nothing
-    local unit u= GetTriggerUnit()
-    local item it= GetManipulatedItem()
-    local integer it_gv= GetItemTypeId(it)
-    local integer it_up
-    local integer n= 0
-    local timer tim
-    local integer hid
-    loop
-    exitwhen it_gv == udg_Item_to_give[n] or n == 100
-        set n=n + 1
-    endloop
-    if n == 100 then
-        set u=null
-        set it=null
-        return
-    else
-        set it_up=udg_Item_pick_up[n]
-    endif
-    set tim=CreateTimer()
-    set hid=GetHandleId(tim)
-    call SaveItemHandle(udg_hash, hid, 0, it)
-    call SaveInteger(udg_hash, hid, 0, it_up)
-    call TimerStart(tim, 0.10, false, function TimerCreateItemRune)
-    set u=null
-    set it=null
-    set tim=null
-endfunction
-
-//===========================================================================
-function InitTrig_Drop_item takes nothing returns nothing
-    set gg_trg_Drop_item=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Drop_item, EVENT_PLAYER_UNIT_DROP_ITEM)
-    call TriggerAddCondition(gg_trg_Drop_item, Condition(function Trig_Drop_item_Conditions))
-    call TriggerAddAction(gg_trg_Drop_item, function Trig_Drop_item_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Azure Scale
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function InitTrig_Azure_Scale takes nothing returns nothing
-endfunction
-
-
-
-
-//===========================================================================
-// Trigger: Brass Knuckles
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function Trig_Brass_Knuckles_Conditions takes nothing returns boolean
-    return IsUnitType(GetAttacker(), UNIT_TYPE_HERO) == true and GetRandomInt(1, 100) <= 25
-endfunction
-
-function Trig_Brass_Knuckles_Actions takes nothing returns nothing
-    local unit u= GetAttacker()
-    local unit t= GetTriggerUnit()
-    local integer n= 0
-    local item it
-    local effect eff
-    loop
-    exitwhen n >= 6
-        set it=UnitItemInSlot(u, n)
-        if GetItemTypeId(it) == 'rat6' then
-            set n=7
-        else
-            set n=n + 1
-        endif
-    endloop
-    if n == 7 then
-        call UnitDamageTarget(u, t, 20.00, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-        set eff=AddSpecialEffectTarget("Abilities\\Weapons\\HydraliskImpact\\HydraliskImpact.mdl", t, "head")
-        call DestroyEffect(eff)
-    endif
-    set u=null
-    set t=null
-    set it=null
-    set eff=null
-endfunction
-
-//===========================================================================
-function InitTrig_Brass_Knuckles takes nothing returns nothing
-    set gg_trg_Brass_Knuckles=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Brass_Knuckles, EVENT_PLAYER_UNIT_ATTACKED)
-    call TriggerAddCondition(gg_trg_Brass_Knuckles, Condition(function Trig_Brass_Knuckles_Conditions))
-    call TriggerAddAction(gg_trg_Brass_Knuckles, function Trig_Brass_Knuckles_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Charge of thunder
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function TimerBaffRemoveThunderclap takes nothing returns nothing
-    local timer tim= GetExpiredTimer()
-    local integer hid= GetHandleId(tim)
-    local integer index= LoadInteger(udg_hash, hid, 0)
-    local unit target= udg_ThunderclapUnit[index]
-    local integer score= GetUnitAbilityLevel(target, 'A03G') + GetUnitAbilityLevel(target, 'A03H') + GetUnitAbilityLevel(target, 'A03F')
-    if udg_ThunderclapTime[index] == 3 then
-        if GetLocalPlayer() == GetOwningPlayer(udg_ThunderclapUnit[index]) then
-            call StartSound(gg_snd_LightningShieldTarget)
-        endif
-    endif
-    if udg_ThunderclapTime[index] == 0 or GetWidgetLife(udg_ThunderclapUnit[index]) <= 0.405 then
-        call PauseTimer(tim)
-        call DestroyTimer(tim)
-        call RemoveSavedInteger(udg_hash, hid, 0)
-        if score > 2 then
-            call UnitRemoveAbility(target, 'A03F')
-            call UnitRemoveAbility(target, 'B00E')
-        endif
-        if score > 1 then
-            call UnitRemoveAbility(target, 'A03H')
-            call UnitRemoveAbility(target, 'B00D')
-        endif
-        call UnitRemoveAbility(target, 'A03G')
-        call UnitRemoveAbility(target, 'B00C')
-        set udg_ThunderclapUnit[index]=null
-        call DestroyEffect(udg_ThunderclapEffect[index])
-        set udg_ThunderclapEffect[index]=null
-    else
-        set udg_ThunderclapTime[index]=udg_ThunderclapTime[index] - 1
-    endif
-    set tim=null
-    set target=null
-endfunction
-
-function Trig_Charge_of_thunder_Conditions takes nothing returns boolean
-    return GetSpellAbilityId() == 'A03E'
-endfunction
-
-function Trig_Charge_of_thunder_Actions takes nothing returns nothing
-    local unit target= GetSpellTargetUnit()
-    local integer score= GetUnitAbilityLevel(target, 'A03G') + GetUnitAbilityLevel(target, 'A03H') + GetUnitAbilityLevel(target, 'A03F')
-    local integer index= 0
-    local timer tim
-    local integer hid
-    if score > 0 then
-        loop
-        exitwhen udg_ThunderclapUnit[index] == target
-            set index=index + 1
-        endloop
-        set udg_ThunderclapTime[index]=10
-        if score == 1 then
-            call UnitAddAbility(target, 'A03H')
-        elseif score == 2 then
-            call UnitAddAbility(target, 'A03F')
-        endif
-    else
-        loop
-        exitwhen udg_ThunderclapUnit[index] == null
-            set index=index + 1
-        endloop
-        set udg_ThunderclapUnit[index]=target
-        set udg_ThunderclapTime[index]=10
-        set udg_ThunderclapEffect[index]=AddSpecialEffectTarget("Abilities\\Spells\\Orc\\LightningShield\\LightningShieldTarget.mdl", target, "origin")
-        call UnitAddAbility(target, 'A03G')
-        set tim=CreateTimer()
-        set hid=GetHandleId(tim)
-        call SaveInteger(udg_hash, hid, 0, index)
-        call TimerStart(tim, 1.00, true, function TimerBaffRemoveThunderclap)
-    endif
-    set target=null
-    set tim=null
-endfunction
-
-//===========================================================================
-function InitTrig_Charge_of_thunder takes nothing returns nothing
-    set gg_trg_Charge_of_thunder=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Charge_of_thunder, EVENT_PLAYER_UNIT_SPELL_EFFECT)
-    call TriggerAddCondition(gg_trg_Charge_of_thunder, Condition(function Trig_Charge_of_thunder_Conditions))
-    call TriggerAddAction(gg_trg_Charge_of_thunder, function Trig_Charge_of_thunder_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Thunderclap
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function TimerMoveThinderclapLightning takes nothing returns nothing
-    local timer tim= GetExpiredTimer()
-    local integer hid= GetHandleId(tim)
-    local unit caster= LoadUnitHandle(udg_hash, hid, 8)
-    local integer n= LoadInteger(udg_hash, hid, 0)
-    local integer score= LoadInteger(udg_hash, hid, 1)
-    local real x= GetUnitX(caster)
-    local real y= GetUnitY(caster)
-    local real z= GetUnitZ(caster)
-    local integer i= 0
-    local unit target
-    local lightning l
-    loop
-    exitwhen i > n
-        set target=LoadUnitHandle(udg_hash, hid, i)
-        set l=LoadLightningHandle(udg_hash, hid, i + 4)
-        call MoveLightningEx(l, true, x, y, z + 50.00, GetUnitX(target), GetUnitY(target), GetUnitZ(target) + 50.00)
-        call SetLightningColor(l, 1.00, 1.00, 1.00, 1.00 - 0.05 * score)
-        if score == 20 then
-            call DestroyLightning(l)
-        endif
-        set i=i + 1
-    endloop
-    if score == 20 then
-        call PauseTimer(tim)
-        call DestroyTimer(tim)
-        call FlushChildHashtable(udg_hash, hid)
-        call RemoveSavedInteger(udg_hash, hid, 0)
-        call RemoveSavedInteger(udg_hash, hid, 0)
-    else
-        call SaveInteger(udg_hash, hid, 1, score + 1)
-    endif
-    set tim=null
-    set caster=null
-    set target=null
-    set l=null
-endfunction
-
-function Trig_Thunderclap_Conditions takes nothing returns boolean
-    return GetUnitAbilityLevel(GetAttacker(), 'A03G') > 0 and IsPlayerEnemy(GetOwningPlayer(GetAttacker()), GetOwningPlayer(GetTriggerUnit())) == true
-endfunction
-
-function Trig_Thunderclap_Actions takes nothing returns nothing
-    local unit target= GetTriggerUnit()
-    local unit caster= GetAttacker()
-    local player p= GetOwningPlayer(caster)
-    local real angle= GetUnitFacing(caster)
-    local real x= GetUnitX(caster)
-    local real y= GetUnitY(caster)
-    local real z= GetUnitZ(caster)
-    local real dist= DistanceBetweenCoords(x , y , GetUnitX(target) , GetUnitY(target))
-    local integer score= GetUnitAbilityLevel(caster, 'A03G') + GetUnitAbilityLevel(caster, 'A03H') + GetUnitAbilityLevel(caster, 'A03F')
-    local real damage= 10.00 * score
-    local group gr= CreateGroup()
-    local unit fu
-    local real facing
-    local integer n= 0
-    local effect eff= AddSpecialEffectTarget("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", target, "chest")
-    local lightning l
-    local timer tim= CreateTimer()
-    local integer hid= GetHandleId(tim)
-    call DestroyEffect(eff)
-    call GroupEnumUnitsInRange(gr, x, y, dist + 250.00, Condition(function FilterGroupUnitNoMagicImmune))
-    loop
-        set fu=RandomOfGroup(gr)
-    exitwhen fu == null or n == 3
-        if IsPlayerEnemy(p, GetOwningPlayer(fu)) == true then
-            set facing=FacingAngle(x , y , GetUnitX(fu) , GetUnitY(fu))
-            if facing < angle + 65.00 and facing > angle - 65.00 then
-                set eff=AddSpecialEffectTarget("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", fu, "chest")
-                call UnitDamageTarget(caster, fu, damage, true, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
-                call DestroyEffect(eff)
-                set l=AddLightningEx("CHIM", false, x, y, z + 50.00, GetUnitX(fu), GetUnitY(fu), GetUnitZ(fu) + 50.00)
-                call SaveUnitHandle(udg_hash, hid, n, fu)
-                call SaveLightningHandle(udg_hash, hid, n + 4, l)
-                set n=n + 1
-            endif
-        endif
-        call GroupRemoveUnit(gr, fu)
-    endloop
-    call UnitDamageTarget(caster, target, damage, true, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
-    set l=AddLightningEx("CHIM", true, x, y, z + 50.00, GetUnitX(target), GetUnitY(target), GetUnitZ(target) + 50.00)
-    call SaveUnitHandle(udg_hash, hid, n, target)
-    call SaveLightningHandle(udg_hash, hid, n + 4, l)
-    call SaveUnitHandle(udg_hash, hid, 8, caster)
-    call SaveInteger(udg_hash, hid, 0, n)
-    call SaveInteger(udg_hash, hid, 1, 0)
-    call TimerStart(tim, 0.05, true, function TimerMoveThinderclapLightning)
-    set target=null
-    set caster=null
-    set p=null
-    call DestroyGroup(gr)
-    set gr=null
-    set fu=null
-    set l=null
-    set tim=null
-endfunction
-
-//===========================================================================
-function InitTrig_Thunderclap takes nothing returns nothing
-    set gg_trg_Thunderclap=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Thunderclap, EVENT_PLAYER_UNIT_ATTACKED)
-    call TriggerAddCondition(gg_trg_Thunderclap, Condition(function Trig_Thunderclap_Conditions))
-    call TriggerAddAction(gg_trg_Thunderclap, function Trig_Thunderclap_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Halberd use
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function TimerHalberdDamageRemove takes nothing returns nothing
-    local timer tim= GetExpiredTimer()
-    local integer hid= GetHandleId(tim)
-    local unit caster= LoadUnitHandle(udg_hash, hid, 0)
-    if GetUnitAbilityLevel(caster, 'A02Z') > 0 then
-        call UnitRemoveAbility(caster, 'A02Z')
-    endif
-    call DestroyTimer(tim)
-    call FlushChildHashtable(udg_hash, hid)
-    set caster=null
-    set tim=null
-endfunction
-
-function Trig_Halberd_use_Conditions takes nothing returns boolean
-    return GetSpellAbilityId() == 'A03I'
-endfunction
-
-function Trig_Halberd_use_Actions takes nothing returns nothing
-    local unit caster= GetTriggerUnit()
-    local timer tim= CreateTimer()
-    local integer hid= GetHandleId(tim)
-    call UnitAddAbility(caster, 'A02Z')
-    call SaveUnitHandle(udg_hash, hid, 0, caster)
-    call TimerStart(tim, 10.00, false, function TimerHalberdDamageRemove)
-    set caster=null
-    set tim=null
-endfunction
-
-//===========================================================================
-function InitTrig_Halberd_use takes nothing returns nothing
-    set gg_trg_Halberd_use=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Halberd_use, EVENT_PLAYER_UNIT_SPELL_EFFECT)
-    call TriggerAddCondition(gg_trg_Halberd_use, Condition(function Trig_Halberd_use_Conditions))
-    call TriggerAddAction(gg_trg_Halberd_use, function Trig_Halberd_use_Actions)
-endfunction
-
-
-//===========================================================================
-// Trigger: Halberd attack
-//===========================================================================
-//TESH.scrollpos=-1
-//TESH.alwaysfold=0
-function Trig_Halberd_attack_Conditions takes nothing returns boolean
-    return GetUnitAbilityLevel(GetAttacker(), 'A02Z') > 0
-endfunction
-
-function Trig_Halberd_attack_Actions takes nothing returns nothing
-    local unit caster= GetAttacker()
-    local timer tim
-    local integer hid
-    if GetUnitAbilityLevel(caster, 'A02Z') == 1 then
-        call IncUnitAbilityLevel(caster, 'A02Z')
-        set tim=CreateTimer()
-        set hid=GetHandleId(tim)
-        call SaveUnitHandle(udg_hash, hid, 0, caster)
-        call TimerStart(tim, 0.50, false, function TimerHalberdDamageRemove)
-    else
-        call UnitRemoveAbility(caster, 'A02Z')
-    endif
-    set caster=null
-    set tim=null
-endfunction
-
-//===========================================================================
-function InitTrig_Halberd_attack takes nothing returns nothing
-    set gg_trg_Halberd_attack=CreateTrigger()
-    call TriggerRegisterAnyUnitEventBJ(gg_trg_Halberd_attack, EVENT_PLAYER_UNIT_ATTACKED)
-    call TriggerAddCondition(gg_trg_Halberd_attack, Condition(function Trig_Halberd_attack_Conditions))
-    call TriggerAddAction(gg_trg_Halberd_attack, function Trig_Halberd_attack_Actions)
 endfunction
 
 
@@ -9798,18 +8807,6 @@ function InitCustomTriggers takes nothing returns nothing
     call InitTrig_Group()
     call InitTrig_Math()
     call InitTrig_Unit()
-    call InitTrig_Item_DB()
-    call InitTrig_Pick_up_item()
-    call InitTrig_Sale_charged_item()
-    call InitTrig_Pick_up_charged_item()
-    call InitTrig_Pick_normal_to_rune()
-    call InitTrig_Drop_item()
-    call InitTrig_Azure_Scale()
-    call InitTrig_Brass_Knuckles()
-    call InitTrig_Charge_of_thunder()
-    call InitTrig_Thunderclap()
-    call InitTrig_Halberd_use()
-    call InitTrig_Halberd_attack()
     call InitTrig_Portal_Out_Base()
     call InitTrig_Start_Wave_1()
     call InitTrig_Start_Wave_2()
@@ -9876,7 +8873,6 @@ function RunInitializationTriggers takes nothing returns nothing
     call ConditionalTriggerExecute(gg_trg_GateWave)
     call ConditionalTriggerExecute(gg_trg_Multiboard)
     call ConditionalTriggerExecute(gg_trg_Attack_Speed_DB)
-    call ConditionalTriggerExecute(gg_trg_Item_DB)
 endfunction
 
 //***************************************************************************
@@ -10127,11 +9123,10 @@ function main takes nothing returns nothing
     call CreateAllUnits()
     call InitBlizzard()
 
-call ExecuteFunc("jasshelper__initstructs45501250")
-call ExecuteFunc("AnyUnitDamagedEvent___Init")
-call ExecuteFunc("PlayerColor___Init")
-call ExecuteFunc("PlayingPlayers___Init")
-call ExecuteFunc("ItemAzureScale___Init")
+call ExecuteFunc("jasshelper__initstructs47757812")
+call ExecuteFunc("AnyUnitDamagedEvent__Init")
+call ExecuteFunc("PlayerColor__Init")
+call ExecuteFunc("PlayingPlayers__Init")
 
     call InitGlobals()
     call InitCustomTriggers()
@@ -10178,34 +9173,11 @@ local integer this=f__arg_this
         set s__Table_hash[this]=null
    return true
 endfunction
-function sa__ItemAzureScale___AzureScaleShield_onDestroy takes nothing returns boolean
-local integer this=f__arg_this
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_tim[this]))) // INLINED!!
-        call RemoveSavedInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(s__ItemAzureScale___AzureScaleShield_caster[this]))) // INLINED!!
-        call GroupRemoveUnit(s__ItemAzureScale___AzureScaleShield_shieldedUnits, s__ItemAzureScale___AzureScaleShield_caster[this])
-        call DestroyTimer(s__ItemAzureScale___AzureScaleShield_tim[this])
-        call UnitRemoveAbility(s__ItemAzureScale___AzureScaleShield_caster[this], ItemAzureScale___BUFF_ID)
-        set s__ItemAzureScale___AzureScaleShield_caster[this]=null
-        set s__ItemAzureScale___AzureScaleShield_tim[this]=null
-   return true
-endfunction
-function sa__ItemAzureScale___AzureScaleShield_onShieldExpired takes nothing returns boolean
 
-        local integer shield= (LoadInteger(s__Table_hash[(ItemAzureScale___table)], (GetHandleId(s__ItemAzureScale___AzureScaleShield_shieldedUnits) ), ( GetHandleId(GetExpiredTimer())))) // INLINED!!
-        call s__ItemAzureScale___AzureScaleShield_deallocate(shield)
-   return true
-endfunction
-
-function jasshelper__initstructs45501250 takes nothing returns nothing
+function jasshelper__initstructs47757812 takes nothing returns nothing
     set st__Table_onDestroy=CreateTrigger()
     call TriggerAddCondition(st__Table_onDestroy,Condition( function sa__Table_onDestroy))
-    set st__ItemAzureScale___AzureScaleShield_onDestroy=CreateTrigger()
-    call TriggerAddCondition(st__ItemAzureScale___AzureScaleShield_onDestroy,Condition( function sa__ItemAzureScale___AzureScaleShield_onDestroy))
-    set st__ItemAzureScale___AzureScaleShield_onShieldExpired=CreateTrigger()
-    call TriggerAddCondition(st__ItemAzureScale___AzureScaleShield_onShieldExpired,Condition( function sa__ItemAzureScale___AzureScaleShield_onShieldExpired))
 
 
-
-    call ExecuteFunc("s__ItemAzureScale___AzureScaleShield_onInit")
 endfunction
 

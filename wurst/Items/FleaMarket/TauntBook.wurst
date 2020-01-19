@@ -1,0 +1,80 @@
+package TauntBook
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import AbilityObjEditing
+import FleaMarket
+import RunedAlias
+import ItemTooltipGenerator
+import ItemAbilityPreset
+
+
+public class TauntBook
+	static constant int GOLD_COST = 150
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "\"The Shortest Collection of Dwarven Swear Words\"|n(Tome 1 of 246)"
+	static constant ICON = Icons.bTNSpellBookBLS
+	static constant int SHOP_X = 3
+	static constant int SHOP_Y = 1
+	static constant int DAMAGE_BLOCKED = 4
+	static constant int DAMAGE_BLOCK_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant int TAUNT_TARGETS = 10
+	static constant real TAUNT_AOE = 400
+	static constant real TAUNT_COOLDOWN = 10
+	static constant int TAUNT_ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant TARGETS_ALLOWED = "air,ground,enemy,vuln,invu"
+
+	@compiletime static protected function build()
+		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+			..setActiveEffect("Taunts {0} enemies in {1} range, making them attack the wearer ({2} sec. cooldow).".format(TAUNT_TARGETS.toString(), TAUNT_AOE.toInt().toString(), TAUNT_COOLDOWN.toInt().toString()))
+			..addPassiveEffect("Blocks {0} damage from ranged attacks.".format(DAMAGE_BLOCKED.toString()))
+			..setComment("You've never seen such a thick book...")
+		let damageBlockDef = new AbilityDefinitionHardenedSkin(DAMAGE_BLOCK_ABIL_ID)
+			..setLevels(1)
+			..setItemAbility(true)
+			..setName(NAME)
+			..setEditorSuffix("(Passive)")
+			..setIconNormal(ICON)
+			..setCheckDependencies(false)
+			..setRace(ITEM_ABILITY_RACE)
+			..setIncludeMeleeDamage(1, false)
+			..setIncludeRangedDamage(1, true)
+		let tauntDef = new AbilityDefinitionTaunt(TAUNT_ABIL_ID)
+			..setLevels(1)
+			..setItemAbility(true)
+			..setName(NAME)
+			..setEditorSuffix("(Active)")
+			..setIconNormal(ICON)
+			..setCheckDependencies(false)
+			..setRace(ITEM_ABILITY_RACE)
+			..setTargetsAllowed(1, TARGETS_ALLOWED)
+			..setCooldown(1, TAUNT_COOLDOWN)
+			..setMaxUnits(1, TAUNT_TARGETS)
+			..setAreaofEffect(1, TAUNT_AOE)
+		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setCooldownGroup(tauntDef.getNewId().toRawCode())
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if isAlias
+				fleaMarket.addItemSold(def.getNewId())
+			else
+				def.setAbilities("{0},{1}".format(tauntDef.getNewId().toRawCode(), damageBlockDef.getNewId().toRawCode()))

@@ -1,0 +1,165 @@
+package LightningRod
+import Assets
+import ObjectIds
+import ObjectIdGenerator
+import ItemObjEditing
+import AbilityObjEditing
+import BuffObjEditing
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import DalaranMerchant
+import WandOfNeutralization
+import StrongCane
+import LionsRing
+
+import LinkedList
+import ItemCombine
+import ChargedStrike
+import ForkedLightning
+import HashMap
+import ClosureTimers
+import ClosureEvents
+
+
+public class LightningRod
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Lightning Rod"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNLightningRod.blp"
+	static constant int GOLD_COST = WandOfNeutralization.GOLD_COST + StrongCane.GOLD_COST + LionsRing.GOLD_COST + LightningRodRecipe.GOLD_COST
+	static constant int STRENGTH = 5
+	static constant int AGILITY = 15
+	static constant int INTELLIGENCE = 10
+	static constant real MANA_REG_RATE = 0.5
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant ABIL_ID = compiletime(ABIL_ID_GEN.next())
+	static constant BUFF_ID = compiletime(BUFF_ID_GEN.next())
+	static constant BUFF_DESCRIPTION = "This unit can be a victim of Charged Strike."
+	static constant real COOLDOWN = 5
+	static constant real DURATION = 20
+	static constant real CAST_RANGE = 550
+	static constant int MANACOST = 50
+	static constant ACTIVE_EFFECT = "Charges an allied hero for {0} seconds (requires {1} mana and has {2} sec. cooldown). The lightning of the wearer's \"Charged Strike\" can bounce against charged heroes, dealing damage but resetting their \"Forked Lightning\" cooldown.".format(DURATION.toInt().toString(), MANACOST.toString(), COOLDOWN.toInt().toString())
+	static constant TARGETS_ALLOWED = "air,ground,hero,notself,friend,ally,nutral,vuln,invu"
+	
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_EFFECT)
+			
+	@compiletime protected static function build()
+		let attrDef = buildAttributeBonus(NAME, ICON, STRENGTH, AGILITY, INTELLIGENCE, tooltipGenerator)
+		let manaRegDef = buildManaRegenerationBonus(NAME, ICON, MANA_REG_RATE, tooltipGenerator)
+		let activeDef = new AbilityDefinitionRejuvination(ABIL_ID)
+			..setItemAbility(true)
+			..setHeroAbility(false)
+			..setCheckDependencies(false)
+			..setEditorSuffix(("(Active)"))
+			..setRace(ITEM_ABILITY_RACE)
+			..setName(NAME)
+			..setIconNormal(ICON)
+			..setLevels(1)
+			..setHitPointsGained(1, 0.01)
+			..setTargetsAllowed(1, TARGETS_ALLOWED)
+			..setCooldown(1, COOLDOWN)
+			..setDurationHero(1, DURATION)
+			..setDurationNormal(1, DURATION)
+			..setCastRange(1, CAST_RANGE)
+			..setManaCost(1, MANACOST)
+			..setBuffs(1, BUFF_ID.toRawCode())
+		new BuffDefinition(BUFF_ID, 'Basl')
+			..setArtTarget(1, Abilities.lightningShieldTarget)
+			..setTargetAttachmentPoint0(1, "origin")
+			..setName(1, NAME)
+			..setTooltipNormal(1, NAME)
+			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
+			..setIcon(ICON)
+		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCooldownGroup(activeDef.getNewId().toRawCode())
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1},{2}".format(activeDef.getNewId().toRawCode(), attrDef.getNewId().toRawCode(), manaRegDef.getNewId().toRawCode()))
+
+
+public class LightningRodRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(LightningRod.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = LightningRod.ICON
+	static constant int SHOP_X = 0
+	static constant int SHOP_Y = 1
+	static constant int GOLD_COST = 600
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = LightningRod.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(WandOfNeutralization.NAME, WandOfNeutralization.GOLD_COST)
+		..addRecipeRequirement(StrongCane.NAME, StrongCane.GOLD_COST)
+		..addRecipeRequirement(LionsRing.NAME, LionsRing.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+		..setComment("")
+
+	@compiletime protected static function build()
+		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				dalaranMerchant.addItemSold(def.getNewId())
+
+
+init
+	new ItemCombine(LightningRod.ID, asList<int>(WandOfNeutralization.ID, StrongCane.ID, LionsRing.ID, LightningRodRecipe.ID))
+
+
+init
+	let affectedUnits = new HashMap<unit, CallbackSingle>
+
+	ChargedStrike.onBounce() (unit target) ->
+		if affectedUnits.has(target) and target.hasAbility(ForkedLightning.ABIL_ID)
+			target.resetAbilityCooldown(ForkedLightning.ABIL_ID)
+
+	EventListener.onTargetCast(LightningRod.ABIL_ID) (unit caster, unit target) ->
+		if not affectedUnits.has(target)
+			ChargedStrike.ADDITIONAL_TARGETS.addUnit(target)
+		else
+			destroy affectedUnits.getAndRemove(target)
+		let cb = doAfter(LightningRod.DURATION) () ->
+			ChargedStrike.ADDITIONAL_TARGETS.removeUnit(target)
+			affectedUnits.remove(target)
+		affectedUnits.put(target, cb)

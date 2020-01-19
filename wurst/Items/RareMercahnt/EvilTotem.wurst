@@ -40,7 +40,7 @@ public class EvilTotem
 	static constant MODEL = Units.stasisTotem
 	static constant BUFF = compiletime(createDummyBuffObject(NAME, "Taken damage is increased", ICON, Abilities.barkSkinTarget, "chest"))
 	
-	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		..setActiveEffect("Places an evil totem in the center of a target area that increases damage taken by all units in that area by {0}% ({1} sec. cooldown). The totem exists {2} seconds. The effect can stack.".format((DAMAGE_FACTOR * 100).toInt().toString(), COOLDOWN.toInt().toString(), DURATION.toInt().toString()))
 			
 	@compiletime protected static function build()
@@ -92,7 +92,7 @@ public class EvilTotemRecipe
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-	static protected let tooltipGenerator = EvilTotem.tooltipGenerator.copy()
+	protected static let tooltipGenerator = EvilTotem.tooltipGenerator.copy()
 		..setName(NAME)
 		..addRecipeRequirement(SobiMask.NAME, SobiMask.GOLD_COST)
 		..addRecipeRequirement(StrongCane.NAME, StrongCane.GOLD_COST)

@@ -26,7 +26,7 @@ public class ShamanClaws
 	static constant int AGILITY = 5
 	static constant int ATTACK_DAMAGE = 10
 	
-	static protected let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 			
 	@compiletime protected static function build()
 		let strDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
@@ -65,7 +65,7 @@ public class ShamanClawsRecipe
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
 
-	static protected let tooltipGenerator = ShamanClaws.tooltipGenerator.copy()
+	protected static let tooltipGenerator = ShamanClaws.tooltipGenerator.copy()
 		..setName(NAME)
 		..addRecipeRequirement(GauntletsOfOgre.NAME, GauntletsOfOgre.GOLD_COST)
 		..addRecipeRequirement(SlippersOfAgility.NAME, SlippersOfAgility.GOLD_COST)

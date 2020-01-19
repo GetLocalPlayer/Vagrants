@@ -2,7 +2,6 @@ package RunedAlias
 import ItemObjEditing
 import ObjectIdGenerator
 
-import OrderIds
 import ClosureEvents
 import ClosureTimers
 import LinkedListModule
@@ -19,11 +18,6 @@ to pick up an item with no empty inventory slots. For example, when a hero
 needs to pick up a stackable item with no empty slot but with such an item
 in the inventory, or when an item's gonna be combined with other items but
 it can't be done becouse of the annoying mechanic. */
-
-/** Prevents picking up items that do not belong to the player
-of the picking up unit. Neutral passive items will be moved under
-the control of the picking up unit's owner. */
-@configurable constant PROTECT_PLAYER_OWNERSHIP = true
 
 
 let actualItemIds = compiletime(new LinkedList<int>)
@@ -70,23 +64,13 @@ init
 		createItem(actualItemIds.get(i), ZERO2).remove()
 		createItem(aliasItemIds.get(i), ZERO2).remove()
 
-	EventListener.add(EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER) ->
-		let orderId = EventData.getIssuedOrderId()
-		let targetItem = EventData.getOrderTargetItem()
-		if targetItem != null and orderId == OrderIds.smart
-			if PROTECT_PLAYER_OWNERSHIP
-				let u = EventData.getTriggerUnit()
-				let itemPlayer = targetItem.getPlayer()
-				if itemPlayer.getId() != PLAYER_NEUTRAL_PASSIVE and itemPlayer != u.getOwner()
-					u.issuePointOrderById(OrderIds.move, targetItem.getPos())
-
 	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) () ->
 		let aliasItem = EventData.getManipulatedItem()
 		let aliasItemId = aliasItem.getTypeId()
 		if aliasItemIds.has(aliasItemId)
 			let u = EventData.getTriggerUnit()
 			let pos = aliasItem.getPos()
-			let p = PROTECT_PLAYER_OWNERSHIP ? (aliasItem.getPlayer().getId() == PLAYER_NEUTRAL_PASSIVE ? u.getOwner() : aliasItem.getPlayer()) : aliasItem.getPlayer()
+			let p = aliasItem.getPlayer()
 			let charges = aliasItem.getCharges()
 			aliasItem.remove()
 			let isInventoryFull = u.isInventoryFull()

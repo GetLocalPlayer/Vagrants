@@ -1,0 +1,18 @@
+package ItemOwnership
+import ClosureEvents
+import OrderIds
+
+init
+	EventListener.add(EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER) ->
+		let orderId = EventData.getIssuedOrderId()
+		let targetItem = EventData.getOrderTargetItem()
+		if targetItem != null and orderId == OrderIds.smart
+			let u = EventData.getTriggerUnit()
+			let itemPlayer = targetItem.getPlayer()
+			if itemPlayer.getId() != PLAYER_NEUTRAL_PASSIVE and itemPlayer != u.getOwner()
+				u.issuePointOrderById(OrderIds.move, targetItem.getPos())
+
+	EventListener.add(EVENT_PLAYER_UNIT_SELL_ITEM) ->
+		let buyer = EventData.getBuyingUnit()
+		let soldItem = EventData.getSoldItem()
+		soldItem.setPlayer(buyer.getOwner(), true)

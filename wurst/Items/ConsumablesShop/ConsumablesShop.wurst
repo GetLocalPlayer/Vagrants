@@ -31,3 +31,4 @@ init
 			u..addAbility('Aloc')
 			..setVertexColor(255, 255, 255, 0)
 			createUnit(players[PLAYER_NEUTRAL_PASSIVE], shopId, u.getPos(), u.getFacingAngle())
+			..setColor(21 .toPlayerColor())
