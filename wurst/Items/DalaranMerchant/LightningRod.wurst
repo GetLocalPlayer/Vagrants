@@ -59,7 +59,7 @@ public class LightningRod
 			..setName(NAME)
 			..setIconNormal(ICON)
 			..setLevels(1)
-			..setHitPointsGained(1, 0.01)
+			..setHitPointsGained(1, 0.0001)
 			..setTargetsAllowed(1, TARGETS_ALLOWED)
 			..setCooldown(1, COOLDOWN)
 			..setDurationHero(1, DURATION)

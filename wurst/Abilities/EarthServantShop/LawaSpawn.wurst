@@ -21,7 +21,7 @@ constant NAME = "Lava Spawn"
 constant DESCRIPTION = "Summons fire creatures from the bowels of the earth to fight the hero's enemies. Each summoned creature deals damage on landing."
 
 constant int array MANACOST = [110, 125, 140, 155, 170]
-constant real array CHANNELING_TIME = [0.4, 0.6, 0.8, 1., 1.2]
+constant real array CHANNELING_TIME = [1.2, 1.2, 1.2, 1.2, 1.2]
 constant real AOE = 175.
 constant real COOLDOWN = 7.
 
@@ -32,7 +32,7 @@ constant real SPAWN_LIFETIME = 9.5
 constant real SPAWN_INTERVAL = 0.2
 constant int SPAWN_SIGHT_RADIUS = 400
 constant int SPAWN_HEALTH = 100
-constant int SPAWN_DAMAGE_BASE = 8
+constant int array SPAWN_DAMAGE_BASE = [4, 5, 6, 7, 8]
 constant int SPAWN_DAMAGE_DICE = 2
 constant int SPAWN_DAMAGE_SIDE = 2
 constant int SPAWN_MOVEMENT_SPEED = 200
@@ -69,7 +69,7 @@ constant SUMMON_ID = compiletime(UNIT_ID_GEN.next())
 	..addTooltipProperty("Follow Through Time", (int lvl) -> CHANNELING_TIME[lvl - 1].toString())
 	..addTooltipProperty("Spawn Interval", (int lvl) -> SPAWN_INTERVAL.toString() + " sec.")
 	..addTooltipProperty("Spawn Lifetime", (int lvl) -> SPAWN_LIFETIME.toString() + " sec.")
-	..addTooltipProperty("Spawn Damage", (int lvl) -> "{0}-{1}".format((SPAWN_DAMAGE_BASE + SPAWN_DAMAGE_DICE).toString(),(SPAWN_DAMAGE_BASE + SPAWN_DAMAGE_DICE*SPAWN_DAMAGE_SIDE).toString()))
+	..addTooltipProperty("Spawn Damage", (int lvl) -> "{0}-{1}".format((SPAWN_DAMAGE_BASE[lvl - 1] + SPAWN_DAMAGE_DICE).toString(),(SPAWN_DAMAGE_BASE[lvl - 1] + SPAWN_DAMAGE_DICE*SPAWN_DAMAGE_SIDE).toString()))
 	..addTooltipProperty("Landing AoE", (int lvl) -> LANDING_AOE.toInt())
 	..addTooltipProperty("Landing Damage", (int lvl) -> LANDING_DAMAGE.toInt())
 	..tooltipStopListen()
@@ -84,7 +84,7 @@ constant SUMMON_ID = compiletime(UNIT_ID_GEN.next())
 	earthServantShopDef.addAbilitySold(ABIL_ID, false, ICON, NAME, tooltipGen.getTooltipLearnExtended(), SHOP_COST)
 	new UnitDefinition(SUMMON_ID, UnitIds.lavaspawn)
 	..setAttack1AttackType(AttackType.Pierce)
-	..setAttack1DamageBase(SPAWN_DAMAGE_BASE)
+	..setAttack1DamageBase(1)
 	..setAttack1DamageNumberofDice(SPAWN_DAMAGE_DICE)
 	..setAttack1DamageSidesperDie(SPAWN_DAMAGE_SIDE)
 	..setArmorType(ArmorType.Normal)
@@ -127,6 +127,7 @@ function onCastActions()
 				let spawn = createUnit(caster.getOwner(), SUMMON_ID, finish, start.angleTo2d(finish))
 				..setTimedLife(SPAWN_LIFETIME)
 				..setAnimation("birth")
+				..setBaseDamage(SPAWN_DAMAGE_BASE[lvl - 1], 0)
 				doAfter(SPAWN_BIRTH_ANIM_DURATION) () ->
 					spawn.setAnimation("stand")
 				flashEffect(PROJECTILE_MODEL, finish)

@@ -1,13 +1,14 @@
 package Mushrooms
-import ClosureEvents
-import ClosureTimers
-import ClosureForGroups
-
 import Assets
 import ChannelAbilityPreset
 import AbilityTooltipGenerator
 import HotkeyFactory
 import NatureServantShop
+
+import LinkedList
+import ClosureEvents
+import ClosureTimers
+import ClosureForGroups
 
 
 constant int SHOP_COST = 1
@@ -19,10 +20,12 @@ constant DESCRIPTION = "Mushrooms grow beneath the hero's feet, whose spores hea
 
 constant ART_CAST = Objects.nEDeath
 constant ART_TARGET = Abilities.vampiricAuraTarget
-constant MUSHROOM_MODEL = Doodads.ashenShrooms0
+constant MUSHROOM_MODEL_VAR = asList<string>(Doodads.ashenShrooms0, Doodads.ashenShrooms1, Doodads.ashenShrooms3)
+constant MUSHROOM_COLOR = color(0, 255, 0)
 constant MUSHROOM_ART_DEATH = Abilities.mirrorImageDeathCaster
 constant int MUSHROOMS_DENSITY = 6
-constant real MUSHROOM_HEIGHT = 100
+constant real MUSHROOM_MIN_SCALE = 0.85
+constant real MUSHROOM_MAX_SCALE = 1.
 constant real MUSHROOMS_GROWING_TIME = 1
 constant real MUSHROOMS_SPAWN_INTERVAL = 0.04
 
@@ -79,29 +82,32 @@ init
 		let offsetRange = AOE * 2 / MUSHROOMS_DENSITY
 		let randomOffsetRange = AOE / MUSHROOMS_DENSITY
 		var count = 0
-		vec3 array positions
+		vec2 array positions
 		for i = 1 to MUSHROOMS_DENSITY 
 			for n = 0 to MUSHROOMS_DENSITY - 1
 				let randomOffset = vec2(GetRandomReal(-randomOffsetRange, randomOffsetRange), GetRandomReal(-randomOffsetRange, randomOffsetRange))
-				let pos = (startPos.add(offsetRange * (i - 1), offsetRange * n) + randomOffset).withTerrainZ(-MUSHROOM_HEIGHT)
-				if pos.distanceTo2dSq(casterPos) <= areaSq
+				let pos = startPos.add(offsetRange * (i - 1), offsetRange * n) + randomOffset
+				if pos.distanceToSq(casterPos) <= areaSq
 					positions[count] = pos
 					count++
 		var spawnDelay = 0.0
 		while count > 0
 			let random = GetRandomInt(0, count - 1)
-			var pos = positions[random]
+			let pos = positions[random]
 			doAfter(spawnDelay) () ->
-				let mushroom = addEffect(MUSHROOM_MODEL, pos)
+				let mushroom = addEffect(MUSHROOM_MODEL_VAR.get(GetRandomInt(0, MUSHROOM_MODEL_VAR.size() - 1)), pos)
 				..setYaw(GetRandomReal(-180, 180).asAngleDegrees())
-				..setColor(0, 255, 0)
+				..setColor(MUSHROOM_COLOR)
+				..setScale(0)
 				let timerInterval = 0.02
+				let targetScaling = GetRandomReal(MUSHROOM_MIN_SCALE, MUSHROOM_MAX_SCALE)
+				var scaling = 0.0
 				doPeriodicallyTimed(timerInterval, MUSHROOMS_GROWING_TIME) (CallbackCounted cb) ->
-					pos.z += timerInterval / MUSHROOMS_GROWING_TIME * MUSHROOM_HEIGHT
-					mushroom..setPos(pos)
+					scaling += timerInterval / MUSHROOMS_GROWING_TIME * targetScaling
+					mushroom.setScale(scaling)
 					if cb.isLast()
-						doAfter(DURATION) () ->
-							mushroom..setZ(-10000)
+						doAfter(DURATION - spawnDelay - MUSHROOMS_GROWING_TIME) () ->
+							mushroom..setScale(0)
 							..destr()
 							flashEffect(MUSHROOM_ART_DEATH, pos)
 			spawnDelay += MUSHROOMS_SPAWN_INTERVAL
