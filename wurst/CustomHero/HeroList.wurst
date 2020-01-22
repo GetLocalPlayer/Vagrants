@@ -1,6 +1,7 @@
 package HeroList
 import ObjectIdGenerator
 import ClosureTimers
+import ClosureEvents
 import Assets
 import CustomHero
 
@@ -215,10 +216,12 @@ init
 				..setAttack1WeaponSound(WeaponSound.Nothing)
 				..setAttack1ProjectileArc(0.05)
 	else
-		CustomHero.onAttackSwitch() (unit u, boolean isMelee) ->
+		EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) ->
+			let u = EventData.getTriggerUnit()
 			let id = u.getTypeId()
 			if id == meleeId or id == rangerId
-				AddUnitAnimationProperties(u, "alternate", false) 
+				nullTimer() () ->
+					AddUnitAnimationProperties(u, "alternate", false) 
 			
 init
 	buildAncientOfLore()

@@ -66,8 +66,6 @@ constant ATTACK_SWITCHER_RANGER = "Ranger"
 constant ATTACK_SWITCHER_ENABLE_MELEE_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableMelee.blp"
 constant ATTACK_SWITCHER_ENABLE_RANGER_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableRanger.blp"
 constant ATTACK_SWITCHER_START_WITH_MELEE = true
-constant ATTACK_SWITCHER_MARKER = "SwapMeleeRange" /* Marker that used to determine if a form swap ability is cast whatever its id is. */
-
 
 
 enum CustomHeroEventIds
@@ -101,6 +99,7 @@ abstract class CustomHero
 	// Transfer data
 	static let meleeIds = compiletime(new LinkedList<int>)
 	static let rangerIds = compiletime(new LinkedList<int>)
+	static let attackSwitcherIds = compiletime(new LinkedList<int>)
 
 	static abstract class BuildCallback
 		abstract function call(HeroDefinition def, bool isMelee)
@@ -164,7 +163,7 @@ abstract class CustomHero
 			..setNormalFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? meleeFormDef.getNewId().toRawCode() : rangerFormDef.getNewId().toRawCode())
 			..setAlternateFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? rangerFormDef.getNewId().toRawCode() : meleeFormDef.getNewId().toRawCode())
 			..setIconNormal(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_ENABLE_RANGER_ICON : ATTACK_SWITCHER_ENABLE_MELEE_ICON)
-			..setLightningEffects(ATTACK_SWITCHER_MARKER)
+		attackSwitcherIds.add(swapFormAbilDef.getNewId())
 		basicBuild.call(meleeFormDef, true)
 		basicBuild.call(rangerFormDef, false)
 		meleeFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
@@ -249,7 +248,7 @@ init
 
 	EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) ->
 		let abilId = EventData.getSpellAbilityId()
-		if GetAbilityEffectById(abilId, EFFECT_TYPE_LIGHTNING, 0) == ATTACK_SWITCHER_MARKER
+		if CustomHero.attackSwitcherIds.has(abilId)
 			let u = EventData.getTriggerUnit()
 			let isMelee = u.isType(UNIT_TYPE_MELEE_ATTACKER)
 			setAbilityIcon(abilId, isMelee ? ATTACK_SWITCHER_ENABLE_MELEE_ICON : ATTACK_SWITCHER_ENABLE_RANGER_ICON)
