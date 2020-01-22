@@ -30,10 +30,10 @@ public abstract class RunedAlias
 	ondestroy
 		if first == this
 			first = next
+		else
+			prev.next = next
 		if next != null
 			next.prev = prev
-		if prev != null
-			prev.next = next
 
 	static function onActualItem(RunedAlias cb) returns RunedAlias
 		if RunedAlias.first == null

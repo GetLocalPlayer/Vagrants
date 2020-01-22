@@ -115,11 +115,11 @@ public abstract class AbilityShop
 
 	ondestroy
 		if first == this
-			first.next = next
+			first = next
+		else
+			prev.next = next
 		if next != null
 			next.prev = prev
-		if prev != null
-			prev.next = next
 
 
 init
