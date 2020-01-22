@@ -28,7 +28,7 @@ public class HuntingBow
 	@compiletime protected static function build()
 		let agiDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
 		let attackSpeedDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_SPEED, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

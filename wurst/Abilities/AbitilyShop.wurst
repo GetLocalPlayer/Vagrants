@@ -96,18 +96,31 @@ public class AbilityShopPreset extends BuildingDefinition
 
 		setUnitsSold(soldUnitsString)
 		return heroDef.getNewId()
+		
 
+public abstract class AbilityShop
+	protected AbilityShop prev = null
+	protected AbilityShop next = null
 
-let userTriggers = new HashMap<int, trigger>
+	protected static AbilityShop first = null
 
-public function trigger.registerAbilitySoldEvent(int abilId)
-	userTriggers.put(abilId, this)
+	abstract function onEvent(unit u, int abilId, int level)
 
-function executeUserTriggers(int abilId)
-	if userTriggers.has(abilId)
-		let trg = userTriggers.get(abilId)
-		if trg.isEnabled() and trg.evaluate()
-			trg.execute()
+	static function onSold(AbilityShop cb) returns AbilityShop
+		if first != null
+			cb.next = first
+			first.prev = cb
+		first = cb
+		return cb
+
+	ondestroy
+		if first == this
+			first.next = next
+		if next != null
+			next.prev = prev
+		if prev != null
+			prev.next = next
+
 
 init
 	// <buyer, ability counter>
@@ -143,12 +156,18 @@ init
 						setAbilityActivatedPosX(abilId, x)
 						setAbilityActivatedPosY(abilId, y)
 					abilitiesSold.put(buyer, abilitiesSold.get(buyer) + 1)
-					executeUserTriggers(abilId)
+					var onSoldCb = AbilityShop.first
+					while onSoldCb != null
+						onSoldCb.onEvent(buyer, abilId, buyer.getAbilityLevel(abilId))
+						onSoldCb = onSoldCb.next
 			else
 				if buyer.getAbilityLevel(abilId) < buyer.getAbility(abilId).getField(ABILITY_IF_LEVELS)
 					buyer.incAbilityLevel(abilId)
 					flashEffect(ABILITY_SOLD_EFFECT, buyer, "origin")
-					executeUserTriggers(abilId)
+					var onSoldCb = AbilityShop.first
+					while onSoldCb != null
+						onSoldCb.onEvent(buyer, abilId, buyer.getAbilityLevel(abilId))
+						onSoldCb = onSoldCb.next
 				else
 					buyer.getOwner()..print(MSG_MAX_LEVEL.format(GetObjectName(abilId)))
 					..addLumber(cost)

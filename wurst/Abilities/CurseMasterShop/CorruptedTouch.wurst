@@ -79,11 +79,10 @@ constant DUMMY_ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
 
 init
-	CreateTrigger()..registerAbilitySoldEvent(ABIL_ID)
-	..addCondition(Condition(()->not EventData.getBuyingUnit().hasAbility(ORB_ABIL_ID)))
-	..addAction() ->
-		EventData.getBuyingUnit()..addAbility(ORB_ABIL_ID)
-		..makeAbilityPermanent(ORB_ABIL_ID, true)
+	AbilityShop.onSold() (unit u, int abilId, int level) ->
+		if abilId == ABIL_ID and level == 1
+			u..addAbility(ORB_ABIL_ID)
+			..makeAbilityPermanent(ORB_ABIL_ID, true)
 
 	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
 		let target = EventData.getTriggerUnit()

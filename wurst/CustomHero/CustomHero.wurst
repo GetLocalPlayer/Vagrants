@@ -2,7 +2,7 @@ package CustomHero
 import ClosureEvents
 import MapBounds
 import HashMap
-import HashList
+import LinkedList
 import ClosureTimers
 
 import ObjectIds
@@ -36,14 +36,15 @@ import public ObjEditingCommons
 @configurable constant int SIGHT_RADIUS_DAY = 1800
 @configurable constant int SIGHT_RADIUS_NIGHT = 800
 
+@configurable constant int STARTING_LUMBER = 3
 @configurable constant int LUMBER_PER_LEVEL = 1
+@configurable constant int STARTING_GOLD = 300
 @configurable constant int STR_PER_ABIL_LEVEL = 1
 @configurable constant int AGI_PER_ABIL_LEVEL = 1
 @configurable constant int INT_PER_ABIL_LEVEL = 1
 /** Each hero already has 1 skill point at first level. */
-@configurable constant int STARTING_BONUS_SKILL_POINTS = 9
-/** Each hero gets 1 skill point on level up by default. */
-@configurable constant int BONUS_SKILL_POINTS_PER_LEVEL = 2 
+@configurable constant int SKILL_POINTS_PER_LEVEL = 3
+@configurable constant int STARTING_SKILL_POINTS = 15
 @configurable constant int ATTR_ABIL_MAX_LEVEL = 50
 constant STR_ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant AGI_ABIL_ID = compiletime(ABIL_ID_GEN.next())
@@ -68,91 +69,125 @@ constant ATTACK_SWITCHER_START_WITH_MELEE = true
 constant ATTACK_SWITCHER_MARKER = "SwapMeleeRange" /* Marker that used to determine if a form swap ability is cast whatever its id is. */
 
 
-interface ICustomHeroBuilCallback
-	function call(HeroDefinition def, bool isMelee)
 
+enum CustomHeroEventIds
+	ATTACK_SWITCH
 
-ICustomHeroBuilCallback initBuilCallback = (def, isMelee) -> begin
-	def..setProperNamesUsed(0)
-	..setName(isMelee ? "Melee" : "Ranger")
-	..setProjectileImpactZ(60)
-	..setHeroAbilities("{0},{1},{2}".format(STR_ABIL_ID.toRawCode(), AGI_ABIL_ID.toRawCode(), INT_ABIL_ID.toRawCode()))
-	..setMovementType(MovementType.Foot)
-	..setCollisionSize(COLLISION_SIZE)
-	..setAttack1TargetsAllowed(ATTACK_TARGETS_ALLOWED)
-	..setAttack1AttackType(isMelee ? AttackType.Normal : AttackType.Pierce)
-	..setAttack1DamageBase(isMelee ? MELEE_ATTACK_DAMAGE_BASE : RANGER_ATTACK_DAMAGE_BASE)
-	..setAttack1DamageSidesperDie(isMelee ? MELEE_ATTACK_DAMAGE_SIDES_PER_DICE : RANGER_ATTACK_DAMAGE_SIDES_PER_DICE)
-	..setAttack1DamageNumberofDice(isMelee ? MELEE_ATTACK_DAMAGE_NUMBER_OF_DICE : RANGER_ATTACK_DAMAGE_NUMBER_OF_DICE)
-	..setAttack1Range(isMelee ? 128 : ATTACK_RANGE)
-	..setMinimumAttackRange(isMelee ? 0 : MINIMUM_ATTACK_RANGE)
-	..setAttack1ProjectileSpeed(isMelee ? 0 : PROJECTILE_SPEED)
-	..setAttack1ProjectileArc(isMelee ? 0 : PROJECTILE_ARC)
-	..setAttack1WeaponType(isMelee ? WeaponType.Normal : WeaponType.Missile)
-	..setAttack1ProjectileHomingEnabled(true)
-	..setAttacksEnabled(1)
-	..setProjectileLaunchX(0)
-	..setProjectileLaunchY(0)
-	..setProjectileLaunchZ(100)
-	..setStartingStrength(0)
-	..setStartingAgility(0)
-	..setStartingIntelligence(0)
-	..setStrengthPerLevel(0)
-	..setAgilityPerLevel(0)
-	..setIntelligencePerLevel(0)
-	..setPrimaryAttribute(PRIMARY_ATTRIBUTE)
-	..setHitPointsMaximumBase(MAX_HP)
-	..setManaMaximum(MAX_MANA)
-	..setHitPointsRegenerationRate(HP_REGEN)
-	..setManaRegeneration(MANA_REGEN)
-	..setHitPointsRegenerationType("always")
-	..hideHeroDeathMsg(true)
-	..setSightRadiusDay(SIGHT_RADIUS_DAY)
-	..setSightRadiusNight(SIGHT_RADIUS_NIGHT)
-	..setFoodCost(0)
-end
+abstract class CustomHero
+	protected CustomHero next = null
+	protected CustomHero prev = null
+	protected int eventId
 
+	protected static CustomHero array first
 
-function buildCustomHero(HeroDefinition meleeFormDef, HeroDefinition rangerFormDef, ICustomHeroBuilCallback cb)
-	let swapFormAbilDef = new AbilityDefinitionIllidanMetamorphosis(ABIL_ID_GEN.next())
-	..setLevels(1)
-	..setLevelSkipRequirement(0)
-	..setHeroAbility(false)
-	..setAlternateFormHitPointBonus(1, 0)
-	..setManaCost(1, 0)
-	..setHotkeyNormal(ATTACK_SWITCHER_HOTKEY)
-	..setCooldown(1, ATTACK_SWITCHER_COOLDOWN)
-	..setDurationHero(1, 0)
-	..setDurationNormal(1, 0)
-	..setTooltipNormal(1, ATTACK_SWITCHER_TOOLTIP.format(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_MELEE : ATTACK_SWITCHER_RANGER))
-	..setTooltipNormalExtended(1, ATTACK_SWITCHER_TOOLTIP_EXTENDED)
-	..setButtonPositionNormalX(0)
-	..setButtonPositionNormalY(0)
-	..setNormalFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? meleeFormDef.getNewId().toRawCode() : rangerFormDef.getNewId().toRawCode())
-	..setAlternateFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? rangerFormDef.getNewId().toRawCode() : meleeFormDef.getNewId().toRawCode())
-	..setIconNormal(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_ENABLE_RANGER_ICON : ATTACK_SWITCHER_ENABLE_MELEE_ICON)
-	..setLightningEffects(ATTACK_SWITCHER_MARKER)
-	initBuilCallback.call(meleeFormDef, true)
-	meleeFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
-	initBuilCallback.call(rangerFormDef, false)
-	rangerFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
-	if cb != null
-		cb.call(meleeFormDef, true)
-		cb.call(rangerFormDef, false)
-	destroy cb
+	abstract function onEvent(unit u, bool isMelee)
 
+	static function onAttackSwitch(CustomHero cb) returns CustomHero
+		cb.eventId = CustomHeroEventIds.ATTACK_SWITCH castTo int
+		if first[cb.eventId] != null
+			first[cb.eventId].prev = cb
+			cb.next = first[cb.eventId]
+		first[cb.eventId] = cb
+		return cb
 
-public function buildCustomHero(int meleeFormId, int rangerFormId, int originId, ICustomHeroBuilCallback cb)
-	buildCustomHero(new HeroDefinition(meleeFormId, originId), new HeroDefinition(rangerFormId, originId), cb)
+	ondestroy
+		if first[eventId] == this
+			first[eventId] = next
+		else
+			prev.next = next
+		if next != null
+			next.prev = prev
 
+	// Transfer data
+	static let meleeIds = compiletime(new LinkedList<int>)
+	static let rangerIds = compiletime(new LinkedList<int>)
 
-public function buildCustomHero(int meleeFormId, int originId, ICustomHeroBuilCallback cb)
-	buildCustomHero(meleeFormId, HERO_ID_GEN.next(), originId, cb)
+	static abstract class BuildCallback
+		abstract function call(HeroDefinition def, bool isMelee)
 
+	private static BuildCallback basicBuild = (def, isMelee) -> begin
+		def..setProperNamesUsed(0)
+			..setName(isMelee ? "Melee" : "Ranger")
+			..setProjectileImpactZ(60)
+			..setHeroAbilities("{0},{1},{2}".format(STR_ABIL_ID.toRawCode(), AGI_ABIL_ID.toRawCode(), INT_ABIL_ID.toRawCode()))
+			..setMovementType(MovementType.Foot)
+			..setCollisionSize(COLLISION_SIZE)
+			..setAttack1TargetsAllowed(ATTACK_TARGETS_ALLOWED)
+			..setAttack1AttackType(isMelee ? AttackType.Normal : AttackType.Pierce)
+			..setAttack1DamageBase(isMelee ? MELEE_ATTACK_DAMAGE_BASE : RANGER_ATTACK_DAMAGE_BASE)
+			..setAttack1DamageSidesperDie(isMelee ? MELEE_ATTACK_DAMAGE_SIDES_PER_DICE : RANGER_ATTACK_DAMAGE_SIDES_PER_DICE)
+			..setAttack1DamageNumberofDice(isMelee ? MELEE_ATTACK_DAMAGE_NUMBER_OF_DICE : RANGER_ATTACK_DAMAGE_NUMBER_OF_DICE)
+			..setAttack1Range(isMelee ? 128 : ATTACK_RANGE)
+			..setMinimumAttackRange(isMelee ? 0 : MINIMUM_ATTACK_RANGE)
+			..setAttack1ProjectileSpeed(isMelee ? 0 : PROJECTILE_SPEED)
+			..setAttack1ProjectileArc(isMelee ? 0 : PROJECTILE_ARC)
+			..setAttack1WeaponType(isMelee ? WeaponType.Normal : WeaponType.Missile)
+			..setAttack1ProjectileHomingEnabled(true)
+			..setAttacksEnabled(1)
+			..setProjectileLaunchX(0)
+			..setProjectileLaunchY(0)
+			..setProjectileLaunchZ(100)
+			..setStartingStrength(0)
+			..setStartingAgility(0)
+			..setStartingIntelligence(0)
+			..setStrengthPerLevel(0)
+			..setAgilityPerLevel(0)
+			..setIntelligencePerLevel(0)
+			..setPrimaryAttribute(PRIMARY_ATTRIBUTE)
+			..setHitPointsMaximumBase(MAX_HP)
+			..setManaMaximum(MAX_MANA)
+			..setHitPointsRegenerationRate(HP_REGEN)
+			..setManaRegeneration(MANA_REGEN)
+			..setHitPointsRegenerationType("always")
+			..hideHeroDeathMsg(true)
+			..setSightRadiusDay(SIGHT_RADIUS_DAY)
+			..setSightRadiusNight(SIGHT_RADIUS_NIGHT)
+			..setFoodCost(0)
+	end
 
-public function buildCustomHero(int meleeFormId, ICustomHeroBuilCallback cb)
-	buildCustomHero(meleeFormId, HERO_ID_GEN.next(), 'Hpal', cb)
+	static function build(HeroDefinition meleeFormDef, HeroDefinition rangerFormDef, BuildCallback buildCb) returns BuildCallback
+		let swapFormAbilDef = new AbilityDefinitionIllidanMetamorphosis(ABIL_ID_GEN.next())
+			..setLevels(1)
+			..setLevelSkipRequirement(0)
+			..setCheckDependencies(false)
+			..setHeroAbility(false)
+			..setAlternateFormHitPointBonus(1, 0)
+			..setManaCost(1, 0)
+			..setHotkeyNormal(ATTACK_SWITCHER_HOTKEY)
+			..setCooldown(1, ATTACK_SWITCHER_COOLDOWN)
+			..setDurationHero(1, 0)
+			..setDurationNormal(1, 0)
+			..setTooltipNormal(1, ATTACK_SWITCHER_TOOLTIP.format(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_MELEE : ATTACK_SWITCHER_RANGER))
+			..setTooltipNormalExtended(1, ATTACK_SWITCHER_TOOLTIP_EXTENDED)
+			..setButtonPositionNormalX(0)
+			..setButtonPositionNormalY(0)
+			..setNormalFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? meleeFormDef.getNewId().toRawCode() : rangerFormDef.getNewId().toRawCode())
+			..setAlternateFormUnit(1, ATTACK_SWITCHER_START_WITH_MELEE ? rangerFormDef.getNewId().toRawCode() : meleeFormDef.getNewId().toRawCode())
+			..setIconNormal(ATTACK_SWITCHER_START_WITH_MELEE ? ATTACK_SWITCHER_ENABLE_RANGER_ICON : ATTACK_SWITCHER_ENABLE_MELEE_ICON)
+			..setLightningEffects(ATTACK_SWITCHER_MARKER)
+		basicBuild.call(meleeFormDef, true)
+		basicBuild.call(rangerFormDef, false)
+		meleeFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
+		rangerFormDef.setNormalAbilities("AInv," + swapFormAbilDef.getNewId().toRawCode())
+		if buildCb != null
+			buildCb.call(meleeFormDef, true)
+			buildCb.call(rangerFormDef, false)
+		meleeIds.add(meleeFormDef.getNewId())
+		rangerIds.add(rangerFormDef.getNewId())
+		return buildCb
 
+	static function build(int meleeFormId, int rangerFormId, int originId, BuildCallback buildCb) returns BuildCallback
+		return build(new HeroDefinition(meleeFormId, originId), new HeroDefinition(rangerFormId, originId), buildCb)
+	
+	static function build(int meleeFormId, int rangerId, BuildCallback buildCb) returns BuildCallback
+		return build(meleeFormId, rangerId, 'Hpal', buildCb)
+	
+	static function build(int meleeFormId, BuildCallback buildCb) returns BuildCallback
+		return build(meleeFormId, HERO_ID_GEN.next(), 'Hpal', buildCb)
+	
+	static function build(BuildCallback buildCb) returns BuildCallback
+		return build(HERO_ID_GEN.next(), HERO_ID_GEN.next(), 'Hpal', buildCb)
+	
 
 @compiletime function buildAttibuteLearningAbilities()
 	new AbilityDefinitionIllidanChannel(STR_ABIL_ID)
@@ -183,12 +218,20 @@ public function buildCustomHero(int meleeFormId, ICustomHeroBuilCallback cb)
 
 init
 	EventListener.add(EVENT_PLAYER_HERO_LEVEL) ->
-		EventData.getLevelingUnit()..addSkillPoints(BONUS_SKILL_POINTS_PER_LEVEL)
-		.getOwner().addLumber(LUMBER_PER_LEVEL)
+		let levelingUnit = EventData.getLevelingUnit()
+		let unitId = levelingUnit.getTypeId()
+		if CustomHero.meleeIds.has(unitId) or CustomHero.rangerIds.has(unitId)
+			levelingUnit.addSkillPoints(SKILL_POINTS_PER_LEVEL - 1)
+			levelingUnit.getOwner().addLumber(LUMBER_PER_LEVEL)
 
-	CreateTrigger()
-	..registerEnterRegion(playableMapRegion, Filter(() -> GetFilterUnit().isType(UNIT_TYPE_HERO)))
-	..addAction(() -> EventData.getEnteringUnit().addSkillPoints(BONUS_SKILL_POINTS_PER_LEVEL))
+	CreateTrigger()..registerEnterRegion(playableMapRegion, null)
+	..addAction() ->
+		let enteringUnit = EventData.getEnteringUnit()
+		let unitId = enteringUnit.getTypeId()
+		if CustomHero.meleeIds.has(unitId) or CustomHero.rangerIds.has(unitId)
+			enteringUnit.setSkillPoints(STARTING_SKILL_POINTS)
+			enteringUnit.getOwner().addLumber(STARTING_LUMBER)
+			enteringUnit.getOwner().addGold(STARTING_GOLD)
 
 	EventListener.add(EVENT_PLAYER_HERO_SKILL) ->
 		switch EventData.getLearnedSkill()
@@ -199,12 +242,6 @@ init
 			case INT_ABIL_ID
 				EventData.getTriggerUnit().addInt(INT_PER_ABIL_LEVEL)
 
-
-let userTriggers = new HashList<trigger>
-
-public function trigger.registerAttackTypeSwitchEvent()
-	if not userTriggers.has(this)
-		userTriggers.add(this)
 
 init
 	let rangedCircles = new HashMap<unit, effect>
@@ -217,9 +254,10 @@ init
 			let isMelee = u.isType(UNIT_TYPE_MELEE_ATTACKER)
 			setAbilityIcon(abilId, isMelee ? ATTACK_SWITCHER_ENABLE_MELEE_ICON : ATTACK_SWITCHER_ENABLE_RANGER_ICON)
 			setAbilityTooltip(abilId, ATTACK_SWITCHER_TOOLTIP.format(isMelee ? ATTACK_SWITCHER_RANGER : ATTACK_SWITCHER_MELEE), 0)
-			for trg in userTriggers
-				if trg.isEnabled() and trg.evaluate()
-					trg.execute()
+			var attackSwitchCb = CustomHero.first[CustomHeroEventIds.ATTACK_SWITCH castTo int]
+			while attackSwitchCb != null
+				attackSwitchCb.onEvent(u, isMelee)
+				attackSwitchCb = attackSwitchCb.next
 			// Attack range Circle
 			if isMelee
 				let eff = addEffect("Abilities\\AttackRangeCircle\\AttackRangeCircle.mdx", u.getPos())
@@ -242,6 +280,7 @@ init
 			let eff = rangedCircles.getAndRemove(u)
 			destroy circlesCallback.getAndRemove(eff)
 			eff.destr()
-		for trg in userTriggers
-			if trg.isEnabled() and trg.evaluate()
-				trg.execute()
+		var attackSwitchCb = CustomHero.first[CustomHeroEventIds.ATTACK_SWITCH castTo int]
+		while attackSwitchCb != null
+			attackSwitchCb.onEvent(u, u.isType(UNIT_TYPE_MELEE_ATTACKER))
+			attackSwitchCb = attackSwitchCb.next

@@ -1,0 +1,54 @@
+package CreateCustomHeroes
+import HashMap
+import ClosureEvents
+import CustomHero
+
+
+constant COMMAND_ALL = "-CreateAllCustomHeroes"
+constant SHORT_COMMAND_ALL = "-cach"
+constant COMMAND_BY_NAME = "-CreateCustomHero"
+constant SHORT_COMMAND_BY_NAME = "-cch"
+constant COMMAND_REMOVE = "-RemoveCustomheroes"
+constant SHORT_COMMAND_REMOVE = "-rch"
+constant TEST_RECT = gg_rct_BaseEntrance
+
+
+let heroesNameMap = new IterableMap<string, int>
+let createdHeroes = CreateGroup()
+
+
+init
+	for id in CustomHero.meleeIds
+		heroesNameMap.put(GetObjectName(id).toLowerCase(), id)
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			let msg = EventData.getChatMessage().toLowerCase()
+			let cmd = COMMAND_ALL.toLowerCase()
+			let short = SHORT_COMMAND_ALL.toLowerCase()
+			if msg.startsWith(cmd) or msg.startsWith(short)
+				for name in heroesNameMap
+					let hero = createUnit(localPlayer, heroesNameMap.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
+					createdHeroes.addUnit(hero)
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			let msg = EventData.getChatMessage().toLowerCase()
+			let cmd = COMMAND_BY_NAME.toLowerCase()
+			let short = SHORT_COMMAND_BY_NAME.toLowerCase()
+			if msg.startsWith(cmd) or msg.startsWith(short)
+				let name = msg.startsWith(cmd) ? msg.substring(cmd.length() + 1) : (msg.startsWith(short) ? msg.substring(short.length() + 1) : null)
+				if heroesNameMap.has(name)
+					let hero = createUnit(localPlayer, heroesNameMap.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
+					createdHeroes.addUnit(hero)
+				else
+					print("No hero with such name.")
+
+	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
+		if bj_isSinglePlayer
+			let msg = EventData.getChatMessage().toLowerCase()
+			let cmd = COMMAND_REMOVE.toLowerCase()
+			let short = SHORT_COMMAND_REMOVE.toLowerCase()
+			if msg.startsWith(cmd) or msg.startsWith(short)
+				for hero in createdHeroes
+					hero.remove()

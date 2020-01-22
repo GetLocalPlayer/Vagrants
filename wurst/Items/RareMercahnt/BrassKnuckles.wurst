@@ -32,7 +32,7 @@ public class BrassKnuckles
 			
 	@compiletime protected static function build()
 		let strDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -73,7 +73,7 @@ public class BrassKnucklesRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

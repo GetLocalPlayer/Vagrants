@@ -1,4 +1,5 @@
 package BaseHealing
+import Base
 import ClosureEvents
 
 
@@ -8,7 +9,6 @@ constant COMMAND_ON = "-EnableBaseRestoration"
 constant SHORT_COMMAND_ON = "-ebr"
 constant HEALING_INTERVAL = 0.2
 
-let baseRect = gg_rct_Base
 
 function healBase()
 	ENUM_GROUP.enumUnitsInRect(baseRect, Filter(() -> GetFilterUnit().isType(UNIT_TYPE_HERO) and GetFilterUnit().isAlive()))

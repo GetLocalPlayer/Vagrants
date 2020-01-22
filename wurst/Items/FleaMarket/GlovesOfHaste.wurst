@@ -21,7 +21,7 @@ constant real ATTACK_RATE = 0.15
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 	let abilDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
+	RunedAlias.build(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)

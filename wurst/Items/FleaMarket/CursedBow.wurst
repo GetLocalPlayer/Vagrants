@@ -25,7 +25,7 @@ public class CursedBow
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let armorDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
 		let attackRateDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

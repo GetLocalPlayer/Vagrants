@@ -4,7 +4,6 @@ import ObjectIdGenerator
 
 import ClosureEvents
 import ClosureTimers
-import LinkedListModule
 import LinkedList
 
 
@@ -20,83 +19,99 @@ in the inventory, or when an item's gonna be combined with other items but
 it can't be done becouse of the annoying mechanic. */
 
 
-let actualItemIds = compiletime(new LinkedList<int>)
-let aliasItemIds = compiletime(new LinkedList<int>)
+public abstract class RunedAlias
+	protected RunedAlias next = null
+	protected RunedAlias prev = null
 
-interface IItemWithAliasCallback
-	function call(ItemDefinition def, bool isAlias)
+	protected static RunedAlias first = null
 
-function buildItemWithAlias(ItemDefinition actualItemDef, ItemDefinition aliasItemDef, IItemWithAliasCallback cb)
-	cb.call(actualItemDef, false)
-	cb.call(aliasItemDef, true)
-	actualItemDef.setUseAutomaticallyWhenAcquired(false)
-	aliasItemDef..setUseAutomaticallyWhenAcquired(true)
-	..setAbilities("")
-	actualItemIds.add(actualItemDef.getNewId())
-	aliasItemIds.add(aliasItemDef.getNewId())
-	destroy cb
-
-public function buildItemWithAlias(int actualItemId, int aliasItemId, IItemWithAliasCallback cb)
-	buildItemWithAlias(new ItemDefinition(actualItemId, 'afac'), new ItemDefinition(aliasItemId, 'afac'), cb)
-
-public function buildItemWithAlias(int actualItemId, IItemWithAliasCallback cb)
-	buildItemWithAlias(actualItemId, ITEM_ID_GEN.next(), cb)
-
-
-public function registerItemAlias(int actualItemId, int aliasItemId)
-	if not actualItemIds.has(actualItemId)
-		actualItemIds.add(actualItemId)
-		aliasItemIds.add(aliasItemId)
-	else
-		let i = actualItemIds.indexOf(actualItemId)
-		aliasItemIds.set(i, aliasItemId)
-
-
-abstract class AliasedItemGivenCallback
-	use LinkedListModule
 	abstract function call(unit u, item givenItem)
 
-public function onAliasedItemGiven(AliasedItemGivenCallback _cb)
+	ondestroy
+		if first == this
+			first = next
+		if next != null
+			next.prev = prev
+		if prev != null
+			prev.next = next
+
+	static function onActualItem(RunedAlias cb) returns RunedAlias
+		if RunedAlias.first == null
+			cb.next = RunedAlias.first
+			RunedAlias.first.prev = cb
+		RunedAlias.first = cb
+		return cb
+
+	// Compiletime 
+
+	// Transfered data
+	protected static let actualItemIds = compiletime(new LinkedList<int>)
+	protected static let aliasItemIds = compiletime(new LinkedList<int>)
+
+	abstract static class BuildCallback
+		abstract function call(ItemDefinition def, bool isAlias)
+
+	static function build(ItemDefinition actualItemDef, ItemDefinition aliasItemDef, BuildCallback buildCb)
+		buildCb.call(actualItemDef, false)
+		buildCb.call(aliasItemDef, true)
+		actualItemDef.setUseAutomaticallyWhenAcquired(false)
+		aliasItemDef..setUseAutomaticallyWhenAcquired(true)
+		..setAbilities("")
+		actualItemIds.add(actualItemDef.getNewId())
+		aliasItemIds.add(aliasItemDef.getNewId())
+		destroy buildCb
+	
+	static function build(int actualItemId, int aliasItemId, BuildCallback buildCb)
+		build(new ItemDefinition(actualItemId, 'afac'), new ItemDefinition(aliasItemId, 'afac'), buildCb)
+	
+	static function build(int actualItemId, BuildCallback buildCb)
+		build(actualItemId, ITEM_ID_GEN.next(), buildCb)
+
+	static function build(BuildCallback buildCb)
+		build(ITEM_ID_GEN.next(), ITEM_ID_GEN.next(), buildCb)
 
 
 init
-	for i = 0 to actualItemIds.size() - 1
-		createItem(actualItemIds.get(i), ZERO2).remove()
-		createItem(aliasItemIds.get(i), ZERO2).remove()
+	for i = 0 to RunedAlias.actualItemIds.size() - 1
+		createItem(RunedAlias.actualItemIds.get(i), ZERO2).remove()
+		createItem(RunedAlias.aliasItemIds.get(i), ZERO2).remove()
 
 	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) () ->
 		let aliasItem = EventData.getManipulatedItem()
 		let aliasItemId = aliasItem.getTypeId()
-		if aliasItemIds.has(aliasItemId)
+		if RunedAlias.aliasItemIds.has(aliasItemId)
 			let u = EventData.getTriggerUnit()
 			let pos = aliasItem.getPos()
 			let p = aliasItem.getPlayer()
 			let charges = aliasItem.getCharges()
 			aliasItem.remove()
 			let isInventoryFull = u.isInventoryFull()
-			let index = aliasItemIds.indexOf(aliasItemId)
-			let actualItemId = actualItemIds.get(index)
+			let index = RunedAlias.aliasItemIds.indexOf(aliasItemId)
+			let actualItemId = RunedAlias.actualItemIds.get(index)
 			let newItem = not isInventoryFull ? u.addItemById(actualItemId) : createItem(actualItemId, pos)
 			newItem..setPlayer(p, true)
 			..setCharges(charges)
-			for cb in AliasedItemGivenCallback
+			var cb = RunedAlias.first
+			while cb != null
 				cb.call(u, newItem)
+				cb = cb.next
 			if newItem.getTypeId() != 0 and isInventoryFull
 				newItem.remove()
 				createItem(aliasItemId, pos)
 				..setPlayer(p, true)
 				..setCharges(charges)
 
+
 	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM) ->
 		let droppedItem = EventData.getManipulatedItem()
 		let droppedItemId = droppedItem.getTypeId()
-		if actualItemIds.has(droppedItemId)
+		if RunedAlias.actualItemIds.has(droppedItemId)
 			nullTimer() () ->
 				let p = droppedItem.getPlayer()
 				let pos = droppedItem.getPos()
 				let charges = droppedItem.getCharges()
 				droppedItem.remove()
-				let index = actualItemIds.indexOf(droppedItemId)
-				createItem(aliasItemIds.get(index), pos)
+				let index = RunedAlias.actualItemIds.indexOf(droppedItemId)
+				createItem(RunedAlias.aliasItemIds.get(index), pos)
 				..setPlayer(p, true)
 				..setCharges(charges)

@@ -45,7 +45,7 @@ init
 			ItemCombine.combine(u, itemList)
 		destroy itemList
 		
-	onAliasedItemGiven() (unit u, item givenItem) ->
+	RunedAlias.onActualItem() (unit u, item givenItem) ->
 		let itemList = new LinkedList<item>
 		for i in u.inventory()
 			itemList.add(i)

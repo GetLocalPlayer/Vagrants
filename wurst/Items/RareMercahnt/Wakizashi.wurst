@@ -30,7 +30,7 @@ public class Wakizashi
 	@compiletime protected static function build()
 		let intDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
 		let manaRegDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

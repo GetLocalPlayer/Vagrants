@@ -36,7 +36,7 @@ public class Vanguard
 	@compiletime protected static function build()
 		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
 		let hitPointsDef = buildHitPointsBonus(NAME, ICON, HIT_POINTS, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -78,7 +78,7 @@ public class VanguardRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

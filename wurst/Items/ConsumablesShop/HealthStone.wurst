@@ -37,7 +37,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 	..setLevels(1)
 	..setHitPointsGained(1, HEALING)
 	..setCooldown(1, COOLDOWN)
-	buildItemWithAlias(ITEM_ID) (def, isAlias) ->
+	RunedAlias.build(ITEM_ID) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -66,7 +66,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 
 
 init
-	onAliasedItemGiven() (unit u, item givenItem) ->
+	RunedAlias.onActualItem() (unit u, item givenItem) ->
 		if givenItem.getTypeId() == ITEM_ID
 			for i in EventData.getTriggerUnit().inventory()
 				if i.getTypeId() == ITEM_ID and i != givenItem

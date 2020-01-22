@@ -23,7 +23,7 @@ public class RingOfProtection
 	@compiletime protected static function build()
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let abilDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

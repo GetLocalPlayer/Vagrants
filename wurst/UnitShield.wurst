@@ -1,6 +1,5 @@
 package UnitShield
 import HashMap
-import LinkedList
 import ClosureEvents
 import ErrorHandling
 
@@ -8,36 +7,49 @@ import ErrorHandling
 /** Allows to create a shield that prevents damage taken by
 a unit. The system uses EventListener, manually placing its
 listener at the end of EventListener's callback sequence so
-the user can be sure, any other "DAMAGED" event listener will
-be called before damage absorbing. */
+the user can be sure any other "DAMAGED" event listener will
+be called before damage absorbing.
+The latest created shield will absorb first (LIFO). */
 
 
-let unitToShieldList = new HashMap<unit, LinkedList<UnitShieldCallback>>
+public function unit.addShield(real amount, real blockFactor, UnitShield cb) returns UnitShield
+	return UnitShield.add(this, amount, blockFactor, cb)
 
 
-public function unit.addShield(real amount, real blockFactor, UnitShieldCallback cb) returns UnitShieldCallback
-	cb.set(this, amount, blockFactor)
-	if not unitToShieldList.has(this)
-		unitToShieldList.put(this, asList<UnitShieldCallback>(cb))
-	else
-		unitToShieldList.get(this).addtoStart(cb)
-	return cb
-
-
-public abstract class UnitShieldCallback
+public abstract class UnitShield
 	protected unit target
 	protected real amount
 	protected real factor
 	protected bool isBroken = false
+	protected UnitShield next = null
+	protected UnitShield prev = null
 
-	abstract function onAbsorb(UnitShieldCallback cb, real takenDamage, real absorbedDamage)
+	protected static let firstMap = new HashMap<unit, UnitShield>
+
+	abstract function onAbsorb(UnitShield shield, real takenDamage, real absorbedDamage)
+
+	static function add(unit target, real amount, real factor, UnitShield absorbCb) returns UnitShield
+		absorbCb.target = target
+		absorbCb.setAmount(amount)
+		absorbCb.setFactor(factor)
+		if firstMap.has(target)
+			let first = firstMap.get(target)
+			first.prev = absorbCb
+			absorbCb.next = first
+		firstMap.put(target, absorbCb)
+		return absorbCb
 
 	ondestroy
-		let shieldStack = unitToShieldList.get(target)
-		shieldStack.remove(this)
-		if shieldStack.isEmpty()
-			destroy shieldStack
-			unitToShieldList.remove(target)
+		let first = firstMap.get(target)
+		if first == this
+			if next != null
+				firstMap.put(target, next)
+			else
+				firstMap.remove(target)
+		else
+			prev.next = next
+		if next != null
+			next.prev = prev
 
 	function setAmount(real amount)
 		if amount < 0
@@ -60,11 +72,6 @@ public abstract class UnitShieldCallback
 	function isBroken() returns bool
 		return isBroken
 
-	protected function set(unit target, real amount, real factor)
-		this.target = target
-		setAmount(amount)
-		setFactor(factor)
-
 	/** Returns amount of absorbed damage. */
 	protected function absorb(real damage) returns real
 		if not isBroken()
@@ -85,17 +92,18 @@ public abstract class UnitShieldCallback
 init
 	let listener = EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) ->
 		let target = EventData.getTriggerUnit()
-		let shields = unitToShieldList.get(target)
-		var damage = EventData.getEventDamage()
-		if unitToShieldList.has(target)
-			for shield in shields
+		if UnitShield.firstMap.has(target)
+			var shield = UnitShield.firstMap.get(target)
+			while shield != null
 				if not shield.isBroken()
+					let damage = EventData.getEventDamage()
 					let absorbedDamage = shield.absorb(damage)
 					if absorbedDamage >= damage
 						EventData.setDamage(0)
 						break
 					else
 						EventData.setDamage(damage - absorbedDamage)
+				shield = shield.next
 
 	if listener.next != null
 		var lastListener = listener.next
@@ -107,8 +115,3 @@ init
 		lastListener.next = listener
 		listener.prev = lastListener
 		listener.next = null 
-
-	EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
-		let u = EventData.getDyingUnit()
-		if not u.isType(UNIT_TYPE_HERO) and unitToShieldList.has(u)
-			destroy unitToShieldList.getAndRemove(u)

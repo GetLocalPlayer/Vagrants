@@ -49,7 +49,7 @@ public class AzureScale
 		..setCooldown(1, SHIELD_COOLDOWN)
 		..setIconNormal(ICON)
 		..setName(NAME)
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -72,7 +72,7 @@ public class AzureScale
 				def.setAbilities("{0},{1}".format(shieldDef.getNewId().toRawCode(), defenseDef.getNewId().toRawCode()))
 
 
-	static let shields = new HashMap<unit, UnitShieldCallback>
+	static let shields = new HashMap<unit, UnitShield>
 	static let timers = new HashMap<unit, CallbackSingle>
 	
 	static function shieldUnit(unit u)
@@ -116,7 +116,7 @@ public class AzureScaleRecipe
 		..addRecipeRequirement("Recipe", GOLD_COST)
 
 	@compiletime protected static function build()
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

@@ -1,0 +1,25 @@
+package SpawnHeroes
+import LinkedList
+import CustomHero
+import BootsOfSalvation
+import Base
+
+
+constant STARTING_ITEM_ID = BootsOfSalvation.ID
+constant STARTING_GOLD = 300
+constant STARTING_LUMBER = 3
+constant STARTING_SKILL_POINTS = 15
+constant SPAWN_RECT = baseEntranceRect
+
+
+init
+	let list = CustomHero.meleeIds.copy()
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		let p = players[i]
+		if p.getController() == MAP_CONTROL_USER and p.getSlotState() == PLAYER_SLOT_STATE_PLAYING
+			let random = GetRandomInt(0, list.size() - 1)
+			let hero = createUnit(p, list.get(random), SPAWN_RECT.randomPoint(), angle(0))
+			hero.addItemById(STARTING_ITEM_ID).setPlayer(p, true)
+			list.removeAt(random)
+			p..panCamToTimed(hero, 0)
+			..select(hero)

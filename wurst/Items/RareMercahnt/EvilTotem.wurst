@@ -58,7 +58,7 @@ public class EvilTotem
 		..presetTargetType((int lvl) -> Targettype.POINT castTo int)
 		..presetCastRange(lvl -> CAST_RANGE)
 		..presetAreaofEffect((int lvl) -> AOE)
-		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -101,7 +101,7 @@ public class EvilTotemRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

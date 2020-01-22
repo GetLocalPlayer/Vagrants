@@ -74,7 +74,7 @@ public class LightningRod
 			..setTooltipNormal(1, NAME)
 			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
 			..setIcon(ICON)
-		buildItemWithAlias(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -117,7 +117,7 @@ public class LightningRodRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		buildItemWithAlias(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

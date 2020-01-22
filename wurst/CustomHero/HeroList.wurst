@@ -1,37 +1,12 @@
 package HeroList
-import HashMap
-import EventHelper
-import ClosureTimers
-
-import Assets
 import ObjectIdGenerator
+import ClosureTimers
+import Assets
 import CustomHero
 
 
-public let heroes = new IterableMap<string, int>
-	..put("Firelord", compiletime(buildFirelord()))
-	..put("Northerner", compiletime(buildNortherner()))
-	..put("Mad Poet", compiletime(buildMadPoet()))
-	..put("Ancient of Lore", compiletime(buildAncientOfLore()))
-	..put("Eredar-Sorcerer", compiletime(buildEredarSorcerer()))
-	..put("Dreadlord", compiletime(buildDreadlord()))
-	..put("Spirit Walker", compiletime(buildSpiritWalker()))
-	..put("Bandit", compiletime(buildBandit()))
-	..put("Trollin' Hunter", compiletime(buildTrollingHunter()))
-	..put("Banshee", compiletime(buildBanshee()))
-	..put("Tentacle Monster", compiletime(buildTentacleMonster()))
-	..put("Death Knight", compiletime(buildDeathKnight()))
-	..put("Keeper of the Grove", compiletime(buildKeeperOfTheGrove()))
-
-
-init /* TEST ======================== */
-/* 	for h in heroes
-		createUnit(localPlayer, heroes.get(h), gg_rct_Base.getCenter(), angle(0)) */
-
-
-function buildFirelord() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildFirelord()
+	CustomHero.build() (def, isMelee) ->
 		def..setModelFile(Units.heroFlameLord)
 		..setUnitSoundSet("HeroFireLord")
 		..setProperNames("Lindemann")
@@ -45,12 +20,10 @@ function buildFirelord() returns int
 		else
 			def..setAttack1ProjectileArt(Abilities.lordofFlameMissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
-	return meleeFormId
 
 
-function buildNortherner() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildNortherner()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.heroPaladin)
 		..setProperNames("Elon Tusk")
 		..setName("Northerner")
@@ -65,12 +38,10 @@ function buildNortherner() returns int
 			def..setModelFile(Units.tuskarRanged)
 			..setAttack1ProjectileArt(Abilities.tuskarSpear)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
-	return meleeFormId
 
 
-function buildMadPoet() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildMadPoet()
+	CustomHero.build() (def, isMelee) ->
 		def..setModelFile(Units.orcWarlockRed1)
 		..setUnitSoundSet("Grom")
 		..setProperNames("Abdul Alhazred")
@@ -86,12 +57,10 @@ function buildMadPoet() returns int
 			def..setAttack1ProjectileArt(Abilities.makuraMissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0)
-	return meleeFormId
 
 
-function buildEredarSorcerer() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildEredarSorcerer()
+	CustomHero.build() (def, isMelee) ->
 		def..setModelFile(Units.eredarWarlockPurple)
 		..setUnitSoundSet(Soundsets.varimathras)
 		..setProperNames("Mozenrath")
@@ -108,12 +77,10 @@ function buildEredarSorcerer() returns int
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0.05)
 			..setProjectileLaunchZ(70)
-	return meleeFormId
 
 
-function buildDreadlord() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildDreadlord()
+	CustomHero.build() (def, isMelee) ->
 		def..setModelFile(Units.heroDreadLord)
 		..setUnitSoundSet(Soundsets.heroDreadLord)
 		..setProperNames("Doctor Moreau")
@@ -129,12 +96,10 @@ function buildDreadlord() returns int
 			def..setAttack1ProjectileArt(Abilities.avengerMissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0)
-	return meleeFormId
 
 
-function buildSpiritWalker() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildSpiritWalker()
+	CustomHero.build() (def, isMelee) ->
 		def..setModelFile(Units.spiritWalker)
 		..setUnitSoundSet(Soundsets.spiritWalker)
 		..setProperNames("Mogambo")
@@ -149,12 +114,10 @@ function buildSpiritWalker() returns int
 		else
 			def..setAttack1ProjectileArt(Abilities.witchDoctorMissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
-	return meleeFormId
 
 
-function buildBandit() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildBandit()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.bandit)
 		..setProperNames("Michael ''The Pot''")
 		..setName("Bandit")
@@ -170,12 +133,10 @@ function buildBandit() returns int
 			def..setAttack1ProjectileArt(Abilities.huntermissile)
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setModelFile(Units.banditSpearThrower)
-	return meleeFormId
 
 
-function buildBanshee() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildBanshee()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.banshee)
 		..setProperNames("Karen Braineater")
 		..setName("Banshee")
@@ -192,78 +153,79 @@ function buildBanshee() returns int
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0)
 			..setProjectileLaunchZ(50)
-	return meleeFormId
 
 
-function buildTrollingHunter() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
-		def..setUnitSoundSet(Soundsets.headHunter)
-		..setProperNames("Zul'Chuk")
-		..setName("Trollin' Hunter")
-		..setProperNamesUsed(1)
-		..setSelectionScale(1.4)
-		..setScaleProjectiles(false)
-		..setIconGameInterface(Icons.bTNIceTroll)
-		if isMelee
-			def..setAttack1WeaponSound(WeaponSound.MetalMediumChop)
-			..setModelFile(Units.iceTroll1)
-			..setScalingValue(1.5)
-		else
-			def..setAttack1ProjectileArt(Abilities.murgulMagicMissile)
-			..setAttack1WeaponSound(WeaponSound.Nothing)
-			..setAttack1ProjectileArc(0.1)
-			..setModelFile(Units.iceTrollShadowPriest1)
-			..setScalingValue(1.4)
-	return meleeFormId
-
-init
-	CreateTrigger()..registerAttackTypeSwitchEvent()
-	..addAction() ->
-		let u = EventData.getTriggerUnit()
-		if u.getProperName() == "Zul'Chuk"
-			nullTimer() () ->
-				u.setProperName("Zul'Gek")
-		if u.getProperName() == "Zul'Gek"
-			nullTimer() () ->
-				u.setProperName("Zul'Chuk")
-
-
-function buildAncientOfLore() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
-		def..setModelFile(Buildings.ancientofLore)
-		..setUnitSoundSet(Soundsets.ancientOfLore)
-		..setProperNames("Dagda")
-		..setName("Ancient of Lore")
-		..setProperNamesUsed(1)
-		..setScalingValue(0.85)
-		..setSelectionScale(2)
-		..setScaleProjectiles(false)
-		..setIconGameInterface(Icons.bTNAncientOfLore)
-		..setRequiredAnimationNames("")
-		..setRequiredAnimationNamesAttachments("")
-		..setRequiredAttachmentLinkNames("")
-		..setRequiredBoneNames("")
-		if isMelee
-			def..setAttack1WeaponSound(WeaponSound.WoodMediumBash)
-		else
-			def..setAttack1ProjectileArt(Units.snowOwl1)
-			..setAttack1WeaponSound(WeaponSound.Nothing)
-			..setAttack1ProjectileArc(0.05)
-	return meleeFormId
+@compiletime function buildTrollingHunter()
+	let meleeId = compiletime(HERO_ID_GEN.next())
+	let rangerId = compiletime(HERO_ID_GEN.next())
+	if compiletime
+		CustomHero.build(meleeId, rangerId) (def, isMelee) ->
+			def..setUnitSoundSet(Soundsets.headHunter)
+			..setProperNames("Zul'Chuk")
+			..setName("Trollin' Hunter")
+			..setProperNamesUsed(1)
+			..setSelectionScale(1.4)
+			..setScaleProjectiles(false)
+			..setIconGameInterface(Icons.bTNIceTroll)
+			if isMelee
+				def..setAttack1WeaponSound(WeaponSound.MetalMediumChop)
+				..setModelFile(Units.iceTroll1)
+				..setScalingValue(1.5)
+			else
+				def..setAttack1ProjectileArt(Abilities.murgulMagicMissile)
+				..setAttack1WeaponSound(WeaponSound.Nothing)
+				..setAttack1ProjectileArc(0.1)
+				..setModelFile(Units.iceTrollShadowPriest1)
+				..setScalingValue(1.4)
+	else
+		CustomHero.onAttackSwitch() (unit u, boolean isMelee) ->
+			if u.getTypeId() == meleeId
+				nullTimer() () ->
+					u.setProperName("Zul'Gek")
+			if u.getTypeId() == rangerId
+				nullTimer() () ->
+					u.setProperName("Zul'Chuk")
 
 init
-	CreateTrigger()..registerAnyUnitEvent(EVENT_PLAYER_UNIT_SPELL_ENDCAST)
-	..addAction()-> 
-		let u = EventData.getTriggerUnit()
-		if  u.getTypeId() == compiletime(heroes.get("Ancient of Lore"))
-			AddUnitAnimationProperties(u, "alternate", false) 
+	buildTrollingHunter()
 
 
-function buildTentacleMonster() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildAncientOfLore()
+	let meleeId = compiletime(HERO_ID_GEN.next())
+	let rangerId = compiletime(HERO_ID_GEN.next())
+	if compiletime
+		CustomHero.build(meleeId, rangerId) (def, isMelee) ->
+			def..setModelFile(Buildings.ancientofLore)
+			..setUnitSoundSet(Soundsets.ancientOfLore)
+			..setProperNames("Dagda")
+			..setName("Ancient of Lore")
+			..setProperNamesUsed(1)
+			..setScalingValue(0.85)
+			..setSelectionScale(2)
+			..setScaleProjectiles(false)
+			..setIconGameInterface(Icons.bTNAncientOfLore)
+			..setRequiredAnimationNames("")
+			..setRequiredAnimationNamesAttachments("")
+			..setRequiredAttachmentLinkNames("")
+			..setRequiredBoneNames("")
+			if isMelee
+				def..setAttack1WeaponSound(WeaponSound.WoodMediumBash)
+			else
+				def..setAttack1ProjectileArt(Units.snowOwl1)
+				..setAttack1WeaponSound(WeaponSound.Nothing)
+				..setAttack1ProjectileArc(0.05)
+	else
+		CustomHero.onAttackSwitch() (unit u, boolean isMelee) ->
+			let id = u.getTypeId()
+			if id == meleeId or id == rangerId
+				AddUnitAnimationProperties(u, "alternate", false) 
+			
+init
+	buildAncientOfLore()
+
+
+@compiletime function buildTentacleMonster()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.sludgeMonster)
 		..setProperNames("Weeb")
 		..setName("Tentacle Monster")
@@ -280,12 +242,11 @@ function buildTentacleMonster() returns int
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0)
 			..setProjectileLaunchZ(0)
-	return meleeFormId
+	
 
 
-function buildDeathKnight() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildDeathKnight()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.heroDeathKnight)
 		..setProperNames("Azazello")
 		..setName("Death Knight")
@@ -302,12 +263,10 @@ function buildDeathKnight() returns int
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0)
 			..setProjectileLaunchZ(100)
-	return meleeFormId
 
 
-function buildKeeperOfTheGrove() returns int
-	let meleeFormId = HERO_ID_GEN.next()
-	buildCustomHero(meleeFormId) (def, isMelee) ->
+@compiletime function buildKeeperOfTheGrove()
+	CustomHero.build() (def, isMelee) ->
 		def..setUnitSoundSet(Soundsets.heroKeeperOfTheGrove)
 		..setModelFile(Units.heroKeeperoftheGrove)
 		..setProperNames("Bambi")
@@ -324,4 +283,4 @@ function buildKeeperOfTheGrove() returns int
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0.1)
 			..setProjectileLaunchZ(70)
-	return meleeFormId
+	

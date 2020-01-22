@@ -25,7 +25,7 @@ public class HelmOfIronWill
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENCE, tooltipGenerator)
 		let hpRegDef = buildLifeRegenerationBonus(NAME, ICON, HP_PER_SECOND, tooltipGenerator)
-		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

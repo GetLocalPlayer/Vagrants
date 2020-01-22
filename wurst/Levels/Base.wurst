@@ -1,0 +1,24 @@
+package Base
+
+
+public let baseRect = gg_rct_Base
+public let baseEntranceRect = gg_rct_BaseEntrance
+public let baseExitRect = gg_rct_BaseExit
+
+public let baseReg = CreateRegion()
+	..addRect(baseRect)
+public let baseEntranceReg = CreateRegion()
+	..addRect(baseEntranceRect)
+public let baseExitReg = CreateRegion()
+	..addRect(baseExitRect)
+
+public fogmodifier array baseVision
+
+
+init
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		let p = players[i]
+		if p.getController() == MAP_CONTROL_USER and p.getSlotState() == PLAYER_SLOT_STATE_PLAYING
+			baseVision[p.getId()] = createVision(p, baseRect, false)
+				..start()
+

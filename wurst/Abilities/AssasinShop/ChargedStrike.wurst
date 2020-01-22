@@ -82,10 +82,9 @@ public class ChargedStrike
 
 
 init
-	CreateTrigger()..registerAbilitySoldEvent(ChargedStrike.ABIL_ID)
-	..addAction() ->
-		if not EventData.getBuyingUnit().hasAbility(ChargedStrike.ORB_ABIL_ID)
-			EventData.getBuyingUnit()..addAbility(ChargedStrike.ORB_ABIL_ID)
+	AbilityShop.onSold() (unit u, int abilId, int level) ->
+		if abilId == ChargedStrike.ABIL_ID and level == 1
+			u..addAbility(ChargedStrike.ORB_ABIL_ID)
 			..makeAbilityPermanent(ChargedStrike.ORB_ABIL_ID, true)
 
 

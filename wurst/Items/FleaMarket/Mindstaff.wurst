@@ -21,7 +21,7 @@ constant int MANA = 100
 @compiletime function build()
 	let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 	let abilDef = buildManaBonus(NAME, ICON, MANA, tooltipGenerator)
-	buildItemWithAlias(ITEM_ID_GEN.next()) (def, isAlias) ->
+	RunedAlias.build(ITEM_ID_GEN.next()) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)

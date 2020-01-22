@@ -48,7 +48,7 @@ public class BootsOfSalvation
 			..setTooltipNormal(1, NAME)
 			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
 			..setIcon(ICON)
-		buildItemWithAlias(ID, ALIAS_ID) (def, isAlias) ->
+		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
