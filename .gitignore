@@ -3,3 +3,4 @@ wurst.dependencies
 .vscode/settings.json
 /.def
 /ExcludedFromCompilation
+/wurst/war3map.j
