@@ -10,8 +10,8 @@ constant COMMAND = "-CreateTestGhoul"
 constant SHORT_COMMAND = "-ctg"
 constant COMMAND_REMOVE = "-RemoveTestGhouls"
 constant SHORT_COMMAND_REMOVE = "-rtg"
-constant COMMAND_HP = "-SetGhoulHitPoints"
-constant SHORT_COMMAND_HP = "-sghp"
+constant COMMAND_HP = "-SetTestGhoulHitPoints"
+constant SHORT_COMMAND_HP = "-stghp"
 constant SPAWN_RECT = gg_rct_TestGhoul
 constant UNIT_ID = compiletime(UNIT_ID_GEN.next())
 

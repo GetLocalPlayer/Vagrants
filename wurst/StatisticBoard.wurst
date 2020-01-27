@@ -1,0 +1,76 @@
+package StatisticBoard
+import LinkedList
+import HashMap
+import ClosureTimers
+import ClosureEvents
+
+
+constant COLUMN_TITLE_COLOR = "|cffffcc00"
+constant TOTAL_TITLE_COLOR = "|cffc3dbff"
+constant LEFT_PLAYER_COLOR = "|cff969696"
+
+
+init
+	let playingPlayers = new LinkedList<player>
+	let damage = new HashMap<player, real>
+	let kills = new HashMap<player, int>
+	var totalDamage = 0.0
+	var totalKills = 0
+
+	for i = 0 to bj_MAX_PLAYER_SLOTS - 1
+		let p = players[i]
+		if p.getController() == MAP_CONTROL_USER and p.getSlotState() == PLAYER_SLOT_STATE_PLAYING
+			playingPlayers.add(p)
+			damage.put(p, 0)
+			kills.put(p, 0)
+
+	nullTimer() () ->
+		let board = CreateMultiboard()
+		..setItemsStyle(true, false)
+		..setTitle("Statistic")
+		..setItemsValue("0")
+		..setColumnCount(3)
+		..setRowCount(playingPlayers.size() + 2)
+		..setColumnWidth(0, 0.12)
+		..setColumnWidth(1, 0.08)
+		..setColumnWidth(2, 0.025)
+		..setItemValue(0, 0, "{0}Name:|r".format(COLUMN_TITLE_COLOR))
+		..setItemValue(0, 1, "{0}Damage:|r".format(COLUMN_TITLE_COLOR))
+		..setItemValue(0, 2, "{0}Kills:|r".format(COLUMN_TITLE_COLOR))
+		for row = 1 to board.getRowCount() - 2
+			board.setItemValue(row, 0, "{0} {1}".format(row.toString(), playingPlayers.get(row - 1).getNameColored()))
+		let lastRow = board.getRowCount() - 1
+		board..setItemValue(lastRow, 0, "{0}Total|r".format(TOTAL_TITLE_COLOR))
+		..setItemValue(lastRow, 1, "0")
+		..setItemValue(lastRow, 2, "0")
+
+		..show()
+		..maximize()
+
+		EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) () ->
+			let target = EventData.getTriggerUnit()
+			let sourceOwner = EventData.getEventDamageSource().getOwner()
+			if target.isEnemyOf(sourceOwner) and playingPlayers.has(sourceOwner)
+				let eventDamage = EventData.getEventDamage()
+				let value = damage.get(sourceOwner) + eventDamage
+				damage.put(sourceOwner, value)
+				board.setItemValue(sourceOwner.getId() + 1, 1, value.toInt())
+				totalDamage += eventDamage
+				board.setItemValue(board.getRowCount() - 1, 1, totalDamage.toInt())
+
+
+		EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
+			let target = EventData.getDyingUnit()
+			let sourceOwner = EventData.getKillingUnit().getOwner()
+			if target.isEnemyOf(sourceOwner) and playingPlayers.has(sourceOwner)
+				let value = kills.get(sourceOwner) + 1
+				kills.put(sourceOwner, value)
+				board.setItemValue(sourceOwner.getId() + 1, 2, value)
+				totalKills += 1
+				board.setItemValue(board.getRowCount() - 1, 2, totalKills)
+
+		EventListener.add(EVENT_PLAYER_LEAVE) () ->
+			let p = EventData.getTriggerPlayer()
+			let row = playingPlayers.indexOf(p) + 1
+			board.setItemValue(row, 0, "{0} {1}{2}|r".format(row.toString(), LEFT_PLAYER_COLOR, p.getName()))
+			playingPlayers.remove(p)
