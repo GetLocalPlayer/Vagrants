@@ -49,23 +49,23 @@ import public ObjEditingCommons
 constant STR_ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant AGI_ABIL_ID = compiletime(ABIL_ID_GEN.next())
 constant INT_ABIL_ID = compiletime(ABIL_ID_GEN.next())
-constant STR_ICON = "ReplaceableTextures\\CommandButtons\\BTNstr.blp"
-constant AGI_ICON = "ReplaceableTextures\\CommandButtons\\BTNagi.blp"
-constant INT_ICON = "ReplaceableTextures\\CommandButtons\\BTNint.blp"
-constant STR_ABIL_HOTKEY = "Q"
-constant AGI_ABIL_HOTKEY = "W"
-constant INT_ABIL_HOTKEY = "E"
-constant PRIMARY_ATTRIBUTE = "INT"
+@configurable constant STR_ICON = "ReplaceableTextures\\CommandButtons\\BTNstr.blp"
+@configurable constant AGI_ICON = "ReplaceableTextures\\CommandButtons\\BTNagi.blp"
+@configurable constant INT_ICON = "ReplaceableTextures\\CommandButtons\\BTNint.blp"
+@configurable constant STR_ABIL_HOTKEY = "Q"
+@configurable constant AGI_ABIL_HOTKEY = "W"
+@configurable constant INT_ABIL_HOTKEY = "E"
+@configurable constant PRIMARY_ATTRIBUTE = "INT"
 
-constant ATTACK_SWITCHER_HOTKEY = "C"
-constant real ATTACK_SWITCHER_COOLDOWN = 1
-constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r - [|cffffcc00" + ATTACK_SWITCHER_HOTKEY + "|r]"
-constant ATTACK_SWITCHER_TOOLTIP_EXTENDED = "Changes the hero's attack type from melee to ranged and vice versa."
-constant ATTACK_SWITCHER_MELEE = "Melee"
-constant ATTACK_SWITCHER_RANGER = "Ranger"
-constant ATTACK_SWITCHER_ENABLE_MELEE_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableMelee.blp"
-constant ATTACK_SWITCHER_ENABLE_RANGER_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableRanger.blp"
-constant ATTACK_SWITCHER_START_WITH_MELEE = true
+@configurable constant ATTACK_SWITCHER_HOTKEY = "C"
+@configurable constant real ATTACK_SWITCHER_COOLDOWN = 1
+@configurable constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r - [|cffffcc00" + ATTACK_SWITCHER_HOTKEY + "|r]"
+@configurable constant ATTACK_SWITCHER_TOOLTIP_EXTENDED = "Changes the hero's attack type from melee to ranged and vice versa."
+@configurable constant ATTACK_SWITCHER_MELEE = "Melee"
+@configurable constant ATTACK_SWITCHER_RANGER = "Ranger"
+@configurable constant ATTACK_SWITCHER_ENABLE_MELEE_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableMelee.blp"
+@configurable constant ATTACK_SWITCHER_ENABLE_RANGER_ICON = "ReplaceableTextures\\CommandButtons\\BTNEnableRanger.blp"
+@configurable constant ATTACK_SWITCHER_START_WITH_MELEE = true
 
 
 enum CustomHeroEventIds

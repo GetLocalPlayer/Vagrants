@@ -286,4 +286,24 @@ init
 			..setAttack1WeaponSound(WeaponSound.Nothing)
 			..setAttack1ProjectileArc(0.1)
 			..setProjectileLaunchZ(70)
+
+
+@compiletime function buildZombie()
+	CustomHero.build() (def, isMelee) ->
+		def..setUnitSoundSet(Soundsets.zombie)
+		..setModelFile(Units.zombie)
+		..setProperNames("Rob")
+		..setName("Zombie")
+		..setProperNamesUsed(1)
+		..setScalingValue(2.)
+		..setSelectionScale(1.5)
+		..setScaleProjectiles(false)
+		..setIconGameInterface(Icons.bTNZombie)
+		if isMelee
+			def..setAttack1WeaponSound(WeaponSound.WoodMediumBash)
+		else
+			def..setAttack1ProjectileArt(Abilities.skeletalMageMissile)
+			..setAttack1WeaponSound(WeaponSound.Nothing)
+			..setAttack1ProjectileArc(0.1)
+			..setProjectileLaunchZ(70)
 	
