@@ -8,7 +8,7 @@ constant COMMAND_ALL = "-CreateAllCustomHeroes"
 constant SHORT_COMMAND_ALL = "-cach"
 constant COMMAND_BY_NAME = "-CreateCustomHero"
 constant SHORT_COMMAND_BY_NAME = "-cch"
-constant COMMAND_REMOVE = "-RemoveCustomheroes"
+constant COMMAND_REMOVE = "-RemoveCustomHeroes"
 constant SHORT_COMMAND_REMOVE = "-rch"
 constant TEST_RECT = gg_rct_BaseEntrance
 

@@ -1,9 +1,9 @@
 ---
-projectName: "CH"
+projectName: "Vagrants"
 dependencies:
 - "https://github.com/wurstscript/wurstStdlib2"
 buildMapData:
-  name: "CH (test)"
-  fileName: "CH (test)"
+  name: "Vagrants (test)"
+  fileName: "Vagrants (test)"
   author: "GetLocalPlayer"
   playerCount: 2-8
