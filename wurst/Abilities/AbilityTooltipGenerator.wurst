@@ -38,7 +38,6 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 	private var levels = 1
 	private var name = ""
 	private var description = ""
-	private var hotkey = ""
 
 	private let propertyAlias = PROPERTY_ALIAS.copy()
 	private let propertyPostfix = PROPERTY_POSTFIX.copy()
@@ -52,7 +51,6 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 
 	override function applyToDef(AbilityDefinition def)
 		levels = properties.has("Levels") ? properties.getAndRemove("Levels").run(0).toInt() : 1
-		hotkey = properties.has("Hotkey") ? properties.getAndRemove("Hotkey").run(0) : ""
 		for lvl = 1 to levels
 			def..setTooltipNormal(lvl, getTooltipNormal(lvl))
 			..setTooltipNormalExtended(lvl, getTooltipNormalExtended(lvl))
@@ -68,7 +66,6 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 	function getTooltipNormal(int lvl) returns string
 		var tooltip = name
 		tooltip += levels > 1 ? " - {0}Level {1}|r".format(LEVEL_COLOR, lvl.toString()) : ""
-		tooltip += hotkey != "" ? " [{0}{1}|r]".format(HOTKEY_COLOR, hotkey) : ""
 		return tooltip
 
 	function getTooltipNormalExtended(int lvl) returns string
@@ -89,7 +86,6 @@ public class AbilityTooltipGenerator implements TooltipGenerator
 	function getTooltipLearn() returns string
 		var tooltip = "{0}Learn {1}|r".format(LEARN_COLOR, name)
 		tooltip += levels > 1 ? " - {0}Level %d|r".format(LEVEL_COLOR) : ""
-		tooltip += hotkey != "" ? " [{0}{1}|r]".format(HOTKEY_COLOR, hotkey) : ""
 		return tooltip
 
 	/** Collapses each level of the property into one string using '/' as a separator. */

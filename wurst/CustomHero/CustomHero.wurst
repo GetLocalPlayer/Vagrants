@@ -59,7 +59,7 @@ constant INT_ABIL_ID = compiletime(ABIL_ID_GEN.next())
 
 @configurable constant ATTACK_SWITCHER_HOTKEY = "C"
 @configurable constant real ATTACK_SWITCHER_COOLDOWN = 1
-@configurable constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r - [|cffffcc00" + ATTACK_SWITCHER_HOTKEY + "|r]"
+@configurable constant ATTACK_SWITCHER_TOOLTIP = "Current attack type: |cff96f162{0}|r"
 @configurable constant ATTACK_SWITCHER_TOOLTIP_EXTENDED = "Changes the hero's attack type from melee to ranged and vice versa."
 @configurable constant ATTACK_SWITCHER_MELEE = "Melee"
 @configurable constant ATTACK_SWITCHER_RANGER = "Ranger"
@@ -193,7 +193,7 @@ abstract class CustomHero
 	..setLevels(ATTR_ABIL_MAX_LEVEL)
 	..setIconResearch(STR_ICON)
 	..setHotkeyLearn(STR_ABIL_HOTKEY)
-	..setTooltipLearn("Increases the hero's strength by {0} [|cffffcc00Q|r]".format(STR_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearn("Increases the hero's strength by {0}".format(STR_PER_ABIL_LEVEL.toString()))
 	..setTooltipLearnExtended("")
 	..setButtonPositionResearchX(0)
 	..setButtonPositionResearchY(0)
@@ -201,7 +201,7 @@ abstract class CustomHero
 	..setLevels(ATTR_ABIL_MAX_LEVEL)
 	..setIconResearch(AGI_ICON)
 	..setHotkeyLearn(AGI_ABIL_HOTKEY)
-	..setTooltipLearn("Increases the hero's agility by {0} [|cffffcc00W|r]".format(AGI_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearn("Increases the hero's agility by {0}".format(AGI_PER_ABIL_LEVEL.toString()))
 	..setTooltipLearnExtended("")
 	..setButtonPositionResearchX(1)
 	..setButtonPositionResearchY(0)
@@ -209,7 +209,7 @@ abstract class CustomHero
 	..setLevels(ATTR_ABIL_MAX_LEVEL)
 	..setIconResearch(INT_ICON)
 	..setHotkeyLearn(INT_ABIL_HOTKEY)
-	..setTooltipLearn("Increases the hero's intelligence by {0} [|cffffcc00E|r]".format(INT_PER_ABIL_LEVEL.toString()))
+	..setTooltipLearn("Increases the hero's intelligence by {0}".format(INT_PER_ABIL_LEVEL.toString()))
 	..setTooltipLearnExtended("")
 	..setButtonPositionResearchX(2)
 	..setButtonPositionResearchY(0)
