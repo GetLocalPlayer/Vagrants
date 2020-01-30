@@ -1,4 +1,4 @@
-package BaseHealing
+package BaseRestoration
 import Base
 import ClosureEvents
 
@@ -7,7 +7,7 @@ constant COMMAND_OFF = "-DisableBaseRestoration"
 constant SHORT_COMMAND_OFF = "-dbr"
 constant COMMAND_ON = "-EnableBaseRestoration"
 constant SHORT_COMMAND_ON = "-ebr"
-constant HEALING_INTERVAL = 0.2
+constant RESTORATION_INTERVAL = 0.2
 
 
 function healBase()
@@ -20,7 +20,7 @@ function healBase()
 
 init
 	let t = CreateTimer()
-	..startPeriodic(HEALING_INTERVAL, function healBase)
+	..startPeriodic(RESTORATION_INTERVAL, function healBase)
 	
 
 	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
@@ -30,5 +30,5 @@ init
 				t.pause()
 				print("Restoration at base has beend disabled")
 			if msg == COMMAND_ON.toLowerCase() or msg == SHORT_COMMAND_ON.toLowerCase()
-				t.startPeriodic(HEALING_INTERVAL, function healBase)
+				t.startPeriodic(RESTORATION_INTERVAL, function healBase)
 				print("Restoration at base has beend enabled")

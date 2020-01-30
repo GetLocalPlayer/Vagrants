@@ -17,6 +17,13 @@ Command | Short | Purpose
 
 Commands that can be used in singleplayer mode to test the map. Non-case sensitive.
 
+#### Base Restoration
+
+Command | Short | Purpose
+--- | --- | ---
+-DisableBaseRestoration | -dbr | Disables health and mana restoration at the base
+-EnableBaseRestoration | -ebr | Enables health and mana restoration at the base
+
 #### Test Ghoul
 
 Creates N enemy ghouls in TestGhoul rect that can be used to test abilities and items. 
