@@ -24,9 +24,10 @@ public class PendantOfEnergy
 	static constant int ABIL_ID = compiletime(CursedTalisman.ABIL_ID)
 	static constant int ID = compiletime(ITEM_ID_GEN.next())
 	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant ACTIVE_EFFECT = "Restores {0} mana ({1} sec. cooldown).".format(RESTORED_MANA.toString(), CursedTalisman.COOLDOWN.toInt().toString())
 
 	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
-		..setActiveEffect("Restores {0} mana ({1} sec. cooldown).".format(RESTORED_MANA.toString(), CursedTalisman.COOLDOWN.toInt().toString()))
+		..setActiveEffect(ACTIVE_EFFECT)
 
 	@compiletime protected static function build()
 		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
