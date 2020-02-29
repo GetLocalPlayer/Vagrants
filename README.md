@@ -1,7 +1,7 @@
 
 ![Logo](Logo.jpg)
 
-I can't work on efficiently since Reforged release. Currently the map is just a collection of items and abilities for a "Custom Hero"-type map.
+I can't work on the map efficiently since Reforged release. Currently, the map is just a collection of items and abilities for a "Custom Hero"-type map.
 
 ## In-game Commands
 
