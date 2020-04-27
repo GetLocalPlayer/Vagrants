@@ -1,5 +1,4 @@
 package StormHammer
-import EventHelper
 import Interpolation
 import ClosureTimers
 import HashMap

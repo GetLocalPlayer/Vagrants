@@ -1,4 +1,5 @@
 -runcompiletimefunctions
 -injectobjects
 -stacktraces
+lua
 inline

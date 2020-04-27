@@ -1,6 +1,5 @@
 package TrueshotAura
 import HashMap
-import EventHelper
 import ClosureTimers
 
 import Assets

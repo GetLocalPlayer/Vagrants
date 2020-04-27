@@ -1,6 +1,5 @@
 package EnvenomedSpears
 import ErrorHandling
-import EventHelper
 import HashMap
 import TimerUtils
 

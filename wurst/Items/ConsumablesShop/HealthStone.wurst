@@ -8,8 +8,6 @@ import RunedAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
-import EventHelper
-
 
 constant int GOLD_COST = 60
 constant CLASSIFICATION = "Charged"
@@ -66,7 +64,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 
 
 init
-	RunedAlias.onActualItem() (unit u, item givenItem) ->
+	RunedAlias.onActualItemGiven() (unit u, item givenItem) ->
 		if givenItem.getTypeId() == ITEM_ID
 			for i in EventData.getTriggerUnit().inventory()
 				if i.getTypeId() == ITEM_ID and i != givenItem

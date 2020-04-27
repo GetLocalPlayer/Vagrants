@@ -7,7 +7,7 @@ init
 	new Quest(true)
 	..setTitle("Gratitude")
 	..setIcon("InfoIcons\\Sparta.blp")
-	..setDescription("Based on an old russian map |c00FFD500''Create Hero''|r: |cffc3dbffhttp://vkontakte.ru/CreateHero|r |n|nIf you hate this map or translation so much that you can't work, study, sleep, eat, breath, live, e.t.c., you can send all your hatered, expressed in JoJo memes, on my email |cffc3dbffGetLocalPlayer@gmail.com|r with a postscript ''Epstein didn't kill himself''.|n|nI'm eternally grateful to my friends for testing this awful map (many moons ago) when they could do either something useful or interesting, instead of playing this crap: |c00FFD500MellTerm|r, |c00FFD500-=Super=-|r, |c00FFD500BeachComa|r, |c00FFD500Nick-Nack|r (this one keklord had too many names so I just wrote the latest I knew).")
+	..setDescription("Based on an old russian map |c00FFD500''Create Hero''|r: |cffc3dbffhttp://vkontakte.ru/CreateHero|r |n|nIf you hate this map or translation so much that you can't work, study, sleep, eat, breath, live, e.t.c., you can send all your hatred, expressed in JoJo memes, on my email |cffc3dbffGetLocalPlayer@gmail.com|r with a postscript ''Epstein didn't kill himself''.|n|nI'm eternally grateful to my friends for testing this awful map (many moons ago) when they could do either something useful or interesting, instead of playing this crap: |c00FFD500MellTerm|r, |c00FFD500-=Super=-|r, |c00FFD500BeachComa|r, |c00FFD500Nick-Nack|r (this one keklord had too many names so I just wrote the latest I knew).")
 	..setState(QuestState.DISCOVERED)
 	new Quest(true)
 	..setTitle("Used Material")

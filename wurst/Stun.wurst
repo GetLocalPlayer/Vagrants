@@ -11,6 +11,10 @@ import ObjectIdGenerator
 import ObjectIds
 
 
+/* Reforged allows us to stun a unit using PauseUnitEx
+that's actually used by stun abilities, but dummy approach
+is still better just because we can dispel the stun buff. */
+
 let abilityId = compiletime(ABIL_ID_GEN.next())
 let buffId = compiletime(BUFF_ID_GEN.next())
 
