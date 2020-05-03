@@ -60,8 +60,9 @@ init
 
 		EventListener.add(EVENT_PLAYER_UNIT_DAMAGED) ->
 			let target = EventData.getTriggerUnit()
-			let sourceOwner = EventData.getEventDamageSource().getOwner()
-			if target.isEnemyOf(sourceOwner) and userPlayers.has(sourceOwner)
+			let source = EventData.getEventDamageSource()
+			if source != null and target.isEnemyOf(source) and userPlayers.has(source.getOwner(()))
+				let sourceOwner = source.getOwner()
 				let eventDamage = EventData.getEventDamage()
 				let totalValue = totalPlayerDamage.get(sourceOwner) + eventDamage
 				let currentValue = currentPlayerDamage.get(sourceOwner) + eventDamage
@@ -74,8 +75,9 @@ init
 
 		EventListener.add(EVENT_PLAYER_UNIT_DEATH) ->
 			let target = EventData.getDyingUnit()
-			let sourceOwner = EventData.getKillingUnit().getOwner()
-			if target.isEnemyOf(sourceOwner) and userPlayers.has(sourceOwner)
+			let source = EventData.getKillingUnit()
+			if source != null and target.isEnemyOf(source) and userPlayers.has(source.getOwner())
+				let sourceOwner = source.getOwner()
 				let totalValue = totalPlayerKills.get(sourceOwner) + 1
 				let currentValue = currentPlayerKills.get(sourceOwner) + 1
 				totalPlayerKills.put(sourceOwner, totalValue)
