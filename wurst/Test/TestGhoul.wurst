@@ -2,6 +2,7 @@ package TestGhoul
 import ClosureEvents
 
 import Assets
+import ObjectIds
 import ObjectIdGenerator
 import UnitObjEditing
 
@@ -26,6 +27,7 @@ var testGhoulsMaxLife = 5000
 	..setAttack1DamageBase(5)
 	..setDefenseBase(0)
 	..setName("Test Ghoul")
+	..setNormalAbilities("{0},{1}".format(AbilityIds.neutralBuildinganyunit.toRawCode(), AbilityIds.feedback.toRawCode()))
 	
 
 let ghouls = CreateGroup()

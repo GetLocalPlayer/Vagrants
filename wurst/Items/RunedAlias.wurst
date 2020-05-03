@@ -35,6 +35,9 @@ public abstract class RunedAlias
 		if next != null
 			next.prev = prev
 
+	/** Called when the hero either has or doesn't have an empty slot for the item.
+	The actual item will be removed from the map and replaced with its alias right
+	after the callback's executed. */
 	static function onActualItemGiven(RunedAlias cb) returns RunedAlias
 		if RunedAlias.first == null
 			cb.next = RunedAlias.first

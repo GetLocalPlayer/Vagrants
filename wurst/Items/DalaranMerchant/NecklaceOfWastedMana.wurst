@@ -1,0 +1,264 @@
+package NecklaceOfWastedMana
+import Assets
+import ItemObjEditing
+import ChannelAbilityPreset
+
+import ItemTooltipGenerator
+import ItemAbilityPreset
+import RunedAlias
+import DalaranMerchant
+import Mindstaff
+import PendantOfEnergy
+
+import LinkedList
+import ItemCombine
+import ClosureEvents
+import ClosureTimers
+import ClosureForGroups
+import Interpolation
+import HashMap
+
+
+public class NecklaceOfWastedMana
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "Necklace of Wasted Mana"
+	static constant ICON = "ReplaceableTextures\\CommandButtons\\BTNNecklaceOfWastedMana.blp"
+	static constant int GOLD_COST = Mindstaff.GOLD_COST + Mindstaff.GOLD_COST + PendantOfEnergy.GOLD_COST + NecklaceOfWastedManaRecipe.GOLD_COST
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ABIL_ID = PendantOfEnergy.ABIL_ID
+	static constant int INTELLIGENCE = PendantOfEnergy.INTELLIGENCE
+	static constant int MANA = Mindstaff.MANA * 2
+	static constant int RESTORED_MANA = PendantOfEnergy.RESTORED_MANA
+	static constant ACTIVE_EFFECT = PendantOfEnergy.ACTIVE_EFFECT
+
+	static constant real DROPS_ATTACK_RANGE = 500
+	static constant real DROPS_CONSUME_RANGE = 100
+	static constant real DROPS_SPEED = 100
+	static constant real DROPS_ACCELERATION = 350
+	static constant real MANA_PER_DROP = 15
+	static constant real DROPS_SPAWN_RADIUS = 200
+	static constant real DROPS_SPAWN_INTERVAL = 0.025
+	static constant real DROPS_SPAWN_TIME = 1
+	static constant real DROPS_LIFETIME = 10
+	static constant DROPS_MODEL = Abilities.dragonHawkMissile
+	static constant real DROPS_SCALE = 0.3
+	static constant PASSIVE_EFFECT = "Each time the hero's losing mana it's additionally losing mana drops with the same amount of mana. The drops attack a random enemy within {0} range, dealing magic damage equal to the mana they contain. The drops can be picked up by allied heroes if there's no enemy to attack.".format(DROPS_ATTACK_RANGE.toInt().toString())
+	
+	protected static let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
+		..setActiveEffect(ACTIVE_EFFECT)
+		..addPassiveEffect(PASSIVE_EFFECT)
+			
+	@compiletime protected static function build()
+		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
+		let manaDef = buildManaBonus(NAME, ICON, MANA, tooltipGenerator)
+		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(true)
+			..setCooldownGroup(ABIL_ID.toRawCode())
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setGoldCost(GOLD_COST)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(ICON)
+			tooltipGenerator.applyToDef(def)
+			if not isAlias
+				def.setAbilities("{0},{1},{2}".format(ABIL_ID.toRawCode(), manaDef.getNewId().toRawCode(), intDef.getNewId().toRawCode()))
+
+
+public class NecklaceOfWastedManaRecipe
+	static constant CLASSIFICATION = "Permanent"
+	static constant NAME = "{0} Recipe".format(NecklaceOfWastedMana.NAME)
+	static constant ICON = Icons.bTNSnazzyScrollGreen
+	static constant ALIAS_ICON = NecklaceOfWastedMana.ICON
+	static constant int SHOP_X = 3
+	static constant int SHOP_Y = 2
+	static constant int GOLD_COST = 500
+	static constant int ID = compiletime(ITEM_ID_GEN.next())
+	static constant int ALIAS_ID = compiletime(ITEM_ID_GEN.next())
+
+	protected static let tooltipGenerator = NecklaceOfWastedMana.tooltipGenerator.copy()
+		..setName(NAME)
+		..addRecipeRequirement(Mindstaff.NAME, Mindstaff.GOLD_COST)
+		..addRecipeRequirement(Mindstaff.NAME, Mindstaff.GOLD_COST)
+		..addRecipeRequirement(PendantOfEnergy.NAME, PendantOfEnergy.GOLD_COST)
+		..addRecipeRequirement("Recipe", GOLD_COST)
+		..setComment("")
+
+	@compiletime protected static function build()
+		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+			def..setLevel(1)
+			..setLevelUnclassified(1)
+			..setLumberCost(0)
+			..setHitPoints(999999)
+			..setNumberofCharges(0)
+			..setStockMaximum(1)
+			..setStockReplenishInterval(1)
+			..setStockStartDelay(1)
+			..setCanBeDropped(true)
+			..setPerishable(false)
+			..setActivelyUsed(false)
+			..setCanBeSoldByMerchants(true)
+			..setCanBeSoldToMerchants(true)
+			..setAbilities("")
+			..setGoldCost(GOLD_COST)
+			..setButtonPositionX(SHOP_X)
+			..setButtonPositionY(SHOP_Y)
+			..setClassification(CLASSIFICATION)
+			..setInterfaceIcon(isAlias ? ALIAS_ICON : ICON)
+			tooltipGenerator..setName(NAME)
+			..applyToDef(def, true)
+			if isAlias
+				dalaranMerchant.addItemSold(def.getNewId())
+
+
+function spawnDrops(unit caster, real mana)
+	let casterPos = caster.getPos()
+	var rest = mana
+	while rest > 0
+		let containedMana = rest > NecklaceOfWastedMana.MANA_PER_DROP ? NecklaceOfWastedMana.MANA_PER_DROP : rest
+		rest -= NecklaceOfWastedMana.MANA_PER_DROP
+		let spawnStart = casterPos.withTerrainZ(GetRandomReal(0, 150))
+		let spawnMid = spawnStart + angle(GetRandomReal(-PI, PI)).toVec(GetRandomReal(0, NecklaceOfWastedMana.DROPS_SPAWN_RADIUS))
+		let spawnEnd = spawnMid.toVec2().withZ(spawnStart.z)
+		let drop = addEffect(NecklaceOfWastedMana.DROPS_MODEL, spawnStart)
+		..setScale(NecklaceOfWastedMana.DROPS_SCALE)
+		let count = (NecklaceOfWastedMana.DROPS_SPAWN_TIME / 0.02).toInt()
+		doPeriodicallyCounted(0.02, count) (CallbackCounted spawnCb) ->
+			if not spawnCb.isLast()
+				drop.setPos(spawnStart.bezier3(spawnMid, spawnEnd, 1 - spawnCb.getCount()/count))
+			else
+				drop.setPos(spawnEnd)
+				let interval = 0.02
+				var _lifetime = NecklaceOfWastedMana.DROPS_LIFETIME
+				var _speed = NecklaceOfWastedMana.DROPS_SPEED * interval
+				let acceleration = NecklaceOfWastedMana.DROPS_ACCELERATION * interval * interval
+				unit _target = null
+				doPeriodically(interval) (CallbackPeriodic lifeCb) ->
+					if _target != null
+						if _target.isAlive() and _target.isEnemyOf(caster) and not _target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not _target.isInvulnerable()
+							if drop.getPos().distanceToSq(_target.getPos()) <= _speed.squared()
+								caster.damageTarget(_target, containedMana, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+								drop.setPos(_target.getPos3Real().add(0, 0, 50))
+								drop.destr()
+								destroy lifeCb
+							else
+								let pos = drop.getPos3().moveTowards(_target.getPos3Real(), _speed)
+								drop.setPos(pos)
+								_speed += acceleration
+						else
+							_target = null
+							_speed = NecklaceOfWastedMana.DROPS_SPEED * interval
+					else
+						let targets = CreateGroup()
+						forUnitsInRange(drop.getPos(), NecklaceOfWastedMana.DROPS_CONSUME_RANGE, true) (unit u) ->
+							if u != caster and u.isAlive() and u.isType(UNIT_TYPE_HERO) and u.isAllyOf(caster)
+								targets.addUnit(u)
+						let ally = targets.getRandomUnit()
+						if ally != null
+							ally.setMana(ally.getMana() + containedMana)
+							drop.destr()
+							destroy lifeCb
+						else
+							forUnitsInRange(drop.getPos(), NecklaceOfWastedMana.DROPS_ATTACK_RANGE, true) (unit u) ->
+								if u.isEnemyOf(caster) and u.isAlive() and not u.isType(UNIT_TYPE_MAGIC_IMMUNE) and not u.isInvulnerable()
+									targets.addUnit(u)
+							let enemy = targets.getRandomUnit()
+							if enemy != null
+								_target = enemy
+							else
+								_lifetime -= interval
+								if _lifetime <= 0
+									drop.destr()
+									destroy lifeCb
+						targets.destr()
+
+
+// <wearer, mana>
+let wearersMana = new IterableMap<unit, int>
+let wearersMaxMana = new IterableMap<unit, int>
+CallbackPeriodic periodicManaCheck
+
+
+init
+	new ItemCombine(NecklaceOfWastedMana.ID, asList<int>(Mindstaff.ID, Mindstaff.ID, PendantOfEnergy.ID, NecklaceOfWastedManaRecipe.ID))
+
+	EventListener.add(EVENT_PLAYER_UNIT_USE_ITEM) ->
+		let usedItem = EventData.getManipulatedItem()
+		if usedItem.getTypeId() == NecklaceOfWastedMana.ID
+			let caster = EventData.getTriggerUnit()
+			caster.setMana(caster.getMana() + NecklaceOfWastedMana.RESTORED_MANA)
+
+	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) ->
+		let itemId = EventData.getManipulatedItem().getTypeId()
+		if itemId == NecklaceOfWastedMana.ID
+			let u = EventData.getTriggerUnit()
+			if not wearersMana.has(u)
+				wearersMana.put(u, u.getMana().toInt())
+				wearersMaxMana.put(u, u.getMaxMana().toInt())
+				if wearersMana.size() == 1
+					periodicManaCheck = doPeriodically(0.01) cb ->
+						for wearer in wearersMana
+							let maxMana = wearer.getMaxMana().toInt()
+							let storedMaxMana = wearersMaxMana.get(wearer)
+							if storedMaxMana != maxMana
+								wearersMana.put(wearer, wearer.getMana().toInt())
+								wearersMaxMana.put(wearer, maxMana)
+							else
+								let currentMana = wearer.getMana()
+								let storedMana = wearersMana.get(wearer)
+								if storedMana > currentMana.toInt()
+									let diff = storedMana - currentMana
+									let mana = diff < currentMana ? diff : currentMana
+									spawnDrops(wearer, mana)
+									wearer.setMana(currentMana - mana)
+									wearersMana.put(wearer, wearer.getMana().toInt())
+								else if storedMana < currentMana
+									wearersMana.put(wearer, currentMana.toInt())
+
+	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM) ->
+		let itemId = EventData.getManipulatedItem().getTypeId()
+		if itemId == NecklaceOfWastedMana.ID
+			let caster = EventData.getTriggerUnit()
+			nullTimer() -> 
+				if not caster.hasItemById(itemId)
+					wearersMana.remove(caster)
+					wearersMaxMana.remove(caster)
+					if wearersMana.size() == 0
+						destroy periodicManaCheck
+
+	EventListener.add(EVENT_PLAYER_UNIT_DAMAGING) ->
+		let caster = EventData.getTriggerUnit()
+		if wearersMana.has(caster)
+			let currentMana = caster.getMana()
+			let storedMana = wearersMana.get(caster)
+			if storedMana > currentMana
+				let diff = storedMana - currentMana
+				let mana = diff < currentMana ? diff : currentMana
+				spawnDrops(caster, mana)
+				caster.setMana(currentMana - mana)
+				wearersMana.put(caster, caster.getMana().toInt())
+
+	EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) ->
+		let caster = EventData.getTriggerUnit()
+		if wearersMana.has(caster)
+			let abil = EventData.getSpellAbility()
+			let level = caster.getAbilityLevel(EventData.getSpellAbilityId())
+			let spentMana = abil.getField(ABILITY_ILF_MANA_COST, level - 1).toReal()
+			if spentMana > 0
+				// At this moment mana is not spent yet so currentMana is something
+				// different from caster.getMana() that will be changed a moment later.
+				let currentMana = (caster.getMana() - spentMana).clamp(0, caster.getMaxMana())
+				let mana = spentMana < currentMana ? spentMana : currentMana
+				spawnDrops(caster, mana)
+				caster.setMana(caster.getMana() - mana)
+				wearersMana.put(caster, (currentMana - mana).toInt())

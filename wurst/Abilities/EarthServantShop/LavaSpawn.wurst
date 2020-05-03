@@ -1,4 +1,4 @@
-package LawaSpawn
+package LavaSpawn
 import ClosureTimers
 import ClosureForGroups
 import ClosureEvents
@@ -50,7 +50,7 @@ constant ABIL_ID = compiletime(HERO_ID_GEN.next())
 constant SUMMON_ID = compiletime(UNIT_ID_GEN.next())
 
 
-@compiletime function buildLawaSpawn()
+@compiletime function buildLavaSpawn()
 	let tooltipGen = new AbilityTooltipGenerator(NAME, DESCRIPTION)
 	new ChannelAbilityPreset(ABIL_ID, LEVELS, true)
 	..setIconNormal(ICON)
