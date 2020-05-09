@@ -121,6 +121,41 @@ public class NecklaceOfWastedManaRecipe
 				dalaranMerchant.addItemSold(def.getNewId())
 
 
+public abstract class AnimationCallbackPeriodic
+	private static let t = CreateTimer()
+	protected static thistype first = null
+	protected thistype prev = null
+	protected thistype next = null
+
+	construct()
+		if first != null
+			first.prev = this
+			next = first
+		else
+			t.startPeriodic(ANIMATION_PERIOD, function staticCallback)
+		first = this
+
+	protected abstract function call(thistype cb)
+
+	private static function staticCallback()
+		var cb = first
+		while cb != null
+			cb.call(cb)
+			cb = cb.next
+
+	ondestroy
+		if next != null
+			next.prev = prev
+		if prev != null
+			prev.next = next
+		else
+			first = next
+			if first == null
+				t.pause()
+
+public function doPeriodically(AnimationCallbackPeriodic cb) returns AnimationCallbackPeriodic
+	return cb
+
 function spawnDrops(unit caster, real mana)
 	let casterPos = caster.getPos()
 	var rest = mana
@@ -132,18 +167,17 @@ function spawnDrops(unit caster, real mana)
 		let spawnEnd = spawnMid.toVec2().withZ(spawnStart.z)
 		let drop = addEffect(NecklaceOfWastedMana.DROPS_MODEL, spawnStart)
 		..setScale(NecklaceOfWastedMana.DROPS_SCALE)
-		let count = (NecklaceOfWastedMana.DROPS_SPAWN_TIME / 0.02).toInt()
-		doPeriodicallyCounted(0.02, count) (CallbackCounted spawnCb) ->
+		let count = (NecklaceOfWastedMana.DROPS_SPAWN_TIME / ANIMATION_PERIOD).toInt()
+		doPeriodicallyCounted(ANIMATION_PERIOD, count) (CallbackCounted spawnCb) ->
 			if not spawnCb.isLast()
 				drop.setPos(spawnStart.bezier3(spawnMid, spawnEnd, 1 - spawnCb.getCount()/count))
 			else
 				drop.setPos(spawnEnd)
-				let interval = 0.02
 				var _lifetime = NecklaceOfWastedMana.DROPS_LIFETIME
-				var _speed = NecklaceOfWastedMana.DROPS_SPEED * interval
-				let acceleration = NecklaceOfWastedMana.DROPS_ACCELERATION * interval * interval
+				var _speed = NecklaceOfWastedMana.DROPS_SPEED * ANIMATION_PERIOD
+				let acceleration = NecklaceOfWastedMana.DROPS_ACCELERATION * ANIMATION_PERIOD * ANIMATION_PERIOD
 				unit _target = null
-				doPeriodically(interval) (CallbackPeriodic lifeCb) ->
+				doPeriodically() lifeCb ->
 					if _target != null
 						if _target.isAlive() and _target.isEnemyOf(caster) and not _target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not _target.isInvulnerable()
 							if drop.getPos().distanceToSq(_target.getPos()) <= _speed.squared()
@@ -157,7 +191,7 @@ function spawnDrops(unit caster, real mana)
 								_speed += acceleration
 						else
 							_target = null
-							_speed = NecklaceOfWastedMana.DROPS_SPEED * interval
+							_speed = NecklaceOfWastedMana.DROPS_SPEED * ANIMATION_PERIOD
 					else
 						let targets = CreateGroup()
 						forUnitsInRange(drop.getPos(), NecklaceOfWastedMana.DROPS_CONSUME_RANGE, true) (unit u) ->
@@ -176,7 +210,7 @@ function spawnDrops(unit caster, real mana)
 							if enemy != null
 								_target = enemy
 							else
-								_lifetime -= interval
+								_lifetime -= ANIMATION_PERIOD
 								if _lifetime <= 0
 									drop.destr()
 									destroy lifeCb
