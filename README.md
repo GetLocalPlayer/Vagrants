@@ -3,7 +3,7 @@
 
 I can't work on the map efficiently since Reforged release. Currently, the map is just a collection of items and abilities for a "Custom Hero"-type map.
 
-It seems it's time to move on Lua.
+It seems it's time to move to Lua.
 
 ## In-game Commands
 

@@ -121,41 +121,6 @@ public class NecklaceOfWastedManaRecipe
 				dalaranMerchant.addItemSold(def.getNewId())
 
 
-public abstract class AnimationCallbackPeriodic
-	private static let t = CreateTimer()
-	protected static thistype first = null
-	protected thistype prev = null
-	protected thistype next = null
-
-	construct()
-		if first != null
-			first.prev = this
-			next = first
-		else
-			t.startPeriodic(ANIMATION_PERIOD, function staticCallback)
-		first = this
-
-	protected abstract function call(thistype cb)
-
-	private static function staticCallback()
-		var cb = first
-		while cb != null
-			cb.call(cb)
-			cb = cb.next
-
-	ondestroy
-		if next != null
-			next.prev = prev
-		if prev != null
-			prev.next = next
-		else
-			first = next
-			if first == null
-				t.pause()
-
-public function doPeriodically(AnimationCallbackPeriodic cb) returns AnimationCallbackPeriodic
-	return cb
-
 function spawnDrops(unit caster, real mana)
 	let casterPos = caster.getPos()
 	var rest = mana
@@ -177,7 +142,7 @@ function spawnDrops(unit caster, real mana)
 				var _speed = NecklaceOfWastedMana.DROPS_SPEED * ANIMATION_PERIOD
 				let acceleration = NecklaceOfWastedMana.DROPS_ACCELERATION * ANIMATION_PERIOD * ANIMATION_PERIOD
 				unit _target = null
-				doPeriodically() lifeCb ->
+				doPeriodically(ANIMATION_PERIOD) lifeCb ->
 					if _target != null
 						if _target.isAlive() and _target.isEnemyOf(caster) and not _target.isType(UNIT_TYPE_MAGIC_IMMUNE) and not _target.isInvulnerable()
 							if drop.getPos().distanceToSq(_target.getPos()) <= _speed.squared()
