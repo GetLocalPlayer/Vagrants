@@ -91,10 +91,9 @@ init
 					let fleshDamage = damage * FLESH_DAMAGE_FACTOR
 					let projectile = addEffect(FLESH_PROJECTILE_MODEL, target.getPos3Real().add(0, 0, FLESH_PROJECTILE_LAUNCH_IMPACT_Z))
 					..setScale(FLESH_PROJECTILE_SCALE)
-					let timerPeriod = 0.02
-					let projectileStep = FLESH_PROJECTILE_SPEED * timerPeriod
+					let projectileStep = FLESH_PROJECTILE_SPEED * ANIMATION_PERIOD
 					let projectileStepSq = projectileStep.squared()
-					doPeriodically(timerPeriod) (CallbackPeriodic cb) ->
+					doPeriodically(ANIMATION_PERIOD) (CallbackPeriodic cb) ->
 						let pos = projectile.getPos3()
 						let uPos = u.getPos3Real().add(0, 0, FLESH_PROJECTILE_LAUNCH_IMPACT_Z)
 						if pos.distanceToSq(uPos) > projectileStepSq

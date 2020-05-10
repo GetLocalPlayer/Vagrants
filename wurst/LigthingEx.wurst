@@ -15,9 +15,9 @@ public class LigthingEx
     private var fadepoint = 0.
     private var expiring = false
 
-    private static let timerOnUpdate = CreateTimer()
-    private static let updateInterval = 0.02
-    private static let listOnUpdate = new LinkedList<LigthingEx>
+    private static let updateTimer = CreateTimer()
+    private static let updateInterval = ANIMATION_PERIOD
+    private static let updateList = new LinkedList<LigthingEx>
 
     construct(string codeName, vec2 posStart, vec2 posEnd)
         constructor(codeName, posStart.withTerrainZ(), posEnd.withTerrainZ(), null, null, ZERO3, ZERO3)
@@ -52,12 +52,12 @@ public class LigthingEx
         this.targetStartOffset = targetStartOffset
         this.targetEndOffset = targetEndOffset
         if targetStart != null or targetEnd != null
-            listOnUpdate.add(this)
-            if listOnUpdate.size() == 1
-                timerOnUpdate.startPeriodic(updateInterval, function updateAll)
+            updateList.add(this)
+            if updateList.size() == 1
+                updateTimer.startPeriodic(updateInterval, function updateAll)
 
     private static function updateAll()
-        for instance in LigthingEx.listOnUpdate
+        for instance in LigthingEx.updateList
             if instance.targetStart != null or instance.targetEnd != null
                 instance.updatePos()
             if instance.lifetime > 0.
@@ -81,10 +81,10 @@ public class LigthingEx
         if not expiring
             this.lifetime = lifetime
             expiring = true
-            if not listOnUpdate.has(this)
-                listOnUpdate.add(this)
-                if listOnUpdate.size() == 1
-                    timerOnUpdate.startPeriodic(updateInterval, function updateAll)
+            if not updateList.has(this)
+                updateList.add(this)
+                if updateList.size() == 1
+                    updateTimer.startPeriodic(updateInterval, function updateAll)
     
     function setFadepoint(real fadepoint)
         this.fadepoint = fadepoint
@@ -104,6 +104,6 @@ public class LigthingEx
         targetStart = null
         targetEnd = null
         light.destr()
-        listOnUpdate.remove(this)
-        if listOnUpdate.size() == 0
-            timerOnUpdate.pause()
+        updateList.remove(this)
+        if updateList.size() == 0
+            updateTimer.pause()

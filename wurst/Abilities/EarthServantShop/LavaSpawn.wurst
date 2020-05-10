@@ -111,12 +111,11 @@ function onCastActions()
 		let projectile = addEffect(PROJECTILE_MODEL, start)
 		..setYaw(start.angleTo2d(finish))
 		..setScale(SPAWN_SCALE)
-		let timerPeriod = 0.02
 		var elapsed = 0.
 		addEffect(PROJECTILE_MODEL, start)..setScale(SPAWN_SCALE)..destr()
-		doPeriodicallyTimed(timerPeriod, PROJECTILE_FLIGHT_TIME) cbProjectile ->
+		doPeriodicallyTimed(ANIMATION_PERIOD, PROJECTILE_FLIGHT_TIME) cbProjectile ->
 			if not cbProjectile.isLast()
-				elapsed += timerPeriod
+				elapsed += ANIMATION_PERIOD
 				projectile.setPos(start.bezier3(control, finish, elapsed/PROJECTILE_FLIGHT_TIME))
 			else
 				projectile..setPos(finish)

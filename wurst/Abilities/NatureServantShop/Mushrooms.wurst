@@ -99,11 +99,10 @@ init
 				..setYaw(GetRandomReal(-180, 180).asAngleDegrees())
 				..setColor(MUSHROOM_COLOR)
 				..setScale(0)
-				let timerInterval = 0.02
 				let targetScaling = GetRandomReal(MUSHROOM_MIN_SCALE, MUSHROOM_MAX_SCALE)
 				var scaling = 0.0
-				doPeriodicallyTimed(timerInterval, MUSHROOMS_GROWING_TIME) (CallbackCounted cb) ->
-					scaling += timerInterval / MUSHROOMS_GROWING_TIME * targetScaling
+				doPeriodicallyTimed(ANIMATION_PERIOD, MUSHROOMS_GROWING_TIME) (CallbackCounted cb) ->
+					scaling += ANIMATION_PERIOD / MUSHROOMS_GROWING_TIME * targetScaling
 					mushroom.setScale(scaling)
 					if cb.isLast()
 						doAfter(DURATION - spawnDelay - MUSHROOMS_GROWING_TIME) () ->

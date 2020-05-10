@@ -263,7 +263,7 @@ init
 				..setScale(MINIMUM_ATTACK_RANGE.toReal() + u.getCollisionSize())
 				let clr = MIMIMUM_RANGE_CIRCLE_COLOR.withoutAlpha().withAlpha(u.getOwner() == localPlayer ? MIMIMUM_RANGE_CIRCLE_COLOR.alpha : 0)
 				eff.setColor(clr)
-				let cb = doPeriodically(0.01) (CallbackPeriodic cb) ->
+				let cb = doPeriodically(ANIMATION_PERIOD) (CallbackPeriodic cb) ->
 					eff.setPos(u.getPos3Real())
 				rangedCircles.put(u, eff)
 				circlesCallback.put(eff, cb)

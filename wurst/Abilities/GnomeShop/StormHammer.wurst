@@ -161,7 +161,7 @@ function onCast()
 	let lvl = caster.getAbilityLevel(EventData.getSpellAbilityId())
 	var distanceTraveled = 0.
 	// Projectile
-	doPeriodicallyTimed(0.02, distance/PROJECTILE_SPEED) (CallbackCounted cb) ->
+	doPeriodicallyTimed(ANIMATION_PERIOD, distance/PROJECTILE_SPEED) (CallbackCounted cb) ->
 		if not cb.isLast()
 			distanceTraveled += GetExpiredTimer().getElapsed() * PROJECTILE_SPEED
 			projectile.setPos(start.bezier3(control, target, distanceTraveled/distance))

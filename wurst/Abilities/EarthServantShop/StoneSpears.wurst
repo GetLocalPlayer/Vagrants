@@ -86,15 +86,14 @@ init
 				let projectile = addEffect(PROJECTILE_MODEL, startSpawnPos)
 				..setYaw(startSpawnPos.angleTo2d(target.getPos()))
 				let targetPos = target.getPos3Real()
-				let timerInterval = 0.02
-				let callAmount = (SPAWN_TIME / timerInterval).toInt()
-				doPeriodicallyCounted(timerInterval, callAmount) (CallbackCounted cbSpawn) ->
+				let callAmount = (SPAWN_TIME / ANIMATION_PERIOD).toInt()
+				doPeriodicallyCounted(ANIMATION_PERIOD, callAmount) (CallbackCounted cbSpawn) ->
 					projectile..setPos(startSpawnPos.lerp(endSpawnPos, (callAmount - cbSpawn.getCount())/callAmount))
 					..setRoll(projectile.getPos().angleTo(target.getPos()))
 					if cbSpawn.isLast()
-						let projectileOffset = PROJECTILE_SPEED * timerInterval
+						let projectileOffset = PROJECTILE_SPEED * ANIMATION_PERIOD
 						let projectileOffsetSq = projectileOffset.squared()
-						doPeriodically(timerInterval) (CallbackPeriodic cbMove) ->
+						doPeriodically(ANIMATION_PERIOD) (CallbackPeriodic cbMove) ->
 							let projectilePos = projectile.getPos3()
 							ENUM_GROUP.enumUnitsInRange(projectilePos.toVec2(), PROJECTILE_COLLISIONO_SIZE + MAX_COLLISION_SIZE, null)
 							for u in ENUM_GROUP

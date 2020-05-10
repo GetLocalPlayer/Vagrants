@@ -20,12 +20,6 @@ var testGhoulsMaxLife = 5000
 
 
 @compiletime function build()
-	let manaBurnDef = new AbilityDefinitionManaBurndemon(compiletime(ABIL_ID_GEN.next()))
-	..setLevels(1)
-	..setManaCost(1, 0)
-	..setCooldown(1, 0)
-	..setCastRange(1, 1000)
-	..setMaxManaDrained(1, 150)
 	new UnitDefinition(UNIT_ID, UnitIds.ghoul)
 	..setHitPointsMaximumBase(testGhoulsMaxLife)
 	..setManaMaximum(5000)
@@ -33,7 +27,7 @@ var testGhoulsMaxLife = 5000
 	..setAttack1DamageBase(5)
 	..setDefenseBase(0)
 	..setName("Test Ghoul")
-	..setNormalAbilities("{0},{1},{2}".format(AbilityIds.neutralBuildinganyunit.toRawCode(), AbilityIds.feedback.toRawCode(), manaBurnDef.getNewId().toRawCode()))
+	..setNormalAbilities("{0}".format(AbilityIds.neutralBuildinganyunit.toRawCode()))
 	
 
 let ghouls = CreateGroup()
