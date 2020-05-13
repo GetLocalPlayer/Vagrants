@@ -13,13 +13,13 @@ constant SHORT_COMMAND_REMOVE = "-rch"
 constant TEST_RECT = gg_rct_BaseEntrance
 
 
-let heroesNameMap = new IterableMap<string, int>
+let heroByName = new IterableMap<string, int>
 let createdHeroes = CreateGroup()
 
 
 init
 	for id in CustomHero.meleeIds
-		heroesNameMap.put(GetObjectName(id).toLowerCase(), id)
+		heroByName.put(GetObjectName(id).toLowerCase(), id)
 
 	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
 		if bj_isSinglePlayer
@@ -27,8 +27,8 @@ init
 			let cmd = COMMAND_ALL.toLowerCase()
 			let short = SHORT_COMMAND_ALL.toLowerCase()
 			if msg.startsWith(cmd) or msg.startsWith(short)
-				for name in heroesNameMap
-					let hero = createUnit(localPlayer, heroesNameMap.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
+				for name in heroByName
+					let hero = createUnit(localPlayer, heroByName.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
 					createdHeroes.addUnit(hero)
 
 	EventListener.add(EVENT_PLAYER_CHAT_FILTER) () ->
@@ -38,8 +38,8 @@ init
 			let short = SHORT_COMMAND_BY_NAME.toLowerCase()
 			if msg.startsWith(cmd) or msg.startsWith(short)
 				let name = msg.startsWith(cmd) ? msg.substring(cmd.length() + 1) : (msg.startsWith(short) ? msg.substring(short.length() + 1) : null)
-				if heroesNameMap.has(name)
-					let hero = createUnit(localPlayer, heroesNameMap.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
+				if heroByName.has(name)
+					let hero = createUnit(localPlayer, heroByName.get(name), TEST_RECT.randomPoint(), GetRandomReal(-180, 180).asAngleDegrees())
 					createdHeroes.addUnit(hero)
 				else
 					print("No hero with such name.")
