@@ -5,7 +5,7 @@ import ChannelAbilityPreset
 
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import RareMerchant
 import WandOfNeutralization
 import CursedTalisman
@@ -31,7 +31,7 @@ public class PendantOfEnergy
 
 	@compiletime protected static function build()
 		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

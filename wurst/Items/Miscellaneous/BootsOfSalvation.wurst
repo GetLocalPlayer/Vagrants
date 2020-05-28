@@ -4,7 +4,7 @@ import ObjectIds
 import ObjectIdGenerator
 import AbilityObjEditing
 import BuffObjEditing
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -48,7 +48,7 @@ public class BootsOfSalvation
 			..setTooltipNormal(1, NAME)
 			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
 			..setIcon(ICON)
-		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

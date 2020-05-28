@@ -8,7 +8,7 @@ import BuffObjEditing
 
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import DalaranMerchant
 import WandOfNeutralization
 import StrongCane
@@ -74,7 +74,7 @@ public class LightningRod
 			..setTooltipNormal(1, NAME)
 			..setTooltipNormalExtended(1, BUFF_DESCRIPTION)
 			..setIcon(ICON)
-		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -117,7 +117,7 @@ public class LightningRodRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

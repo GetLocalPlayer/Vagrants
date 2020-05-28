@@ -1,0 +1,14 @@
+package ItemStacking
+import ItemAlias
+
+
+/* All items classified  as "charged" will be stacked. */ 
+init
+	ItemAlias.onPickUp() (unit u, item givenItem) ->
+		if givenItem.getItemtype() == ITEM_TYPE_CHARGED
+			for i in EventData.getTriggerUnit().inventory()
+				if i.getTypeId() == givenItem.getTypeId() and i != givenItem
+					let charges = givenItem.getCharges()
+					givenItem.remove()
+					i.setCharges(i.getCharges() + charges)
+					break

@@ -5,7 +5,7 @@ import ChannelAbilityPreset
 
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import DalaranMerchant
 import Mindstaff
 import PendantOfEnergy
@@ -52,7 +52,7 @@ public class NecklaceOfWastedMana
 	@compiletime protected static function build()
 		let intDef = buildIntelligenceBonus(NAME, ICON, INTELLIGENCE, tooltipGenerator)
 		let manaDef = buildManaBonus(NAME, ICON, MANA, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -95,7 +95,7 @@ public class NecklaceOfWastedManaRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

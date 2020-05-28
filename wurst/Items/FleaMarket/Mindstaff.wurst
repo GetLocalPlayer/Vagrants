@@ -4,7 +4,7 @@ import ObjectIds
 import ObjectIdGenerator
 import AbilityObjEditing
 import FleaMarket
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -23,7 +23,7 @@ public class Mindstaff
 	@compiletime protected static function build()
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let abilDef = buildManaBonus(NAME, ICON, MANA, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

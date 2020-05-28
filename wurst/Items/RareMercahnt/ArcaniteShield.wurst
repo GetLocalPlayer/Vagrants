@@ -5,7 +5,7 @@ import ChannelAbilityPreset
 
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import RareMerchant
 import RingOfProtection
 import GemOfHealth
@@ -29,7 +29,7 @@ public class ArcaniteShield
 	@compiletime protected static function build()
 		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
 		let hitPointsDef = buildHitPointsBonus(NAME, ICON, HIT_POINTS, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -70,7 +70,7 @@ public class ArcaniteShieldRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

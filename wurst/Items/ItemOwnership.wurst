@@ -2,6 +2,9 @@ package ItemOwnership
 import ClosureEvents
 import OrderIds
 
+
+constant KEEP_CHARGED_NEUTRAL = true
+
 init
 	EventListener.add(EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER) ->
 		let orderId = EventData.getIssuedOrderId()
@@ -15,4 +18,13 @@ init
 	EventListener.add(EVENT_PLAYER_UNIT_SELL_ITEM) ->
 		let buyer = EventData.getBuyingUnit()
 		let soldItem = EventData.getSoldItem()
-		soldItem.setPlayer(buyer.getOwner(), true)
+		if KEEP_CHARGED_NEUTRAL and soldItem.getItemtype() == ITEM_TYPE_CHARGED
+			soldItem.setPlayer(players[PLAYER_NEUTRAL_PASSIVE], true)
+		else
+			soldItem.setPlayer(buyer.getOwner(), true)
+
+	if KEEP_CHARGED_NEUTRAL
+		EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) ->
+			let pickedUpItem = EventData.getManipulatedItem()
+			if pickedUpItem.getItemtype() == ITEM_TYPE_CHARGED
+				pickedUpItem.setPlayer(players[PLAYER_NEUTRAL_PASSIVE], true)

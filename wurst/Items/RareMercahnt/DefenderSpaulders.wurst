@@ -5,7 +5,7 @@ import ObjectIdGenerator
 import ItemObjEditing
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import RareMerchant
 import WandOfNeutralization
 import CursedArmor
@@ -29,7 +29,7 @@ public class DefenderSpaulders
 	@compiletime protected static function build()
 		let defenseDef = buildDefenseBonus(NAME, ICON, DEFENSE, tooltipGenerator)
 		let strengthDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

@@ -3,7 +3,7 @@ import ObjectIds
 import ObjectIdGenerator
 import AbilityObjEditing
 import EquipmentShop
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -24,7 +24,7 @@ public class Knife
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let agilityDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
 		let attackRateDef = buildAttackSpeedBonus(NAME, ICON, ATTACK_RATE, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

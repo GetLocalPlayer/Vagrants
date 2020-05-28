@@ -4,7 +4,7 @@ import ObjectIds
 import ObjectIdGenerator
 import AbilityObjEditing
 import EquipmentShop
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -25,7 +25,7 @@ public class LumberjacksAxe
 		let tooltipGenerator = new ItemTooltipGenerator(NAME, "", GOLD_COST, "")
 		let strengthDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
 		let attackDamageDef = buildAttackDamageBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

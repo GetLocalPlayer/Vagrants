@@ -2,7 +2,7 @@ package ItemCombine
 import LinkedListModule
 import LinkedList
 import ClosureEvents
-import RunedAlias
+import ItemAlias
 
 
 public constant ITEM_COMBINE_EFFECT = "Abilities\\Spells\\Items\\AIsm\\AIsmTarget.mdl"
@@ -45,7 +45,7 @@ init
 			ItemCombine.combine(u, itemList)
 		destroy itemList
 		
-	RunedAlias.onActualItemGiven() (unit u, item givenItem) ->
+	ItemAlias.onPickUp() (unit u, item givenItem) ->
 		let itemList = new LinkedList<item>
 		for i in u.inventory()
 			itemList.add(i)

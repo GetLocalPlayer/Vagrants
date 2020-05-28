@@ -2,7 +2,7 @@ package WandOfNeutralization
 import Assets
 import ChannelAbilityPreset
 import FleaMarket
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -45,7 +45,7 @@ public class WandOfNeutralization
 			..presetTargetType((int lvl) -> Targettype.UNIT castTo int)
 			..presetCastRange(lvl -> CAST_RANGE)
 			..presetTargetsAllowed(lvl -> TARGETS_ALLOWED)
-		RunedAlias.build(ID) (def, isAlias) ->
+		ItemAlias.build(ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

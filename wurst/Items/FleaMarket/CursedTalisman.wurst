@@ -2,7 +2,7 @@ package CursedTalisman
 import Assets
 import ChannelAbilityPreset
 import FleaMarket
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -43,7 +43,7 @@ public class CursedTalisman
 		..presetFollowThroughTime((int lvl) -> 0.1)
 		..presetArtDuration((int lvl) -> 5) 
 		..presetTargetType((int lvl) -> Targettype.NONE castTo int)
-		RunedAlias.build(ID, ALIAS_ID) (def, isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (def, isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

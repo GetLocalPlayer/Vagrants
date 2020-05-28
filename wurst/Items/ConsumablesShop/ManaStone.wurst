@@ -4,7 +4,7 @@ import ObjectIds
 import ObjectIdGenerator
 import AbilityObjEditing
 import ConsumablesShop
-import RunedAlias
+import ItemAlias
 import ItemTooltipGenerator
 import ItemAbilityPreset
 
@@ -35,7 +35,7 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 	..setLevels(1)
 	..setManaPointsGained(1, MANA_RESTORING)
 	..setCooldown(1, COOLDOWN)
-	RunedAlias.build(ITEM_ID) (def, isAlias) ->
+	ItemAlias.build(ITEM_ID) (def, isAlias) ->
 		def..setLevel(1)
 		..setLevelUnclassified(1)
 		..setLumberCost(0)
@@ -61,14 +61,3 @@ constant ITEM_ID = compiletime(ITEM_ID_GEN.next())
 			consumablesShop.addItemSold(def.getNewId())
 		else
 			def.setAbilities("{0},{1}".format(manaRestDef.getNewId().toRawCode(), manaRegDef.getNewId().toRawCode()))
-
-
-init
-	RunedAlias.onActualItemGiven() (unit u, item givenItem) ->
-		if givenItem.getTypeId() == ITEM_ID
-			for i in EventData.getTriggerUnit().inventory()
-				if i.getTypeId() == ITEM_ID and i != givenItem
-					let charges = givenItem.getCharges()
-					givenItem.remove()
-					i.setCharges(i.getCharges() + charges)
-					break

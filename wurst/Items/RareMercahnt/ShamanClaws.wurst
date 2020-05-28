@@ -5,7 +5,7 @@ import ChannelAbilityPreset
 
 import ItemTooltipGenerator
 import ItemAbilityPreset
-import RunedAlias
+import ItemAlias
 import RareMerchant
 import GauntletsOfOgre
 import SlippersOfAgility
@@ -32,7 +32,7 @@ public class ShamanClaws
 		let strDef = buildStrengthBonus(NAME, ICON, STRENGTH, tooltipGenerator)
 		let agiDef = buildAgilityBonus(NAME, ICON, AGILITY, tooltipGenerator)
 		let attackDamageDef = buildAttackDamageBonus(NAME, ICON, ATTACK_DAMAGE, tooltipGenerator)
-		RunedAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID)(ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)
@@ -74,7 +74,7 @@ public class ShamanClawsRecipe
 		..setComment("")
 
 	@compiletime protected static function build()
-		RunedAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
+		ItemAlias.build(ID, ALIAS_ID) (ItemDefinition def, boolean isAlias) ->
 			def..setLevel(1)
 			..setLevelUnclassified(1)
 			..setLumberCost(0)

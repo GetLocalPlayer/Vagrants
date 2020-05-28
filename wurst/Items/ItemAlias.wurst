@@ -1,4 +1,4 @@
-package RunedAlias
+package ItemAlias
 import ItemObjEditing
 import ObjectIdGenerator
 
@@ -19,11 +19,11 @@ in the inventory, or when an item's gonna be combined with other items but
 it can't be done because of the annoying mechanic. */
 
 
-public abstract class RunedAlias
-	protected RunedAlias next = null
-	protected RunedAlias prev = null
+public abstract class ItemAlias
+	protected ItemAlias next = null
+	protected ItemAlias prev = null
 
-	protected static RunedAlias first = null
+	protected static ItemAlias first = null
 
 	abstract function call(unit u, item givenItem)
 
@@ -38,11 +38,11 @@ public abstract class RunedAlias
 	/** Called when the hero either has or doesn't have an empty slot for the item.
 	The actual item will be removed from the map and replaced with its alias right
 	after the callback's executed. */
-	static function onActualItemGiven(RunedAlias cb) returns RunedAlias
-		if RunedAlias.first == null
-			cb.next = RunedAlias.first
-			RunedAlias.first.prev = cb
-		RunedAlias.first = cb
+	static function onPickUp(ItemAlias cb) returns ItemAlias
+		if ItemAlias.first == null
+			cb.next = ItemAlias.first
+			ItemAlias.first.prev = cb
+		ItemAlias.first = cb
 		return cb
 
 	// Compiletime 
@@ -75,26 +75,26 @@ public abstract class RunedAlias
 
 
 init
-	for i = 0 to RunedAlias.actualItemIds.size() - 1
-		createItem(RunedAlias.actualItemIds.get(i), ZERO2).remove()
-		createItem(RunedAlias.aliasItemIds.get(i), ZERO2).remove()
+	for i = 0 to ItemAlias.actualItemIds.size() - 1
+		createItem(ItemAlias.actualItemIds.get(i), ZERO2).remove()
+		createItem(ItemAlias.aliasItemIds.get(i), ZERO2).remove()
 
 	EventListener.add(EVENT_PLAYER_UNIT_PICKUP_ITEM) () ->
 		let aliasItem = EventData.getManipulatedItem()
 		let aliasItemId = aliasItem.getTypeId()
-		if RunedAlias.aliasItemIds.has(aliasItemId)
+		if ItemAlias.aliasItemIds.has(aliasItemId)
 			let u = EventData.getTriggerUnit()
 			let pos = aliasItem.getPos()
 			let p = aliasItem.getPlayer()
 			let charges = aliasItem.getCharges()
 			aliasItem.remove()
 			let isInventoryFull = u.isInventoryFull()
-			let index = RunedAlias.aliasItemIds.indexOf(aliasItemId)
-			let actualItemId = RunedAlias.actualItemIds.get(index)
+			let index = ItemAlias.aliasItemIds.indexOf(aliasItemId)
+			let actualItemId = ItemAlias.actualItemIds.get(index)
 			let newItem = not isInventoryFull ? u.addItemById(actualItemId) : createItem(actualItemId, pos)
 			newItem..setPlayer(p, true)
 			..setCharges(charges)
-			var cb = RunedAlias.first
+			var cb = ItemAlias.first
 			while cb != null
 				cb.call(u, newItem)
 				cb = cb.next
@@ -108,13 +108,13 @@ init
 	EventListener.add(EVENT_PLAYER_UNIT_DROP_ITEM) ->
 		let droppedItem = EventData.getManipulatedItem()
 		let droppedItemId = droppedItem.getTypeId()
-		if RunedAlias.actualItemIds.has(droppedItemId)
+		if ItemAlias.actualItemIds.has(droppedItemId)
 			nullTimer() () ->
 				let p = droppedItem.getPlayer()
 				let pos = droppedItem.getPos()
 				let charges = droppedItem.getCharges()
 				droppedItem.remove()
-				let index = RunedAlias.actualItemIds.indexOf(droppedItemId)
-				createItem(RunedAlias.aliasItemIds.get(index), pos)
+				let index = ItemAlias.actualItemIds.indexOf(droppedItemId)
+				createItem(ItemAlias.aliasItemIds.get(index), pos)
 				..setPlayer(p, true)
 				..setCharges(charges)
